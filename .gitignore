@@ -1,0 +1,34 @@
+### IDE ###
+.idea/
+.vscode/
+*.iml
+
+### Frontend (SWP391_G1_FEdu_Fe) ###
+node_modules/
+dist/
+*.local
+.vite/
+
+### Environment ###
+fedu/.env
+.env.*
+!.env.example
+
+### Local dev DB override (KHÔNG commit) ###
+application-local.yml
+**/application-local.yml
+
+### Logs ###
+*.log
+npm-debug.log*
+
+### OS ###
+.DS_Store
+Thumbs.db
+desktop.ini
+
+### Custom Tools / Agent / OpenSpec ###
+openspec/
+.claude/
+.agent/
+.agents/
