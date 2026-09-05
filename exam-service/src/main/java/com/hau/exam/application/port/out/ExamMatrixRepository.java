@@ -1,0 +1,1 @@
+package com.hau.exam.application.port.out;import com.hau.exam.domain.model.ExamMatrix;import java.util.*;public interface ExamMatrixRepository{ExamMatrix save(ExamMatrix m);Optional<ExamMatrix>findById(UUID id);List<ExamMatrix>findByFaculty(String faculty);}

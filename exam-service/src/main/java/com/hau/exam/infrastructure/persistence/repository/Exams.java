@@ -1,0 +1,1 @@
+package com.hau.exam.infrastructure.persistence.repository;import com.hau.exam.infrastructure.persistence.entity.ExamEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface Exams extends JpaRepository<ExamEntity,UUID>{}

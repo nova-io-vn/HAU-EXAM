@@ -1,0 +1,1 @@
+package com.hau.exam.domain.model;import java.time.Instant;import java.util.*;public record Exam(UUID id,String name,String facultyId,UUID subjectId,UUID matrixId,UUID templateId,UUID createdBy,List<ExamVersion>versions,Instant createdAt,Instant updatedAt){public Exam{versions=List.copyOf(versions);}}

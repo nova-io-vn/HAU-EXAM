@@ -1,0 +1,1 @@
+export const roles=Object.freeze({SYSTEM_ADMIN:'SYSTEM_ADMIN',SUBJECT_ADMIN:'SUBJECT_ADMIN',USER:'USER'})
