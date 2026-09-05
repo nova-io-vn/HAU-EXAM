@@ -1,0 +1,1 @@
+package com.hau.notification.domain.exception; public abstract class DomainException extends RuntimeException{private final String code;protected DomainException(String c,String m){super(m);code=c;}public String getCode(){return code;}}

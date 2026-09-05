@@ -12,6 +12,7 @@ dist/
 ### Environment ###
 .env
 fedu/.env
+.env
 .env.*
 !.env.example
 
