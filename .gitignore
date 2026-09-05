@@ -10,13 +10,7 @@ dist/
 .vite/
 
 ### Environment ###
-.env
-<<<<<<< HEAD
 fedu/.env
-.env
-=======
-**/.env
->>>>>>> origin/main
 .env.*
 !.env.example
 !**/.env.example

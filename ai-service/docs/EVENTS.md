@@ -17,3 +17,6 @@ AI consumer nằm trong cùng deployable `ai-service`.
 
 Cần: - manual ACK; - retry có delay; - DLQ; - concurrency giới hạn theo
 provider quota; - idempotency theo jobId/eventId.
+
+Workspace list/result reads add no RabbitMQ events. Browser job tracking uses
+owner-scoped HTTP polling; internal RabbitMQ events are not browser subscriptions.
