@@ -1,0 +1,9 @@
+package com.hau.question.infrastructure.persistence.adapter;
+import com.hau.question.application.port.out.CatalogRepository; import com.hau.question.domain.model.*; import com.hau.question.infrastructure.persistence.mapper.CatalogMapper; import com.hau.question.infrastructure.persistence.repository.*; import java.util.*; import org.springframework.stereotype.Component;
+@Component public class CatalogPersistenceAdapter implements CatalogRepository {
+ private final SubjectJpaRepository subjects;private final ChapterJpaRepository chapters;private final TopicJpaRepository topics;private final CatalogMapper mapper;
+ public CatalogPersistenceAdapter(SubjectJpaRepository s,ChapterJpaRepository c,TopicJpaRepository t,CatalogMapper m){subjects=s;chapters=c;topics=t;mapper=m;}
+ public Subject saveSubject(Subject v){return mapper.toDomain(subjects.save(mapper.toEntity(v)));} public Optional<Subject> findSubject(UUID id){return subjects.findById(id).map(mapper::toDomain);} public List<Subject> findSubjects(String f){return (f==null?subjects.findAll():subjects.findAllByFacultyIdOrderByCode(f)).stream().map(mapper::toDomain).toList();} public void deleteSubject(UUID id){subjects.deleteById(id);}
+ public Chapter saveChapter(Chapter v){return mapper.toDomain(chapters.save(mapper.toEntity(v)));} public Optional<Chapter> findChapter(UUID id){return chapters.findById(id).map(mapper::toDomain);} public List<Chapter> findChapters(UUID id){return chapters.findAllBySubjectIdOrderByOrdinal(id).stream().map(mapper::toDomain).toList();} public void deleteChapter(UUID id){chapters.deleteById(id);}
+ public Topic saveTopic(Topic v){return mapper.toDomain(topics.save(mapper.toEntity(v)));} public Optional<Topic> findTopic(UUID id){return topics.findById(id).map(mapper::toDomain);} public List<Topic> findTopics(UUID id){return topics.findAllByChapterIdOrderByCode(id).stream().map(mapper::toDomain).toList();} public void deleteTopic(UUID id){topics.deleteById(id);}
+}

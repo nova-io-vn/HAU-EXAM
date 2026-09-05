@@ -1,0 +1,1 @@
+package com.hau.ai.infrastructure.persistence.repository;import com.hau.ai.infrastructure.persistence.entity.ProcessedEventEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface ProcessedEventJpaRepository extends JpaRepository<ProcessedEventEntity,UUID>{}

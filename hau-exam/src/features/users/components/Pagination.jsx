@@ -1,0 +1,2 @@
+import {Button} from '../../../components/ui'
+export function Pagination({page,totalPages,totalElements,onPageChange}){if(totalPages<=1)return totalElements?<p className="result-count">{totalElements} kết quả</p>:null;return <footer className="pagination"><span>Trang {page+1}/{totalPages} · {totalElements} kết quả</span><div><Button variant="secondary" disabled={page===0} onClick={()=>onPageChange(page-1)}>Trước</Button><Button variant="secondary" disabled={page+1>=totalPages} onClick={()=>onPageChange(page+1)}>Sau</Button></div></footer>}

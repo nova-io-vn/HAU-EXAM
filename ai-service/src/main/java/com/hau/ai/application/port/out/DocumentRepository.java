@@ -1,0 +1,1 @@
+package com.hau.ai.application.port.out;import com.hau.ai.domain.model.DocumentMetadata;import java.util.*;public interface DocumentRepository{DocumentMetadata save(DocumentMetadata d);Optional<DocumentMetadata> findById(UUID id);}

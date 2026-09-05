@@ -12,3 +12,5 @@ referenceType, isRead, readAt, createdAt.
 
 Scheduled: targetRole/targetFaculty, scheduledAt, status, creator,
 timestamps.
+
+Implemented tables: `notifications`, `scheduled_notifications`, and the durable consumer inbox `processed_events`.

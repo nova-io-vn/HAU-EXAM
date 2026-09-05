@@ -2,6 +2,11 @@
 
 # AI Service --- Business
 
+The initial extraction adapter deliberately accepts UTF-8 `text/plain` only.
+PDF/DOCX require a separately reviewed parser dependency and are rejected rather
+than accepted without usable extraction. Chat is context-only and does not add
+a vector database or a separate service.
+
 ## Module
 
 -   Document.

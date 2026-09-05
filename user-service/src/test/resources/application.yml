@@ -1,18 +1,39 @@
 spring:
   datasource:
+<<<<<<< HEAD
+    url: jdbc:h2:mem:user;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+=======
     url: jdbc:h2:mem:foundation;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     username: sa
     password:
     driver-class-name: org.h2.Driver
+>>>>>>> origin/main
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
   flyway:
     enabled: true
+<<<<<<< HEAD
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8081/.well-known/jwks.json
+user:
+  messaging:
+    retry-delay-ms: 100
+=======
   cloud:
     discovery:
       enabled: false
 eureka:
   client:
     enabled: false
+>>>>>>> origin/main

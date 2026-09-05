@@ -1,0 +1,1 @@
+package com.hau.exam.domain.model;import java.util.*;public record ExamMatrixRule(UUID id,UUID chapterId,UUID topicId,Difficulty difficulty,int questionCount){public ExamMatrixRule{Objects.requireNonNull(chapterId);Objects.requireNonNull(difficulty);if(questionCount<0)throw new IllegalArgumentException("Question count cannot be negative");}}

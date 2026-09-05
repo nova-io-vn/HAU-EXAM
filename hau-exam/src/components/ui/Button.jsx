@@ -1,0 +1,1 @@
+export function Button({variant='primary',loading=false,className='',children,...props}){return <button className={`button button-${variant} ${className}`} disabled={loading||props.disabled} {...props}>{loading?<span className="spinner" aria-label="Đang xử lý"/>:children}</button>}

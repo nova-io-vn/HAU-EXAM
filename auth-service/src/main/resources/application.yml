@@ -1,19 +1,42 @@
 server:
   port: ${SERVER_PORT:8081}
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
 spring:
   application:
     name: auth-service
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/auth_db}
     username: ${DB_USERNAME:postgres}
+<<<<<<< HEAD
+    password: ${DB_PASSWORD}
+=======
     password: ${DB_PASSWORD:postgres}
+>>>>>>> origin/main
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
   flyway:
     enabled: true
+<<<<<<< HEAD
+
+auth:
+  security:
+    password:
+      bcrypt-strength: ${BCRYPT_STRENGTH:12}
+
+spring:
+  application:
+    name: auth-service
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+=======
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -28,4 +51,5 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+>>>>>>> origin/main
 

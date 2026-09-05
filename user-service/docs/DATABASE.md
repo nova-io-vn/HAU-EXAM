@@ -12,3 +12,10 @@ UserProfile chính: `id`, `lecturerCode`, `fullName`, `dateOfBirth`,
 timestamps.
 
 Không lưu password.
+
+## Schema implemented
+
+- `user_profiles`: profile aggregate, unique `lecturer_code` and `email`, optimistic `version`.
+- `processed_events`: durable consumer inbox keyed by `event_id`.
+
+`faculty_id` is currently a logical reference. A Faculty catalog/entity is not introduced until ownership of the faculty master catalog is explicitly decided.

@@ -1,31 +1,48 @@
 server:
   port: ${SERVER_PORT:8085}
-
 spring:
   application:
     name: ai-service
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/ai_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: ${AI_DB_URL:jdbc:postgresql://localhost:5432/ai_db}
+    username: ${AI_DB_USERNAME:postgres}
+    password: ${AI_DB_PASSWORD}
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
   flyway:
     enabled: true
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
-
+    listener:
+      simple:
+        acknowledge-mode: manual
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8081/.well-known/jwks.json}
+ai:
+  document:
+    max-size-bytes: ${AI_DOCUMENT_MAX_SIZE_BYTES:10485760}
+  storage:
+    root: ${AI_STORAGE_ROOT:./data/ai-documents}
+  provider:
+    api-key: ${GEMINI_API_KEY:}
+    url: ${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=}
+  rabbitmq:
+    retry-delay-ms: ${AI_RETRY_DELAY_MS:10000}
+    max-retries: ${AI_MAX_RETRIES:3}
+    concurrency: ${AI_CONSUMER_CONCURRENCY:1}
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
-
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}

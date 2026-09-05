@@ -1,0 +1,2 @@
+import {useEffect} from 'react'
+export function useAuthEvents({onUnauthorized,onForbidden}){useEffect(()=>{const unauthorized=e=>onUnauthorized?.(e.detail);const forbidden=e=>onForbidden?.(e.detail);window.addEventListener('hau:unauthorized',unauthorized);window.addEventListener('hau:forbidden',forbidden);return()=>{window.removeEventListener('hau:unauthorized',unauthorized);window.removeEventListener('hau:forbidden',forbidden)}},[onUnauthorized,onForbidden])}

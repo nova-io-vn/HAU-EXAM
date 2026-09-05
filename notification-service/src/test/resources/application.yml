@@ -1,5 +1,23 @@
 spring:
   datasource:
+<<<<<<< HEAD
+    url: jdbc:h2:mem:notification;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate.ddl-auto: validate
+  flyway.enabled: true
+  rabbitmq.listener.simple.auto-startup: false
+  mail:
+    host: localhost
+    port: 1025
+  security.oauth2.resourceserver.jwt.jwk-set-uri: http://localhost:8081/.well-known/jwks.json
+notification:
+  mail-from: no-reply@hau.edu.vn
+  retry-delay-ms: 100
+  scheduler-delay-ms: 600000
+=======
     url: jdbc:h2:mem:foundation;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     username: sa
     password:
@@ -16,3 +34,4 @@ spring:
 eureka:
   client:
     enabled: false
+>>>>>>> origin/main

@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+package com.hau.exam;import org.springframework.boot.*;import org.springframework.boot.autoconfigure.*;@SpringBootApplication public class ExamServiceApplication{public static void main(String[]a){SpringApplication.run(ExamServiceApplication.class,a);}}
+=======
 package com.hau.exam;
 
 import org.springframework.boot.SpringApplication;
@@ -11,3 +14,4 @@ public class ExamServiceApplication {
     }
 }
 
+>>>>>>> origin/main

@@ -1,0 +1,1 @@
+export class ApiError extends Error{constructor({status=0,code='NETWORK_ERROR',message='Không thể kết nối tới máy chủ',correlationId,errors}){super(message);this.name='ApiError';this.status=status;this.code=code;this.correlationId=correlationId;this.errors=errors}}
