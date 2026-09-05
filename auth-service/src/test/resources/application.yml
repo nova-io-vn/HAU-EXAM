@@ -1,6 +1,10 @@
 spring:
   datasource:
+<<<<<<< HEAD
     url: jdbc:h2:mem:auth;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+=======
+    url: jdbc:h2:mem:foundation;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+>>>>>>> origin/main
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -10,3 +14,12 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+<<<<<<< HEAD
+=======
+  cloud:
+    discovery:
+      enabled: false
+eureka:
+  client:
+    enabled: false
+>>>>>>> origin/main

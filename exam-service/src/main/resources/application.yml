@@ -1,18 +1,29 @@
 server:
   port: ${SERVER_PORT:8084}
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
 spring:
   application:
     name: exam-service
   datasource:
+<<<<<<< HEAD
     url: ${EXAM_DB_URL:jdbc:postgresql://localhost:5432/exam_db}
     username: ${EXAM_DB_USERNAME:postgres}
     password: ${EXAM_DB_PASSWORD}
+=======
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/exam_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+>>>>>>> origin/main
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
   flyway:
     enabled: true
+<<<<<<< HEAD
   security:
     oauth2:
       resourceserver:
@@ -24,3 +35,16 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+=======
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+
+>>>>>>> origin/main
