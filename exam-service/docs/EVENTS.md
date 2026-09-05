@@ -2,6 +2,11 @@
 
 # Exam Service --- Events
 
+No event is published in this implementation because generation is synchronous
+and no confirmed consumer exists for `exam.generated`. Question selection is a
+synchronous REST query through `QuestionCatalogPort`; RabbitMQ is not used as a
+query mechanism.
+
 Event chỉ tạo khi có consumer thực: - `exam.generated` - `exam.updated`
 nếu Notification/audit cần.
 

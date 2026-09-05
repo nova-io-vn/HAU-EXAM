@@ -1,0 +1,1 @@
+package com.hau.exam.application.port.out;import com.hau.exam.domain.model.ExamTemplate;import java.util.*;public interface ExamTemplateRepository{ExamTemplate save(ExamTemplate t);Optional<ExamTemplate>findById(UUID id);}
