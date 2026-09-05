@@ -1,0 +1,26 @@
+server:
+  port: ${SERVER_PORT:8084}
+spring:
+  application:
+    name: exam-service
+  datasource:
+    url: ${EXAM_DB_URL:jdbc:postgresql://localhost:5432/exam_db}
+    username: ${EXAM_DB_USERNAME:postgres}
+    password: ${EXAM_DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8081/.well-known/jwks.json}
+exam:
+  question-service-url: ${QUESTION_SERVICE_URL:http://question-service}
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}

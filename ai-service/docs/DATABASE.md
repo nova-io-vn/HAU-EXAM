@@ -2,6 +2,10 @@
 
 # AI Service --- Database
 
+Flyway V1 creates `documents`, `ai_jobs`, `ai_results`, and
+`processed_events`. File bytes remain in storage; PostgreSQL contains metadata,
+durable job state, validated result JSON, and the idempotency inbox.
+
 Database: `ai_db`.
 
 Entity dự kiến: - DocumentMetadata - AiJob - AiResult/ResultReference -

@@ -1,0 +1,2 @@
+import {EmptyState} from './EmptyState'
+export function DataTable({columns=[],rows=[],rowKey='id',emptyTitle='Chưa có dữ liệu'}){if(!rows.length)return <EmptyState title={emptyTitle}/>;return <div className="table-wrap"><table><thead><tr>{columns.map(c=><th key={c.key} scope="col">{c.header}</th>)}</tr></thead><tbody>{rows.map((row,index)=><tr key={row[rowKey]??index}>{columns.map(c=><td key={c.key}>{c.render?c.render(row):row[c.key]}</td>)}</tr>)}</tbody></table></div>}

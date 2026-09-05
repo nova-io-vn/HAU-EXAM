@@ -1,0 +1,101 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://auth-service:8081/.well-known/jwks.json}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          default-filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: '#{@clientAddressKeyResolver}'
+                redis-rate-limiter.replenishRate: ${API_RATE_REPLENISH:50}
+                redis-rate-limiter.burstCapacity: ${API_RATE_BURST:100}
+                redis-rate-limiter.requestedTokens: 1
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: ${FRONTEND_ALLOWED_ORIGIN:http://localhost:3000}
+                allowed-methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+                allowed-headers: [Authorization, Content-Type, X-Correlation-Id]
+                exposed-headers: [X-Correlation-Id]
+                allow-credentials: true
+                max-age: 3600
+          routes:
+            - id: auth-sensitive
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/v1/auth/login,/api/v1/auth/forgot-password,/api/v1/auth/verify-otp,/api/v1/auth/reset-password
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@clientAddressKeyResolver}'
+                    redis-rate-limiter.replenishRate: ${AUTH_RATE_REPLENISH:2}
+                    redis-rate-limiter.burstCapacity: ${AUTH_RATE_BURST:5}
+                    redis-rate-limiter.requestedTokens: 1
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/v1/auth/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@clientAddressKeyResolver}'
+                    redis-rate-limiter.replenishRate: ${AUTH_GENERAL_RATE_REPLENISH:5}
+                    redis-rate-limiter.burstCapacity: ${AUTH_GENERAL_RATE_BURST:10}
+                    redis-rate-limiter.requestedTokens: 1
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/v1/users/**,/api/v1/faculties/**
+            - id: question-service
+              uri: lb://question-service
+              predicates:
+                - Path=/api/v1/questions/**,/api/v1/subjects/**,/api/v1/chapters/**,/api/v1/topics/**
+            - id: exam-service
+              uri: lb://exam-service
+              predicates:
+                - Path=/api/v1/exams/**,/api/v1/exam-matrices/**,/api/v1/exam-templates/**
+            - id: ai-service
+              uri: lb://ai-service
+              predicates:
+                - Path=/api/v1/ai/**,/api/v1/documents/**,/api/v1/chat/**
+            - id: notification-websocket
+              uri: lb:ws://notification-service
+              predicates:
+                - Path=/ws/**
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: '#{@authenticatedUserKeyResolver}'
+                    redis-rate-limiter.replenishRate: ${READ_RATE_REPLENISH:20}
+                    redis-rate-limiter.burstCapacity: ${READ_RATE_BURST:40}
+                    redis-rate-limiter.requestedTokens: 1
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+logging:
+  level:
+    com.hau.gateway: INFO

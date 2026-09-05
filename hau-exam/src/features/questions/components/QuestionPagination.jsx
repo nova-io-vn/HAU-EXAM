@@ -1,0 +1,2 @@
+import {Button} from '../../../components/ui'
+export function QuestionPagination({page,totalPages,totalElements,onChange}){if(totalPages<=1)return totalElements?<p className="result-count">{totalElements} câu hỏi</p>:null;return <footer className="pagination"><span>Trang {page+1}/{totalPages} · {totalElements} câu hỏi</span><div><Button variant="secondary" disabled={page===0} onClick={()=>onChange(page-1)}>Trước</Button><Button variant="secondary" disabled={page+1>=totalPages} onClick={()=>onChange(page+1)}>Sau</Button></div></footer>}

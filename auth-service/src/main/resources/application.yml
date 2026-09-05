@@ -1,6 +1,7 @@
 server:
   port: ${SERVER_PORT:8081}
 
+
 spring:
   application:
     name: auth-service
@@ -19,3 +20,12 @@ auth:
   security:
     password:
       bcrypt-strength: ${BCRYPT_STRENGTH:12}
+
+spring:
+  application:
+    name: auth-service
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+

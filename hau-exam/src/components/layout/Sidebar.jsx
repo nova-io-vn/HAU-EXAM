@@ -1,0 +1,4 @@
+import {NavLink} from 'react-router-dom'
+import {navigationByRole} from '../../constants/navigation'
+import {useAuth} from '../../features/auth/hooks/useAuth'
+export function Sidebar({collapsed,mobileOpen,onClose}){const{role}=useAuth();const items=navigationByRole[role]||[];return <><button className={`sidebar-backdrop ${mobileOpen?'is-open':''}`} type="button" aria-label="Đóng điều hướng" onClick={onClose}/><aside className={`sidebar ${mobileOpen?'is-open':''}`} aria-label="Điều hướng chính"><div className="brand"><span className="brand-mark">H</span>{!collapsed&&<span>HAU-EXAM</span>}</div><nav>{items.map(item=><NavLink key={item.to} to={item.to} end={item.end} onClick={onClose} title={collapsed?item.label:undefined} className={({isActive})=>isActive?'active':''}><span className="nav-icon" aria-hidden="true">{item.icon}</span>{!collapsed&&<span>{item.label}</span>}</NavLink>)}</nav>{!collapsed&&<p className="sidebar-role">{role}</p>}</aside></>}

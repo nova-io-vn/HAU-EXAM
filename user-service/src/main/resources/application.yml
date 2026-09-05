@@ -3,6 +3,7 @@ server:
 spring:
   application:
     name: user-service
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/user_db}
     username: ${DB_USERNAME:postgres}
@@ -30,3 +31,9 @@ spring:
 user:
   messaging:
     retry-delay-ms: ${USER_REGISTRATION_RETRY_DELAY_MS:5000}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+

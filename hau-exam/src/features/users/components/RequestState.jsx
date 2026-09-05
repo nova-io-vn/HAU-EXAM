@@ -1,0 +1,2 @@
+import {Button,Loading} from '../../../components/ui'
+export function RequestState({loading,error,onRetry}){if(loading)return <div className="request-state"><Loading label="Đang tải dữ liệu người dùng"/></div>;if(error)return <div className="request-state request-error" role="alert"><strong>Không thể tải dữ liệu</strong><span>{error.message}</span>{error.correlationId&&<small>Mã đối chiếu: {error.correlationId}</small>}<Button variant="secondary" onClick={onRetry}>Thử lại</Button></div>;return null}
