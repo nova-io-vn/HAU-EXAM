@@ -40,3 +40,10 @@
 @media(max-width:1200px){.question-filters{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:800px){.question-filters,.editor-grid,.option-editor,.question-detail{grid-template-columns:1fr}.question-detail>aside{padding:20px 0 0;border-top:1px solid var(--border);border-left:0}}
 @media(max-width:520px){.question-filters{grid-template-columns:1fr}.editor-section,.question-detail{padding:16px}.editor-actions{bottom:6px}}
+
+.review-filters{display:flex;align-items:end;gap:16px;margin-bottom:20px}.review-filters>.field:first-child{flex:1}
+.review-author{display:block;max-width:140px;overflow-wrap:anywhere;font-size:12px}
+.review-empty-actions{padding:16px 24px;color:var(--text-muted);font-size:13px}
+.review-history{margin-top:20px;padding:24px}.review-history h2{font-size:18px;margin-top:0}.review-history ol{list-style:none;padding:0;margin:0}.review-history li{padding:16px 0;border-top:1px solid var(--border)}.review-history li>div{display:flex;justify-content:space-between;gap:16px}.review-history time,.review-history small{color:var(--text-muted);font-size:12px}.review-history p,.review-workspace .question-preview h2,.review-workspace .option-preview span{white-space:pre-wrap;overflow-wrap:anywhere}
+.review-actions{position:sticky;bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);z-index:2}.review-actions>div,.review-dialog-actions{display:flex;gap:8px;flex-wrap:wrap}.review-dialog-actions{justify-content:flex-end;margin-top:20px}.review-actions>span,.review-readonly,.review-explanation{font-size:13px;color:var(--text-muted)}.review-explanation{margin-top:24px}.review-success{padding:16px;background:var(--success-soft);color:var(--success);border-radius:var(--radius-sm)}
+@media(max-width:800px){.review-filters,.review-actions{align-items:stretch;flex-direction:column}.review-history{padding:16px}.review-history li>div{flex-direction:column;gap:4px}.review-history small{overflow-wrap:anywhere}.review-actions>div{justify-content:flex-end}}
