@@ -3,6 +3,35 @@ server:
 spring:
   application:
     name: question-service
+
+  datasource:
+    url: ${QUESTION_DB_URL:jdbc:postgresql://localhost:5432/question_db}
+    username: ${QUESTION_DB_USERNAME:postgres}
+    password: ${QUESTION_DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        acknowledge-mode: manual
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8081/.well-known/jwks.json}
+question:
+  rabbitmq:
+    retry-delay-ms: ${QUESTION_RETRY_DELAY_MS:10000}
+    max-retries: ${QUESTION_MAX_RETRIES:3}
+
 eureka:
   client:
     service-url:
