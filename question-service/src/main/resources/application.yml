@@ -3,6 +3,7 @@ server:
 spring:
   application:
     name: question-service
+
   datasource:
     url: ${QUESTION_DB_URL:jdbc:postgresql://localhost:5432/question_db}
     username: ${QUESTION_DB_USERNAME:postgres}
@@ -30,6 +31,7 @@ question:
   rabbitmq:
     retry-delay-ms: ${QUESTION_RETRY_DELAY_MS:10000}
     max-retries: ${QUESTION_MAX_RETRIES:3}
+
 eureka:
   client:
     service-url:

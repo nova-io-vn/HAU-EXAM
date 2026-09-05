@@ -1,0 +1,24 @@
+.auth-page{min-height:100vh;display:grid;place-items:center;padding:40px 20px;background:var(--bg)}
+.auth-card{width:min(440px,100%);padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.auth-brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:34px;color:var(--text);text-decoration:none}
+.auth-brand>span{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;background:var(--text);color:#fff;font-weight:800}
+.auth-card header h1{margin:7px 0 9px;font-size:30px;letter-spacing:-.7px}
+.auth-card header>p:last-child{margin:0;color:var(--text-muted);font-size:14px;line-height:1.55}
+.auth-form{display:grid;gap:18px;margin-top:26px}
+.auth-form>.button{width:100%;margin-top:2px}
+.auth-card footer{margin-top:24px;padding-top:20px;border-top:1px solid var(--border);text-align:center;color:var(--text-muted);font-size:14px}
+.auth-card a{color:var(--accent);font-weight:600;text-decoration:none}
+.auth-card a:hover{text-decoration:underline}
+.auth-forgot{justify-self:end;margin-top:-7px;font-size:13px}
+.auth-alert{margin-top:20px;padding:11px 13px;border-radius:var(--radius-sm);font-size:13px;line-height:1.45}
+.auth-alert-danger{background:var(--danger-soft);color:var(--danger)}
+.auth-alert-success{background:var(--success-soft);color:var(--success)}
+.password-field{position:relative}
+.password-field>.field input{padding-right:58px}
+.password-field>button{position:absolute;right:7px;bottom:6px;min-height:30px;padding:0 7px;border:0;background:transparent;color:var(--accent);font-size:12px;font-weight:700}
+.auth-success{display:grid;justify-items:center;gap:8px;margin:26px 0;text-align:center}
+.auth-success>span{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--success-soft);color:var(--success);font-size:24px}
+.auth-success p{margin:0;color:var(--text-muted);line-height:1.55}
+.auth-wide{width:100%}
+.profile-button>.button{min-height:34px;padding:0 10px}
+@media(max-width:520px){.auth-page{align-items:start;padding:20px 12px}.auth-card{padding:24px 20px;border-radius:var(--radius-md)}.auth-brand{margin-bottom:28px}.auth-card header h1{font-size:27px}}

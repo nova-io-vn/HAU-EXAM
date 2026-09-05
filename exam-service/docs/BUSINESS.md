@@ -2,6 +2,12 @@
 
 # Exam Service --- Business
 
+Generation is synchronous for the current small selection workload. Every
+candidate returned by Question Service is revalidated as APPROVED and in the
+matrix faculty/catalog scope before only its logical ID is persisted. A new
+generation creates version 1; regeneration appends an immutable numbered
+version.
+
 ## Mục tiêu
 
 Xây ma trận và bộ đề từ ngân hàng câu hỏi đã duyệt.

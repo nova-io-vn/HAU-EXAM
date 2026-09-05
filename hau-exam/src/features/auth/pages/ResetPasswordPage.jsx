@@ -1,0 +1,10 @@
+import {useState} from 'react'
+import {useLocation,useNavigate} from 'react-router-dom'
+import {Button} from '../../../components/ui'
+import {routes} from '../../../constants/routes'
+import {authApi} from '../api/authApi'
+import {AuthAlert} from '../components/AuthAlert'
+import {AuthLayout} from '../components/AuthLayout'
+import {PasswordInput} from '../components/PasswordInput'
+import {getAuthErrorMessage} from '../model/authErrors'
+export function ResetPasswordPage(){const location=useLocation();const navigate=useNavigate();const verification=location.state;const[password,setPassword]=useState('');const[error,setError]=useState('');const[loading,setLoading]=useState(false);if(!verification?.lecturerCode||!verification?.otp)return <AuthLayout title="Phiên xác minh không hợp lệ" description="Vui lòng yêu cầu OTP và xác minh lại."><Button className="auth-wide" onClick={()=>navigate(routes.forgotPassword,{replace:true})}>Bắt đầu lại</Button></AuthLayout>;async function submit(event){event.preventDefault();setLoading(true);setError('');try{await authApi.resetPassword({lecturerCode:verification.lecturerCode,otp:verification.otp,newPassword:password});navigate(routes.login,{replace:true,state:{message:'Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.'}})}catch(reason){setError(getAuthErrorMessage(reason,'Không thể đặt lại mật khẩu.'))}finally{setLoading(false)}}return <AuthLayout title="Đặt lại mật khẩu" description="Tạo mật khẩu mới cho tài khoản của bạn."><AuthAlert>{error}</AuthAlert><form className="auth-form" onSubmit={submit}><PasswordInput label="Mật khẩu mới" name="newPassword" autoComplete="new-password" required value={password} onChange={event=>setPassword(event.target.value)}/><Button type="submit" loading={loading}>Đặt lại mật khẩu</Button></form></AuthLayout>}

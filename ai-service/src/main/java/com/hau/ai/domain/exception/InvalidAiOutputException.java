@@ -1,0 +1,1 @@
+package com.hau.ai.domain.exception; public class InvalidAiOutputException extends DomainException{public InvalidAiOutputException(String m){super(m);}public InvalidAiOutputException(String m,Throwable c){super(m,c);}}

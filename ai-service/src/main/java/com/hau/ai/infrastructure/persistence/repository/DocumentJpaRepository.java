@@ -1,0 +1,1 @@
+package com.hau.ai.infrastructure.persistence.repository;import com.hau.ai.infrastructure.persistence.entity.DocumentEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface DocumentJpaRepository extends JpaRepository<DocumentEntity,UUID>{}
