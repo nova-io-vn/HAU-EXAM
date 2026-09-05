@@ -1,0 +1,7 @@
+package com.hau.question.infrastructure.security;
+import java.util.*; import org.springframework.context.annotation.*; import org.springframework.core.convert.converter.Converter; import org.springframework.security.authentication.AbstractAuthenticationToken; import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; import org.springframework.security.config.annotation.web.builders.HttpSecurity; import org.springframework.security.oauth2.jwt.*; import org.springframework.security.oauth2.server.resource.authentication.*; import org.springframework.security.web.SecurityFilterChain;
+@Configuration @EnableMethodSecurity public class SecurityConfig {
+ @Bean SecurityFilterChain filter(HttpSecurity http)throws Exception{return http.csrf(c->c.disable()).authorizeHttpRequests(a->a.requestMatchers("/actuator/health").permitAll().anyRequest().authenticated()).oauth2ResourceServer(o->o.jwt(j->j.jwtAuthenticationConverter(converter()))).build();}
+ @Bean JwtDecoder jwtDecoder(org.springframework.core.env.Environment env){return NimbusJwtDecoder.withJwkSetUri(Objects.requireNonNull(env.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri"))).build();}
+ private Converter<Jwt,? extends AbstractAuthenticationToken> converter(){JwtAuthenticationConverter c=new JwtAuthenticationConverter();c.setJwtGrantedAuthoritiesConverter(jwt->{String role=jwt.getClaimAsString("role");return role==null?List.of():List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_"+role));});return c;}
+}
