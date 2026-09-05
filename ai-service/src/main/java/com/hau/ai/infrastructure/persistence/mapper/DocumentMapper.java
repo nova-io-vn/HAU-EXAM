@@ -1,0 +1,1 @@
+package com.hau.ai.infrastructure.persistence.mapper;import com.hau.ai.domain.model.DocumentMetadata;import com.hau.ai.infrastructure.persistence.entity.DocumentEntity;import org.mapstruct.Mapper;@Mapper(componentModel="spring")public interface DocumentMapper{DocumentEntity toEntity(DocumentMetadata d);DocumentMetadata toDomain(DocumentEntity e);}
