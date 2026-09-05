@@ -1,0 +1,2 @@
+import {Link} from 'react-router-dom'
+export function AuthLayout({title,description,children,footer}){return <main className="auth-page"><section className="auth-card" aria-labelledby="auth-title"><Link className="auth-brand" to="/login"><span>H</span><strong>HAU-EXAM</strong></Link><header><p className="eyebrow">ĐẠI HỌC KIẾN TRÚC HÀ NỘI</p><h1 id="auth-title">{title}</h1><p>{description}</p></header>{children}{footer&&<footer>{footer}</footer>}</section></main>}

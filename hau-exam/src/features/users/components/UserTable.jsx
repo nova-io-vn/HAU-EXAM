@@ -1,0 +1,5 @@
+import {Link} from 'react-router-dom'
+import {Button,DataTable,StatusBadge} from '../../../components/ui'
+import {formatDateTime} from '../model/userModel'
+
+export function UserTable({users,pending=false,onApprove,onReject}){const columns=[{key:'lecturerCode',header:'Mã giảng viên'},{key:'fullName',header:'Họ và tên',render:user=>user.fullName||'—'},{key:'email',header:'Email',render:user=>user.email||'—'},{key:'facultyId',header:'Khoa',render:user=>user.facultyId||'—'},{key:'role',header:'Vai trò',render:user=><StatusBadge status={user.role}/>},{key:'status',header:'Trạng thái',render:user=><StatusBadge status={user.status}/>},{key:'updatedAt',header:'Cập nhật',render:user=>formatDateTime(user.updatedAt)},{key:'actions',header:'Thao tác',render:user=><div className="row-actions">{pending&&<><Button onClick={()=>onApprove(user)}>Duyệt</Button><Button variant="ghost" onClick={()=>onReject(user)}>Từ chối</Button></>}<Link to={`/admin/users/${user.id}`}>Chi tiết</Link></div>}];return <DataTable columns={columns} rows={users} emptyTitle={pending?'Không có đăng ký đang chờ':'Không tìm thấy người dùng'}/>}

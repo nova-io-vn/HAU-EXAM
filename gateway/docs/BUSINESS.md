@@ -12,5 +12,5 @@ hơn notification read API. CORS chỉ cho origin cấu hình bởi
 `FRONTEND_ALLOWED_ORIGIN`; không dùng wildcard khi bật credentials.
 
 Identity header do client gửi bị xóa trước khi request được forward. Gateway
-chỉ dựng lại các header đó từ JWT hợp lệ. Correlation ID chỉ nhận ký tự an
-toàn và tối đa 64 ký tự; giá trị thiếu hoặc bất thường được thay bằng UUID.
+chỉ dựng lại các header đó từ JWT hợp lệ. Correlation ID chỉ giữ lại khi là
+UUID hợp lệ; giá trị thiếu hoặc sai định dạng được thay bằng UUID mới.
