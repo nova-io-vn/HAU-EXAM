@@ -1,0 +1,1 @@
+package com.hau.notification.domain.exception;public class ForbiddenNotificationAccessException extends DomainException{public ForbiddenNotificationAccessException(){super("FORBIDDEN","Notification belongs to another user");}}

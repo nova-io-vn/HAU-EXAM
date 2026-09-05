@@ -1,0 +1,1 @@
+package com.hau.notification.domain.exception;import java.util.UUID;public class NotificationNotFoundException extends DomainException{public NotificationNotFoundException(UUID id){super("NOTIFICATION_NOT_FOUND","Notification not found: "+id);}}

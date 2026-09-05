@@ -1,0 +1,1 @@
+package com.hau.notification.presentation.response;import java.time.Instant;public record ApiErrorResponse(boolean success,String code,String message,Object data,Instant timestamp,String path,String correlationId){public static ApiErrorResponse of(String c,String m,String p,String x){return new ApiErrorResponse(false,c,m,null,Instant.now(),p,x);}}
