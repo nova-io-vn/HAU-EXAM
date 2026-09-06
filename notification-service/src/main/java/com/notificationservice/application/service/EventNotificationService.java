@@ -2,7 +2,6 @@ package com.notificationservice.application.service;
 
 import com.notificationservice.application.dto.IncomingEvent;
 import com.notificationservice.application.port.in.EventNotificationUseCase;
-import com.notificationservice.application.port.out.DeviceTokenRepository;
 import com.notificationservice.application.port.out.EmailSender;
 import com.notificationservice.application.port.out.ProcessedEventStore;
 import com.notificationservice.application.port.out.PushProvider;
@@ -10,6 +9,7 @@ import com.notificationservice.application.port.out.RealtimeNotifier;
 import com.notificationservice.domain.model.Notification;
 import com.notificationservice.domain.model.NotificationType;
 import com.notificationservice.domain.repository.NotificationRepository;
+import com.notificationservice.domain.repository.DeviceTokenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
