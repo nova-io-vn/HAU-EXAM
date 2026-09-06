@@ -699,7 +699,7 @@ Cấu trúc tham khảo:
 
 ```text
 service-name/
-└── src/main/java/com/hau/<service>/
+└── src/main/java/com/<service_package>/
     |
     +-- domain/
     |   +-- model/

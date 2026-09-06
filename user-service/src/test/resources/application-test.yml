@@ -1,0 +1,34 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:user;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: ''
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9999/jwks
+  cloud:
+    discovery:
+      enabled: false
+
+user:
+  messaging:
+    retry-delay-ms: 100
+
+eureka:
+  client:
+    enabled: false

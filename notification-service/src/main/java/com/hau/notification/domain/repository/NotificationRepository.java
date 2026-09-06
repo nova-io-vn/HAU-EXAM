@@ -1,1 +1,0 @@
-package com.hau.notification.domain.repository;import com.hau.notification.domain.model.Notification;import java.util.*;public interface NotificationRepository{Notification save(Notification n);Optional<Notification> findById(UUID id);List<Notification> findByUser(UUID userId,int page,int size);long countUnread(UUID userId);int markAllRead(UUID userId,java.time.Instant at);}

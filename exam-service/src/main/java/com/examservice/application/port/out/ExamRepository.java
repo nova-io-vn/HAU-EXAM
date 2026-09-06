@@ -1,0 +1,1 @@
+package com.examservice.application.port.out;import com.examservice.domain.model.Exam;import java.util.*;public interface ExamRepository{Exam save(Exam e);Optional<Exam>findById(UUID id);List<Exam>findByFaculty(String facultyId);}

@@ -2,6 +2,7 @@ import {Button,Loading,StatusBadge} from '../../../components/ui'
 import {useAiJob} from '../hooks/useAiJob'
 import {isActiveJob,jobTypeLabels} from '../model/aiModel'
 import {formatDateTime} from '../../questions/model/questionModel'
+import {getErrorMessage} from '../../../services/api/errorMessages'
 
 export function AiError({error,onRetry}) {
   return <div className="ai-error" role="alert"><strong>{error.status===403?'403 · Forbidden':error.status===404?'Không tìm thấy dữ liệu hoặc bạn không có quyền truy cập':error.status===401?'Phiên đăng nhập đã hết hạn':'Không thể hoàn tất yêu cầu'}</strong>
@@ -35,7 +36,7 @@ export function AiJobPanel({id}) {
     <header><h2>{jobTypeLabels[job.type]||job.type}</h2><StatusBadge status={job.status}/></header>
     <p className="ai-id">Job ID: {job.jobId}</p><p>Tạo lúc {formatDateTime(job.createdAt)}</p>
     {isActiveJob(job)&&<Loading label={job.status==='PENDING'?'PENDING · Đang chờ xử lý':'PROCESSING · AI đang xử lý'}/>}
-    {job.status==='FAILED'&&<div role="alert" className="ai-error"><strong>Tác vụ thất bại</strong><p>{job.errorMessage||'Không thể xử lý tác vụ AI.'}</p><small>{job.errorCode}</small></div>}
+    {job.status==='FAILED'&&<div role="alert" className="ai-error"><strong>Tác vụ thất bại</strong><p>{getErrorMessage({code:job.errorCode},'Không thể xử lý tác vụ AI.')}</p><small>{job.errorCode}</small></div>}
     {job.status==='COMPLETED'&&(result===undefined?<Loading label="Đang tải kết quả"/>:<AiResult type={job.type} result={result}/>)}
   </section>
 }

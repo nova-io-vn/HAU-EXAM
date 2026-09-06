@@ -1,0 +1,1 @@
+package com.examservice.application.port.out;import com.examservice.domain.model.ExamMatrix;import java.util.*;public interface ExamMatrixRepository{ExamMatrix save(ExamMatrix m);Optional<ExamMatrix>findById(UUID id);List<ExamMatrix>findByFaculty(String faculty);}

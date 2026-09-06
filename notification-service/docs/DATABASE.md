@@ -14,3 +14,7 @@ Scheduled: targetRole/targetFaculty, scheduledAt, status, creator,
 timestamps.
 
 Implemented tables: `notifications`, `scheduled_notifications`, and the durable consumer inbox `processed_events`.
+
+`device_tokens` stores authenticated user device registrations: `user_id`,
+`token`, `platform`, optional `device_identifier`, `active`, `created_at`, and
+`updated_at`. Tokens are unique and invalid provider tokens are deactivated.

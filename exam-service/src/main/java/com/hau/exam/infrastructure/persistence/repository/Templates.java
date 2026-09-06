@@ -1,1 +1,0 @@
-package com.hau.exam.infrastructure.persistence.repository;import com.hau.exam.infrastructure.persistence.entity.TemplateEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface Templates extends JpaRepository<TemplateEntity,UUID>{}

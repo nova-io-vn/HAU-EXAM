@@ -1,0 +1,37 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${AI_DB_URL}
+    username: ${AI_DB_USERNAME}
+    password: ${AI_DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI}
+
+ai:
+  internal:
+    result-token: ${INTERNAL_SERVICE_TOKEN}
+  storage:
+    root: ${AI_STORAGE_ROOT}
+  provider:
+    api-key: ${AI_API_KEY}
+    url: ${AI_API_URL}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}

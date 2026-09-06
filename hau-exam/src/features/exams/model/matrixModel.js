@@ -28,6 +28,6 @@ export function matrixPayload(form){
 // Current API exposes shortage fields in this documented domain message.
 export function shortageDetails(error){
   if(error?.code!=='INSUFFICIENT_APPROVED_QUESTIONS')return null
-  const match=/chapter=([0-9a-f-]+), topic=(null|[0-9a-f-]+), difficulty=(EASY|MEDIUM|HARD): required=(\d+), available=(\d+)/i.exec(error.message||'')
+  const match=/chapter=([0-9a-f-]+), topic=(null|[0-9a-f-]+), difficulty=(EASY|MEDIUM|HARD): required=(\d+), available=(\d+)/i.exec(error.backendMessage||error.message||'')
   return match?{chapterId:match[1],topicId:match[2]==='null'?null:match[2],difficulty:match[3],required:Number(match[4]),available:Number(match[5])}:null
 }

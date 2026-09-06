@@ -1,24 +1,9 @@
 server:
   port: ${SERVER_PORT:8086}
-<<<<<<< HEAD
-spring:
-  application:
-    name: notification-service
-
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/notification_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD}
-=======
 
 spring:
   application:
     name: notification-service
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/notification_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
->>>>>>> origin/main
   jpa:
     open-in-view: false
     hibernate:
@@ -26,33 +11,21 @@ spring:
   flyway:
     enabled: true
   rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
-<<<<<<< HEAD
-    listener.simple:
-      acknowledge-mode: manual
-      default-requeue-rejected: false
-  mail:
-    host: ${SMTP_HOST:localhost}
-    port: ${SMTP_PORT:1025}
-    username: ${SMTP_USERNAME:}
-    password: ${SMTP_PASSWORD:}
-  security.oauth2.resourceserver.jwt.jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8081/.well-known/jwks.json}
+    listener:
+      simple:
+        acknowledge-mode: manual
+        default-requeue-rejected: false
+
 notification:
-  mail-from: ${SMTP_FROM:no-reply@hau.edu.vn}
   retry-delay-ms: ${NOTIFICATION_RETRY_DELAY_MS:5000}
   scheduler-delay-ms: ${NOTIFICATION_SCHEDULER_DELAY_MS:5000}
-=======
->>>>>>> origin/main
 
-eureka:
-  client:
-    service-url:
-<<<<<<< HEAD
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
-=======
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
->>>>>>> origin/main
+push:
+  expo:
+    url: ${EXPO_PUSH_URL:https://exp.host/--/api/v2/push/send}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

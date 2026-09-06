@@ -1,0 +1,29 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: ${AUTH_DB_URL:jdbc:postgresql://postgres:5432/auth_db}
+    username: ${AUTH_DB_USERNAME}
+    password: ${AUTH_DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+auth:
+  jwt:
+    private-key-base64: ${JWT_PRIVATE_KEY_BASE64:}
+    public-key-base64: ${JWT_PUBLIC_KEY_BASE64:}
+    generate-ephemeral-key: ${JWT_GENERATE_EPHEMERAL_KEY:true}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka:8761/eureka/}

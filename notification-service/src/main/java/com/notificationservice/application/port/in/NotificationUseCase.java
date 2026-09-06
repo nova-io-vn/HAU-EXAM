@@ -1,0 +1,1 @@
+package com.notificationservice.application.port.in;import com.notificationservice.domain.model.Notification;import java.util.*;public interface NotificationUseCase{List<Notification> list(UUID userId,int page,int size);long unreadCount(UUID userId);Notification markRead(UUID userId,UUID id);int markAllRead(UUID userId);}

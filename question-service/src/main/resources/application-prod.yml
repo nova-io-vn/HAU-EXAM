@@ -1,0 +1,29 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${QUESTION_DB_URL}
+    username: ${QUESTION_DB_USERNAME}
+    password: ${QUESTION_DB_PASSWORD}
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI}
+
+ai:
+  service:
+    url: ${AI_SERVICE_URL}
+  internal:
+    result-token: ${INTERNAL_SERVICE_TOKEN}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}

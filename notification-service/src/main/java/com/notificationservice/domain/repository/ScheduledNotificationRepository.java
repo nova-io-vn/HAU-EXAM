@@ -1,0 +1,1 @@
+package com.notificationservice.domain.repository;import com.notificationservice.domain.model.ScheduledNotification;import java.time.Instant;import java.util.*;public interface ScheduledNotificationRepository{ScheduledNotification save(ScheduledNotification s);List<ScheduledNotification> findDue(Instant now,int limit);}

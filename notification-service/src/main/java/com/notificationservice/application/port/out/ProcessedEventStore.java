@@ -1,0 +1,1 @@
+package com.notificationservice.application.port.out;import java.time.Instant;import java.util.UUID;public interface ProcessedEventStore{boolean exists(UUID id);void record(UUID id,String type,Instant at);}
