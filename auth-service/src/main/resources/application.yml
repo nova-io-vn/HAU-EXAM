@@ -1,55 +1,35 @@
 server:
   port: ${SERVER_PORT:8081}
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 spring:
   application:
     name: auth-service
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/auth_db}
-    username: ${DB_USERNAME:postgres}
-<<<<<<< HEAD
-    password: ${DB_PASSWORD}
-=======
-    password: ${DB_PASSWORD:postgres}
->>>>>>> origin/main
+  rabbitmq:
+    listener:
+      simple:
+        acknowledge-mode: manual
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
   flyway:
     enabled: true
-<<<<<<< HEAD
 
 auth:
+  jwt:
+    issuer: ${JWT_ISSUER:hau-exam-auth}
+    key-id: ${JWT_KEY_ID:hau-exam-auth-key}
+    access-token-ttl: ${JWT_ACCESS_TTL:PT15M}
+    refresh-token-ttl: ${JWT_REFRESH_TTL:P30D}
+  messaging:
+    retry-delay-ms: ${AUTH_EVENT_RETRY_DELAY_MS:5000}
+    max-retries: ${AUTH_EVENT_MAX_RETRIES:3}
   security:
     password:
       bcrypt-strength: ${BCRYPT_STRENGTH:12}
 
-spring:
-  application:
-    name: auth-service
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
-=======
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-  rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
->>>>>>> origin/main
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

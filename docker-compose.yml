@@ -1,0 +1,304 @@
+name: hau-exam
+
+x-spring-environment: &spring-environment
+  SPRING_PROFILES_ACTIVE: docker
+  EUREKA_DEFAULT_ZONE: http://eureka:8761/eureka/
+
+x-rabbitmq-environment: &rabbitmq-environment
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: 5672
+  RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:?Set RABBITMQ_USERNAME in .env}
+  RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
+
+x-jwt-resource-server-environment: &jwt-resource-server-environment
+  JWT_JWK_SET_URI: ${DOCKER_JWT_JWK_SET_URI:-http://auth-service:8081/.well-known/jwks.json}
+
+x-service-healthcheck: &service-healthcheck
+  interval: 15s
+  timeout: 5s
+  retries: 20
+  start_period: 60s
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - hau-exam-network
+
+  redis:
+    image: redis:7.4-alpine
+    command:
+      - redis-server
+      - --appendonly
+      - "no"
+      - --requirepass
+      - ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - hau-exam-network
+
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:?Set RABBITMQ_USERNAME in .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+    networks:
+      - hau-exam-network
+
+  eureka:
+    build:
+      context: .
+      dockerfile: eureka/Dockerfile
+    environment:
+      <<: *spring-environment
+      EUREKA_INSTANCE_HOSTNAME: eureka
+    ports:
+      - "8761:8761"
+    healthcheck:
+      <<: *service-healthcheck
+      test: ["CMD", "curl", "-fsS", "http://localhost:8761/actuator/health"]
+    networks:
+      - hau-exam-network
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    environment:
+      <<: [*spring-environment, *jwt-resource-server-environment]
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8081}
+    depends_on:
+      eureka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      <<: *service-healthcheck
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+    networks:
+      - hau-exam-network
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    environment:
+      <<: [*spring-environment, *rabbitmq-environment]
+      AUTH_DB_URL: jdbc:postgresql://postgres:5432/auth_db
+      AUTH_DB_USERNAME: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      AUTH_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      JWT_PRIVATE_KEY_BASE64: ${JWT_PRIVATE_KEY_BASE64:-}
+      JWT_PUBLIC_KEY_BASE64: ${JWT_PUBLIC_KEY_BASE64:-}
+      JWT_GENERATE_EPHEMERAL_KEY: ${JWT_GENERATE_EPHEMERAL_KEY:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    expose:
+      - "8081"
+    healthcheck:
+      <<: *service-healthcheck
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
+    networks:
+      - hau-exam-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    environment:
+      <<: [*spring-environment, *rabbitmq-environment, *jwt-resource-server-environment]
+      USER_DB_URL: jdbc:postgresql://postgres:5432/user_db
+      USER_DB_USERNAME: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      USER_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    expose:
+      - "8082"
+    healthcheck:
+      <<: *service-healthcheck
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
+    networks:
+      - hau-exam-network
+
+  question-service:
+    build:
+      context: .
+      dockerfile: question-service/Dockerfile
+    environment:
+      <<: [*spring-environment, *rabbitmq-environment, *jwt-resource-server-environment]
+      QUESTION_DB_URL: jdbc:postgresql://postgres:5432/question_db
+      QUESTION_DB_USERNAME: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      QUESTION_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      AI_SERVICE_URL: http://ai-service:8085
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    expose:
+      - "8083"
+    healthcheck:
+      <<: *service-healthcheck
+      test: ["CMD", "curl", "-fsS", "http://localhost:8083/actuator/health"]
+    networks:
+      - hau-exam-network
+
+  exam-service:
+    build:
+      context: .
+      dockerfile: exam-service/Dockerfile
+    environment:
+      <<: [*spring-environment, *rabbitmq-environment, *jwt-resource-server-environment]
+      EXAM_DB_URL: jdbc:postgresql://postgres:5432/exam_db
+      EXAM_DB_USERNAME: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      EXAM_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      QUESTION_SERVICE_URL: http://question-service:8083
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    expose:
+      - "8084"
+    healthcheck:
+      <<: *service-healthcheck
+      test: ["CMD", "curl", "-fsS", "http://localhost:8084/actuator/health"]
+    networks:
+      - hau-exam-network
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: ai-service/Dockerfile
+    environment:
+      <<: [*spring-environment, *rabbitmq-environment, *jwt-resource-server-environment]
+      AI_DB_URL: jdbc:postgresql://postgres:5432/ai_db
+      AI_DB_USERNAME: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      AI_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in .env}
+      AI_API_KEY: ${AI_API_KEY:?Set AI_API_KEY in .env}
+      AI_API_URL: ${AI_API_URL:-https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=}
+      AI_STORAGE_ROOT: /data/ai-documents
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    expose:
+      - "8085"
+    volumes:
+      - ai_documents:/data/ai-documents
+    healthcheck:
+      <<: *service-healthcheck
+      test: ["CMD", "curl", "-fsS", "http://localhost:8085/actuator/health"]
+    networks:
+      - hau-exam-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    environment:
+      <<: [*spring-environment, *rabbitmq-environment, *jwt-resource-server-environment]
+      NOTIFICATION_DB_URL: jdbc:postgresql://postgres:5432/notification_db
+      NOTIFICATION_DB_USERNAME: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      NOTIFICATION_DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      SMTP_HOST: ${DOCKER_SMTP_HOST:-host.docker.internal}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS_ENABLED: ${SMTP_STARTTLS_ENABLED:-true}
+      SMTP_STARTTLS_REQUIRED: ${SMTP_STARTTLS_REQUIRED:-true}
+      SMTP_FROM: ${SMTP_FROM:-no-reply@hau-exam.local}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8081}
+      EXPO_PUSH_ENABLED: ${EXPO_PUSH_ENABLED:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    expose:
+      - "8086"
+    healthcheck:
+      <<: *service-healthcheck
+      test: ["CMD", "curl", "-fsS", "http://localhost:8086/actuator/health"]
+    networks:
+      - hau-exam-network
+
+networks:
+  hau-exam-network:
+    name: hau-exam-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  ai_documents:

@@ -1,0 +1,39 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:question;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password: ''
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9999/jwks
+  cloud:
+    discovery:
+      enabled: false
+
+question:
+  rabbitmq:
+    retry-delay-ms: 10
+    max-retries: 3
+
+ai:
+  service:
+    url: http://localhost:9998
+  internal:
+    result-token: test-internal-token
+
+eureka:
+  client:
+    enabled: false

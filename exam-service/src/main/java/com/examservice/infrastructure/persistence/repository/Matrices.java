@@ -1,0 +1,1 @@
+package com.examservice.infrastructure.persistence.repository;import com.examservice.infrastructure.persistence.entity.MatrixEntity;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface Matrices extends JpaRepository<MatrixEntity,UUID>{List<MatrixEntity>findAllByFacultyIdOrderByUpdatedAtDesc(String f);}

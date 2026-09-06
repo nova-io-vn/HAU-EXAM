@@ -4,8 +4,9 @@ import {aiApi} from '../api/aiApi'
 import {AiError} from '../components/AiShared'
 import {DEFAULT_MAX_DOCUMENT_BYTES,validateDocument} from '../model/aiModel'
 import {formatDateTime} from '../../questions/model/questionModel'
+import {AI_DOCUMENT_MAX_SIZE_BYTES} from '../../../config/env'
 
-const maxBytes=Number(import.meta.env.VITE_AI_DOCUMENT_MAX_SIZE_BYTES)||DEFAULT_MAX_DOCUMENT_BYTES
+const maxBytes=AI_DOCUMENT_MAX_SIZE_BYTES||DEFAULT_MAX_DOCUMENT_BYTES
 export function DocumentsPage() {
   const [file,setFile]=useState(null)
   const [error,setError]=useState(null)

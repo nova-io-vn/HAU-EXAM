@@ -1,0 +1,1 @@
+package com.notificationservice.infrastructure.rabbitmq;import java.time.OffsetDateTime;import java.util.*;public record EventEnvelope(UUID eventId,String eventType,UUID correlationId,OffsetDateTime occurredAt,int version,Map<String,Object> payload){}

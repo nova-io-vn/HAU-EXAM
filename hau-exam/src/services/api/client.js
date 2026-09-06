@@ -1,7 +1,7 @@
 import {authStore} from '../../stores/authStore'
 import {ApiError} from './ApiError'
+import {API_BASE_URL} from '../../config/env'
 
-const baseUrl=(import.meta.env.VITE_API_BASE_URL||'').replace(/\/$/,'')
 let refreshPromise=null
 
 function notify(name,detail){window.dispatchEvent(new CustomEvent(name,{detail}))}
@@ -12,7 +12,7 @@ async function refreshSession(){
   const refreshToken=authStore.getRefreshToken()
   if(!refreshToken)throw new Error('Missing refresh token')
   if(!refreshPromise){
-    refreshPromise=fetch(`${baseUrl}/api/v1/auth/refresh`,{method:'POST',credentials:'include',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({refreshToken})})
+    refreshPromise=fetch(`${API_BASE_URL}/api/v1/auth/refresh`,{method:'POST',credentials:'include',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({refreshToken})})
       .then(async response=>{const payload=await parseJson(response);if(!response.ok||payload?.success===false)throw new Error('Refresh failed');const session=unwrap(payload);authStore.setSession(session);return session.accessToken})
       .finally(()=>{refreshPromise=null})
   }
@@ -23,18 +23,22 @@ export async function apiRequest(path,{body,headers={},skipRefresh=false,...opti
   const token=authStore.getAccessToken()
   let response
   try{
-    response=await fetch(`${baseUrl}${path.startsWith('/')?path:`/${path}`}`,{...options,credentials:'include',body:body instanceof FormData?body:body===undefined?undefined:JSON.stringify(body),headers:{Accept:'application/json',...(body!==undefined&&!(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{}) ,...headers}})
+    response=await fetch(`${API_BASE_URL}${path.startsWith('/')?path:`/${path}`}`,{...options,credentials:'include',body:body instanceof FormData?body:body===undefined?undefined:JSON.stringify(body),headers:{Accept:'application/json',...(body!==undefined&&!(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{}) ,...headers}})
   }catch{throw new ApiError({message:'Không thể kết nối đến máy chủ'})}
 
   if(response.status===401&&!skipRefresh&&authStore.getRefreshToken()){
-    try{await refreshSession();return apiRequest(path,{body,headers,skipRefresh:true,...options})}catch{authStore.clear();notify('hau:unauthorized',{reason:'SESSION_EXPIRED'})}
+    try{await refreshSession();return apiRequest(path,{body,headers,skipRefresh:true,...options})}catch{
+      authStore.clear()
+      notify('hau:unauthorized',{reason:'SESSION_EXPIRED'})
+      throw new ApiError({status:401,code:'SESSION_EXPIRED',message:'Phiên đăng nhập đã hết hạn'})
+    }
   }
 
   const payload=await parseJson(response)
   const correlationId=response.headers.get('X-Correlation-Id')||payload?.correlationId
   if(response.status===401){authStore.clear();notify('hau:unauthorized',{correlationId,reason:'SESSION_EXPIRED'})}
   if(response.status===403)notify('hau:forbidden',{correlationId})
-  if(!response.ok||payload?.success===false)throw new ApiError({status:response.status,code:payload?.code||`HTTP_${response.status}`,message:payload?.message||'Yêu cầu không thành công',correlationId,errors:payload?.errors})
+  if(!response.ok||payload?.success===false)throw new ApiError({status:response.status,code:payload?.code||`HTTP_${response.status}`,message:response.status===403?'Bạn không có quyền thực hiện thao tác này.':payload?.message||'Yêu cầu không thành công',correlationId,errors:payload?.errors})
   return unwrap(payload)
 }
 

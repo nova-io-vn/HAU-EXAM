@@ -1,3 +1,0 @@
-package com.hau.question.presentation.request;
-import com.hau.question.domain.model.*; import jakarta.validation.Valid; import jakarta.validation.constraints.*; import java.util.*;
-public record QuestionRequest(@NotBlank String facultyId,@NotNull UUID subjectId,@NotNull UUID chapterId,UUID topicId,@NotBlank String content,@Size(max=1000) String imageUrl,@Size(max=500) String storageKey,@NotNull QuestionType type,@NotNull Difficulty difficulty,@NotEmpty @Valid List<OptionRequest> options){public record OptionRequest(@NotBlank String label,@NotBlank String content,@Size(max=1000)String imageUrl,@Size(max=500)String storageKey,boolean correct,@Min(0)int sortOrder){}}

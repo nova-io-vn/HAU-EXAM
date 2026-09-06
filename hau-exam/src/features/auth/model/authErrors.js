@@ -1,2 +1,5 @@
-const errorMessages={INVALID_CREDENTIALS:'Mã giảng viên hoặc mật khẩu không chính xác.',ACCOUNT_PENDING:'Tài khoản đang chờ quản trị viên xác nhận.',ACCOUNT_PENDING_APPROVAL:'Tài khoản đang chờ quản trị viên xác nhận.',ACCOUNT_REJECTED:'Đăng ký tài khoản đã bị từ chối. Vui lòng liên hệ quản trị viên.',ACCOUNT_LOCKED:'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.',INVALID_OTP:'Mã OTP không chính xác.',OTP_INVALID:'Mã OTP không chính xác.',OTP_EXPIRED:'Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.',SESSION_EXPIRED:'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'}
-export function getAuthErrorMessage(error,fallback='Không thể hoàn tất yêu cầu. Vui lòng thử lại.'){return errorMessages[error?.code]||error?.message||fallback}
+import {getErrorMessage} from '../../../services/api/errorMessages'
+
+export function getAuthErrorMessage(error,fallback='Không thể hoàn tất yêu cầu. Vui lòng thử lại.'){
+  return getErrorMessage(error,fallback)
+}

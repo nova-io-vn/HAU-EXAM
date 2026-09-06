@@ -1,24 +1,34 @@
-> **Vị trí đặt file:** `backend/question-service/docs/EVENTS.md`
-
 # Question Service --- Events
 
-## Implemented contract
+Question Service publishes standard envelopes to `question.exchange` with
+routing keys `question.submitted`, `question.approved`, `question.rejected`,
+and `question.revision.requested`.
 
-Publishes standard envelopes to `question.exchange` with routing keys
-`question.submitted`, `question.approved`, `question.rejected`, and
-`question.revision.requested`. The payload carries `questionId`, `facultyId`,
-`createdBy`, and `status`.
+It consumes `ai.generation.completed` from `ai.exchange` using the same version
+1 payload contract as AI Service:
 
-Consumes `ai.generation.completed` from `ai.exchange`. The payload carries
-`jobId`, `requestedBy`, catalog/faculty references, and generated items with a
-stable `sourceId`. Imports are idempotent by `eventId` and `jobId:sourceId`;
-every AI question starts at `DRAFT`. Delivery uses manual ACK, delayed finite
-retry (three attempts by default), then `question.ai-generation.dlq`.
+```json
+{
+  "jobId": "uuid",
+  "requestedBy": "uuid",
+  "facultyId": "CNTT",
+  "subjectId": "uuid",
+  "chapterId": "uuid",
+  "topicId": "uuid-or-null",
+  "resultReference": "db:ai-results:<jobId>"
+}
+```
 
-Produces: - `question.submitted` - `question.approved` -
-`question.rejected` - `question.revision.requested`
+The message contains context and a result reference only. Question Service
+does not access `ai_db`; its `AiResultClient` adapter retrieves the structured
+result through AI Service REST. The result is validated before import. Each
+generated item becomes `QuestionSource.AI` with status `DRAFT`; it is never
+auto-approved. Faculty/subject/chapter context comes from the event and an
+item topic may override the event topic when present.
 
-Consumes: - `ai.generation.completed` hoặc result contract tương đương.
-
-AI result consumer phải chống duplicate. Payload lớn nên dùng job/result
-reference thay vì nhét tài liệu/file vào message.
+Imports are idempotent by `eventId` and `jobId:sourceId`. A redelivery therefore
+does not create duplicate questions. Missing context, invalid structured
+results, or temporary AI REST failures are processing failures: the consumer
+uses the existing finite retry strategy and DLQ
+`question.ai-generation.dlq`; it does not record the event as successfully
+processed or create partial questions.

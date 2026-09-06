@@ -1,0 +1,1 @@
+package com.examservice.infrastructure.persistence.repository;import com.examservice.infrastructure.persistence.entity.ExamEntity;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface Exams extends JpaRepository<ExamEntity,UUID>{List<ExamEntity> findAllByFacultyIdOrderByUpdatedAtDesc(String facultyId);}

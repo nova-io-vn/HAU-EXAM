@@ -1,3 +1,3 @@
-const apiBase=import.meta.env.VITE_API_BASE_URL||window.location.origin
-export const websocketEndpoint=`${apiBase.replace(/^http/,'ws').replace(/\/$/,'')}/ws`
+import {WS_BASE_URL} from '../../config/env'
+export const websocketEndpoint=`${WS_BASE_URL}/ws`
 export const notificationDestination='/user/queue/notifications'

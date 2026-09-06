@@ -1,1 +1,0 @@
-package com.hau.notification.application.port.out;import com.hau.notification.application.dto.Recipient;import java.util.List;public interface AudienceResolver{List<Recipient> resolve(String role,String faculty);}

@@ -1,0 +1,1 @@
+package com.aiservice.domain.exception; public class ProviderException extends DomainException{private final boolean retryable;public ProviderException(String m,boolean r,Throwable c){super(m,c);retryable=r;}public boolean retryable(){return retryable;}}

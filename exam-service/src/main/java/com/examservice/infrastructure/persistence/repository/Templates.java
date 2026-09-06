@@ -1,0 +1,1 @@
+package com.examservice.infrastructure.persistence.repository;import com.examservice.infrastructure.persistence.entity.TemplateEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface Templates extends JpaRepository<TemplateEntity,UUID>{}

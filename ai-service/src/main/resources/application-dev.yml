@@ -1,0 +1,37 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: ${AI_DB_URL:jdbc:postgresql://localhost:5432/ai_db}
+    username: ${AI_DB_USERNAME:postgres}
+    password: ${AI_DB_PASSWORD:postgres}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI}
+
+ai:
+  internal:
+    result-token: ${INTERNAL_SERVICE_TOKEN:dev-internal-token}
+  storage:
+    root: ${AI_STORAGE_ROOT:./data/ai-documents}
+  provider:
+    api-key: ${AI_API_KEY}
+    url: ${AI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
