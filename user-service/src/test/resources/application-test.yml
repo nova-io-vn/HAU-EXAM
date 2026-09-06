@@ -28,6 +28,8 @@ spring:
 user:
   messaging:
     retry-delay-ms: 100
+  internal:
+    service-token: test-internal-token
 
 eureka:
   client:

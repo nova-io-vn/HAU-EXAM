@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 @WebFluxTest(controllers = SecurityBoundaryTest.ProbeController.class)
 @Import(SecurityConfig.class)
+@ActiveProfiles("test")
 class SecurityBoundaryTest {
     @Autowired WebTestClient client;
     @MockitoBean ReactiveJwtDecoder decoder;

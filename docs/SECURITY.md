@@ -4,6 +4,12 @@
 
 ## Authentication
 
+JWT access/refresh token do Auth Service ký bằng RS256. Private key chỉ tồn tại
+tại Auth Service và phải lấy từ secret/environment trong production. Auth expose
+public JWKS tại `/.well-known/jwks.json`; Gateway và resource services chỉ nhận
+public key qua `jwk-set-uri`. JWT gồm `sub`, `lecturerCode`, `role`, `facultyId`
+khi có, `jti`, `iat`, `exp`; role/faculty lấy từ security snapshot đã đồng bộ.
+
 -   Login bằng `lecturerCode + password`.
 -   JWT Access Token + Refresh Token.
 -   BCrypt cho password.

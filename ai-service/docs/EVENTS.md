@@ -18,6 +18,10 @@ AI Service consumes `ai.generation.requested` internally and publishes
 a reference-based contract; generated question JSON is kept in `ai_db` and is
 never embedded in RabbitMQ.
 
+Notification Service maps `requestedBy` as the recipient for AI completed and
+failed events. The field remains part of the AI domain contract and is not
+renamed to a generic `userId`.
+
 `ai.generation.completed` payload, version 1:
 
 ```json

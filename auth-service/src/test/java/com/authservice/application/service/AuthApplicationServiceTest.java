@@ -36,7 +36,7 @@ class AuthApplicationServiceTest {
     @BeforeEach void setUp() { service = new AuthApplicationService(accounts, hasher, tokenService, refreshTokens, otpStore, events); }
 
     @Test void registerCreatesPendingCredentialAndPublishesEvent() {
-        when(accounts.existsByLecturerCode("gv001")).thenReturn(false);
+        when(accounts.existsByLecturerCode("GV001")).thenReturn(false);
         when(hasher.hash("password123")).thenReturn("hash");
         when(accounts.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         UUID correlationId = UUID.randomUUID();

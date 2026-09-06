@@ -4,6 +4,10 @@ Question Service publishes standard envelopes to `question.exchange` with
 routing keys `question.submitted`, `question.approved`, `question.rejected`,
 and `question.revision.requested`.
 
+Question notification payload preserves `createdBy` as the semantic recipient
+(question author). Notification Service maps this field explicitly; producers
+do not rename it to a generic `userId`.
+
 It consumes `ai.generation.completed` from `ai.exchange` using the same version
 1 payload contract as AI Service:
 

@@ -21,3 +21,7 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka:8761/eureka/}
+
+user:
+  internal:
+    service-token: ${INTERNAL_SERVICE_TOKEN}

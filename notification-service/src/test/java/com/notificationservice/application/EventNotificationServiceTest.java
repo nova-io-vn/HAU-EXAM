@@ -36,7 +36,7 @@ class EventNotificationServiceTest {
         service.handle(new IncomingEvent(UUID.randomUUID(), "USER_APPROVED", UUID.randomUUID(), Map.of("recipientUserId", applicant.toString())));
         var saved = org.mockito.ArgumentCaptor.forClass(com.notificationservice.domain.model.Notification.class);
         verify(repository, times(2)).save(saved.capture());
-        assertThat(saved.getAllValues()).extracting(com.notificationservice.domain.model.Notification::userId)
+        assertThat(saved.getAllValues()).extracting(com.notificationservice.domain.model.Notification::getUserId)
                 .containsExactly(aiUser, applicant);
     }
 }

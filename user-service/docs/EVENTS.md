@@ -1,24 +1,23 @@
-> **Vị trí đặt file:** `backend/user-service/docs/EVENTS.md`
+# User Service — Events
 
-# User Service --- Events
+Mọi message dùng envelope version 1: `eventId`, `eventType`, `correlationId`, `occurredAt`, `version`, `payload`.
 
-Consumes: - `user.registration.requested`
+## Consume registration
 
-Produces: - `user.approved` - `user.rejected` - `user.role.changed` -
-`user.status.changed` - `user.faculty.changed`
+User Service consume `auth.exchange` / `user.registration.requested` qua queue `user.registration.requested.queue`.
 
-Registration consumer phải idempotent theo eventId/userId/lecturerCode
-phù hợp.
+Payload: `userId`, `lecturerCode`, `fullName`, `dateOfBirth`, `phone`, `email`, `address`, `avatar`, `facultyId`.
+Không có password/password hash. Consumer tạo profile `PENDING_APPROVAL`, idempotent theo `eventId`, `userId` và identity; retry tối đa 3 lần rồi vào `user.registration.requested.dlq`.
 
-## RabbitMQ contract implemented
+## Publish security synchronization
 
-- Consume from `auth.exchange` / `user.registration.requested` using durable queue `user.registration.requested.queue`.
-- Retry queue: `user.registration.requested.retry.queue`, finite retry (3 attempts) with configurable delay.
-- Dead-letter queue: `user.registration.requested.dlq`.
-- Publish produced events to topic exchange `user.exchange` with the routing keys listed above.
+User Service publish lên `user.exchange`:
 
-All messages use the common envelope: `eventId`, `eventType`, `correlationId`, `occurredAt`, `version`, `payload`.
+- `user.approved`
+- `user.rejected`
+- `user.status.changed`
+- `user.role.changed`
+- `user.faculty.changed`
 
-Registration payload: `userId`, `lecturerCode`, `fullName`, `dateOfBirth`, `phone`, `email`, `address`, `avatar`, `facultyId`.
-
-Produced user-change payload: `userId`, `lecturerCode`, `role`, `facultyId`, `status`.
+Payload chung: `userId`, `lecturerCode`, `role`, `facultyId`, `status`, `email`, `recipientUserId`.
+`recipientUserId` là applicant/user nhận thông báo cho approval/rejection; `userId` vẫn là identity được Auth đồng bộ.
