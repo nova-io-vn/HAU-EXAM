@@ -1,1 +1,47 @@
-package com.aiservice.infrastructure.storage;import com.aiservice.application.port.out.StoragePort;import com.aiservice.domain.exception.DomainException;import java.io.*;import java.nio.file.*;import java.security.*;import java.util.HexFormat;import org.springframework.beans.factory.annotation.Value;import org.springframework.stereotype.Component;@Component public class LocalStorageAdapter implements StoragePort{private final Path root;public LocalStorageAdapter(@Value("${ai.storage.root}")String root){this.root=Path.of(root).toAbsolutePath().normalize();}public StoredFile store(String name,InputStream data){try{Files.createDirectories(root);String ext=name!=null&&name.lastIndexOf('.')>=0?name.substring(name.lastIndexOf('.')):"";Path target=root.resolve(java.util.UUID.randomUUID()+ext).normalize();if(!target.startsWith(root))throw new DomainException("Invalid storage path");MessageDigest md=MessageDigest.getInstance("SHA-256");try(var out=Files.newOutputStream(target);var digest=new DigestInputStream(data,md)){digest.transferTo(out);}return new StoredFile(root.relativize(target).toString().replace('\\','/'),HexFormat.of().formatHex(md.digest()));}catch(Exception e){throw new DomainException("Cannot store document",e);}}public InputStream read(String key){try{Path p=root.resolve(key).normalize();if(!p.startsWith(root))throw new DomainException("Invalid storage path");return Files.newInputStream(p);}catch(IOException e){throw new DomainException("Cannot read document",e);}}}
+package com.aiservice.infrastructure.storage;
+
+import com.aiservice.application.port.out.StoragePort;
+import com.aiservice.domain.exception.DomainException;
+
+import java.io.*;
+import java.nio.file.*;
+import java.security.*;
+import java.util.HexFormat;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
+public class LocalStorageAdapter implements StoragePort {
+    private final Path root;
+
+    public LocalStorageAdapter(@Value("${ai.storage.root}") String root) {
+        this.root = Path.of(root).toAbsolutePath().normalize();
+    }
+
+    public StoredFile store(String name, InputStream data) {
+        try {
+            Files.createDirectories(root);
+            String ext = name != null && name.lastIndexOf('.') >= 0 ? name.substring(name.lastIndexOf('.')) : "";
+            Path target = root.resolve(java.util.UUID.randomUUID() + ext).normalize();
+            if (!target.startsWith(root)) throw new DomainException("Invalid storage path");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            try (var out = Files.newOutputStream(target); var digest = new DigestInputStream(data, md)) {
+                digest.transferTo(out);
+            }
+            return new StoredFile(root.relativize(target).toString().replace('\\', '/'), HexFormat.of().formatHex(md.digest()));
+        } catch (Exception e) {
+            throw new DomainException("Cannot store document", e);
+        }
+    }
+
+    public InputStream read(String key) {
+        try {
+            Path p = root.resolve(key).normalize();
+            if (!p.startsWith(root)) throw new DomainException("Invalid storage path");
+            return Files.newInputStream(p);
+        } catch (IOException e) {
+            throw new DomainException("Cannot read document", e);
+        }
+    }
+}

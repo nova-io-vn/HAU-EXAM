@@ -1,1 +1,20 @@
-package com.aiservice.presentation.request;import jakarta.validation.constraints.*;import java.util.UUID;public final class AiRequests{private AiRequests(){}public record GenerateRequest(@NotNull UUID documentId,@Min(1)@Max(100)int count,String difficulty,UUID topicId,UUID subjectId,UUID chapterId){}public record AnalyzeRequest(@NotNull UUID documentId,@NotBlank String analysisType){}public record ChatRequest(UUID documentId,@NotBlank@Size(max=4000)String message){}}
+package com.aiservice.presentation.request;
+
+import jakarta.validation.constraints.*;
+
+import java.util.UUID;
+
+public final class AiRequests {
+    private AiRequests() {
+    }
+
+    public record GenerateRequest(@NotNull UUID documentId, @Min(1) @Max(100) int count, String difficulty,
+                                  UUID topicId, UUID subjectId, UUID chapterId) {
+    }
+
+    public record AnalyzeRequest(@NotNull UUID documentId, @NotBlank String analysisType) {
+    }
+
+    public record ChatRequest(UUID documentId, @NotBlank @Size(max = 4000) String message) {
+    }
+}

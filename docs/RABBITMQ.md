@@ -2,6 +2,8 @@
 
 # RabbitMQ Convention
 
+> Bảng event và trạng thái theo source hiện tại được chuẩn hóa tại [05-RABBITMQ.md](05-RABBITMQ.md).
+
 ## Mục đích
 
 RabbitMQ dùng cho event và tác vụ bất đồng bộ. Không dùng thay REST cho

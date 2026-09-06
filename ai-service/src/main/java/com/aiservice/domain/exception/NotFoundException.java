@@ -1,1 +1,7 @@
-package com.aiservice.domain.exception; public class NotFoundException extends DomainException{public NotFoundException(String m){super(m);}}
+package com.aiservice.domain.exception;
+
+public class NotFoundException extends DomainException {
+    public NotFoundException(String m) {
+        super(m);
+    }
+}

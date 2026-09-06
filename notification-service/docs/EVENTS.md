@@ -1,22 +1,17 @@
-> **Vị trí đặt file:** `backend/notification-service/docs/EVENTS.md`
+# Notification Service — Event Contracts
 
-# Notification Service --- Events
+Consumer nhận envelope version 1 và dùng `processed_events.event_id` để idempotent. Main queue có retry hữu hạn và DLQ.
 
-Consumes các event cần thông báo: - password reset OTP request -
-registration/approval status - question
-submitted/approved/rejected/revision - AI completed/failed - exam
-generated nếu cần
+Recipient được map theo từng domain contract, không giả định payload nào cũng có `userId`:
 
-Consumer quyết định channel theo notification policy. Không assume mọi
-event đều gửi email.
+| Event | Recipient field | Channels |
+|---|---|---|
+| `PASSWORD_RESET_OTP_REQUESTED` | `email` | EMAIL |
+| `USER_APPROVED`, `USER_REJECTED` | `recipientUserId` | IN_APP, WEBSOCKET; EMAIL nếu có `email` |
+| `QUESTION_SUBMITTED`, `QUESTION_APPROVED`, `QUESTION_REJECTED`, `QUESTION_REVISION_REQUESTED` | `createdBy` | IN_APP, WEBSOCKET |
+| `AI_GENERATION_COMPLETED`, `AI_GENERATION_FAILED` | `requestedBy` | IN_APP, WEBSOCKET |
+| `EXAM_GENERATED` | `requestedBy` hoặc `createdBy` theo Exam producer | IN_APP, WEBSOCKET |
 
-## Policy and topology implemented
+OTP không được log, lưu Notification DB, hoặc gửi qua WebSocket. Event thiếu recipient bắt buộc là lỗi contract và không được ACK như thành công.
 
-- `PASSWORD_RESET_OTP_REQUESTED`: EMAIL only.
-- User approval/rejection: IN_APP + WEBSOCKET; EMAIL when the event supplies an email address.
-- Question, AI and Exam events: IN_APP + WEBSOCKET.
-- Main queue: `notification.events.queue`.
-- Retry queue: `notification.events.retry.queue`, configurable delay, maximum 3 attempts.
-- DLQ: `notification.events.dlq`.
-
-Consumers require the common event envelope and use `processed_events.event_id` for idempotency.
+Scheduled notification resolve audience ACTIVE từ User Service qua internal REST theo `targetRole`, `targetFaculty`, hoặc cả hai; Notification Service không truy cập `user_db`.

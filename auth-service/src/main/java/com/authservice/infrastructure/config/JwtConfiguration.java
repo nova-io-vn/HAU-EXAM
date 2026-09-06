@@ -19,6 +19,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
@@ -28,12 +29,17 @@ public class JwtConfiguration {
         try {
             RSAPublicKey publicKey;
             RSAPrivateKey privateKey;
-            if (hasText(properties.getPrivateKeyBase64()) && hasText(properties.getPublicKeyBase64())) {
+            boolean hasPrivateKey = hasText(properties.getPrivateKeyBase64());
+            boolean hasPublicKey = hasText(properties.getPublicKeyBase64());
+            if (hasPrivateKey != hasPublicKey) {
+                throw new IllegalStateException("JWT RSA private/public keys must be provided together");
+            }
+            if (hasPrivateKey) {
                 KeyFactory factory = KeyFactory.getInstance("RSA");
                 privateKey = (RSAPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(
-                        Base64.getDecoder().decode(properties.getPrivateKeyBase64())));
+                        decodeDer(properties.getPrivateKeyBase64(), "private", "PKCS#8")));
                 publicKey = (RSAPublicKey) factory.generatePublic(new X509EncodedKeySpec(
-                        Base64.getDecoder().decode(properties.getPublicKeyBase64())));
+                        decodeDer(properties.getPublicKeyBase64(), "public", "X.509 SubjectPublicKeyInfo")));
             } else if (properties.isGenerateEphemeralKey()) {
                 KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
                 generator.initialize(2048);
@@ -45,7 +51,10 @@ public class JwtConfiguration {
             }
             return new RSAKey.Builder(publicKey).privateKey(privateKey).keyID(properties.getKeyId()).build();
         } catch (Exception exception) {
-            throw new IllegalStateException("Unable to configure JWT RSA key pair", exception);
+            if (exception instanceof IllegalStateException illegalStateException) {
+                throw illegalStateException;
+            }
+            throw new IllegalStateException("Unable to configure JWT RSA key pair: JWT_PRIVATE_KEY_BASE64 and JWT_PUBLIC_KEY_BASE64 must contain Base64-encoded DER (PKCS#8 private, X.509 public) keys", exception);
         }
     }
 
@@ -55,4 +64,18 @@ public class JwtConfiguration {
     }
 
     private boolean hasText(String value) { return value != null && !value.isBlank(); }
+
+    private byte[] decodeDer(String encoded, String keyName, String format) {
+        final byte[] decoded;
+        try {
+            decoded = Base64.getDecoder().decode(encoded.trim());
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalStateException("JWT " + keyName + " key is not valid Base64; expected Base64-encoded " + format + " DER", exception);
+        }
+        String decodedText = new String(decoded, StandardCharsets.US_ASCII);
+        if (decodedText.contains("-----BEGIN") || decodedText.contains("-----END")) {
+            throw new IllegalStateException("JWT " + keyName + " key must be Base64-encoded " + format + " DER, not Base64-encoded PEM text");
+        }
+        return decoded;
+    }
 }

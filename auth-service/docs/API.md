@@ -2,6 +2,13 @@
 
 # Auth Service --- API
 
+`POST /api/v1/auth/register` nhận `lecturerCode`, `password`, `fullName`,
+`dateOfBirth` (optional), `phone` (optional), `email`, `address` (optional),
+`avatar` (optional), `facultyId` (optional). Thành công tạo credential và profile
+workflow ở trạng thái `PENDING_APPROVAL`; không auto-login và không trả password.
+
+Public JWKS: `GET /.well-known/jwks.json`.
+
 Các endpoint mục tiêu:
 
   --------------------------------------------------------------------------------

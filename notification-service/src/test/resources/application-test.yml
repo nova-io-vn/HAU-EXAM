@@ -45,6 +45,12 @@ notification:
   websocket:
     allowed-origins: http://localhost:5173
 
+user:
+  service:
+    url: http://localhost:8082
+  internal:
+    service-token: test-internal-token
+
 push:
   expo:
     enabled: false

@@ -1,1 +1,34 @@
-package com.aiservice.infrastructure.persistence.mapper;import com.aiservice.domain.model.AiJob;import com.aiservice.infrastructure.persistence.entity.AiJobEntity;import org.springframework.stereotype.Component;@Component public class AiJobMapper{public AiJobEntity toEntity(AiJob j){var e=new AiJobEntity();e.id=j.id();e.requestedBy=j.requestedBy();e.documentId=j.documentId();e.facultyId=j.facultyId();e.subjectId=j.subjectId();e.chapterId=j.chapterId();e.topicId=j.topicId();e.type=j.type();e.status=j.status();e.requestJson=j.requestJson();e.resultReference=j.resultReference();e.errorCode=j.errorCode();e.errorMessage=j.errorMessage();e.createdAt=j.createdAt();e.startedAt=j.startedAt();e.completedAt=j.completedAt();e.updatedAt=j.updatedAt();return e;}public AiJob toDomain(AiJobEntity e){return new AiJob(e.id,e.requestedBy,e.documentId,e.facultyId,e.subjectId,e.chapterId,e.topicId,e.type,e.status,e.requestJson,e.resultReference,e.errorCode,e.errorMessage,e.createdAt,e.startedAt,e.completedAt,e.updatedAt);}}
+package com.aiservice.infrastructure.persistence.mapper;
+
+import com.aiservice.domain.model.AiJob;
+import com.aiservice.infrastructure.persistence.entity.AiJobEntity;
+import org.springframework.stereotype.Component;
+
+@Component
+public class AiJobMapper {
+    public AiJobEntity toEntity(AiJob j) {
+        var e = new AiJobEntity();
+        e.id = j.id();
+        e.requestedBy = j.requestedBy();
+        e.documentId = j.documentId();
+        e.facultyId = j.facultyId();
+        e.subjectId = j.subjectId();
+        e.chapterId = j.chapterId();
+        e.topicId = j.topicId();
+        e.type = j.type();
+        e.status = j.status();
+        e.requestJson = j.requestJson();
+        e.resultReference = j.resultReference();
+        e.errorCode = j.errorCode();
+        e.errorMessage = j.errorMessage();
+        e.createdAt = j.createdAt();
+        e.startedAt = j.startedAt();
+        e.completedAt = j.completedAt();
+        e.updatedAt = j.updatedAt();
+        return e;
+    }
+
+    public AiJob toDomain(AiJobEntity e) {
+        return new AiJob(e.id, e.requestedBy, e.documentId, e.facultyId, e.subjectId, e.chapterId, e.topicId, e.type, e.status, e.requestJson, e.resultReference, e.errorCode, e.errorMessage, e.createdAt, e.startedAt, e.completedAt, e.updatedAt);
+    }
+}
