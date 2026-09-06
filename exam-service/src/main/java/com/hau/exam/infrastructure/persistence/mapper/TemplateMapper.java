@@ -1,1 +1,0 @@
-package com.hau.exam.infrastructure.persistence.mapper;import com.hau.exam.domain.model.ExamTemplate;import com.hau.exam.infrastructure.persistence.entity.TemplateEntity;import org.mapstruct.Mapper;@Mapper(componentModel="spring")public interface TemplateMapper{TemplateEntity toEntity(ExamTemplate t);ExamTemplate toDomain(TemplateEntity e);}

@@ -36,7 +36,10 @@ HTTP 201 returns `{id,originalName,contentType,size,storageKey,checksum,createdA
 There is no independent document processing status; extraction runs in AI jobs.
 
 Commands:
-- Generate: `{documentId,count,difficulty?,topicId?}`; count 1–100, topic UUID.
+- Generate: `{documentId,count,difficulty?,topicId?,subjectId?,chapterId?}`; count 1–100.
+  `facultyId` is taken from the authenticated JWT snapshot and is not trusted
+  from the request body. Subject/chapter/topic context is persisted with the
+  job so the completion event can be consumed without reconstructing context.
 - Analyze: `{documentId,analysisType}`; analysisType is a nonblank request string.
 - Chat: `{documentId?,message}`; nonblank message, max 4000 characters. Previous
   conversation turns are not supplied implicitly as context.

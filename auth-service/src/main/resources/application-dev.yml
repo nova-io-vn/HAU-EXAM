@@ -1,0 +1,29 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: ${AUTH_DB_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${AUTH_DB_USERNAME:postgres}
+    password: ${AUTH_DB_PASSWORD:postgres}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+auth:
+  jwt:
+    private-key-base64: ${JWT_PRIVATE_KEY_BASE64:}
+    public-key-base64: ${JWT_PUBLIC_KEY_BASE64:}
+    generate-ephemeral-key: ${JWT_GENERATE_EPHEMERAL_KEY:true}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}

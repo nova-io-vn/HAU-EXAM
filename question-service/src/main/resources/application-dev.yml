@@ -1,0 +1,29 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: ${QUESTION_DB_URL:jdbc:postgresql://localhost:5432/question_db}
+    username: ${QUESTION_DB_USERNAME:postgres}
+    password: ${QUESTION_DB_PASSWORD:postgres}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI}
+
+ai:
+  service:
+    url: ${AI_SERVICE_URL:http://localhost:8085}
+  internal:
+    result-token: ${INTERNAL_SERVICE_TOKEN:dev-internal-token}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}

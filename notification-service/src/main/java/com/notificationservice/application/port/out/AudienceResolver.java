@@ -1,0 +1,1 @@
+package com.notificationservice.application.port.out;import com.notificationservice.application.dto.Recipient;import java.util.List;public interface AudienceResolver{List<Recipient> resolve(String role,String faculty);}

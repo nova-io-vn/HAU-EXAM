@@ -21,3 +21,25 @@ liệu người khác.
 - `POST /api/v1/scheduled-notifications` (`SYSTEM_ADMIN`)
 
 All user notification APIs derive user id from JWT `sub`.
+
+## Device token API
+
+- `POST /api/v1/notifications/devices` registers or reactivates a device token.
+- `DELETE /api/v1/notifications/devices` deactivates a device token.
+
+Request body:
+
+```json
+{
+  "token": "ExponentPushToken[...]",
+  "platform": "ANDROID",
+  "deviceIdentifier": "optional-device-id"
+}
+```
+
+The authenticated JWT principal determines the owner; clients cannot submit a
+user id. Invalid provider tokens are deactivated when the push provider reports
+them as revoked.
+
+Expo delivery is disabled by default. Enable it with `EXPO_PUSH_ENABLED=true`
+and configure `EXPO_PUSH_URL` when the deployment is ready for provider delivery.

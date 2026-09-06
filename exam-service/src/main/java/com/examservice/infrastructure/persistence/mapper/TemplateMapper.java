@@ -1,0 +1,1 @@
+package com.examservice.infrastructure.persistence.mapper;import com.examservice.domain.model.ExamTemplate;import com.examservice.infrastructure.persistence.entity.TemplateEntity;import org.mapstruct.Mapper;@Mapper(componentModel="spring")public interface TemplateMapper{TemplateEntity toEntity(ExamTemplate t);ExamTemplate toDomain(TemplateEntity e);}

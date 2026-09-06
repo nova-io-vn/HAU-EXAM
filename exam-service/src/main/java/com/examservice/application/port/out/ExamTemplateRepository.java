@@ -1,0 +1,1 @@
+package com.examservice.application.port.out;import com.examservice.domain.model.ExamTemplate;import java.util.*;public interface ExamTemplateRepository{ExamTemplate save(ExamTemplate t);Optional<ExamTemplate>findById(UUID id);}

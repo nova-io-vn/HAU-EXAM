@@ -1,0 +1,27 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9999/jwks
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cloud:
+    discovery:
+      enabled: false
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: http://localhost:5173
+
+eureka:
+  client:
+    enabled: false

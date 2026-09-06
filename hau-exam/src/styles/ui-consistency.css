@@ -1,0 +1,7 @@
+/* Reuse existing design tokens for legacy one-off color declarations. */
+.brand-mark,.button-primary{color:var(--surface)}
+.button-primary{background:var(--text)}
+.notification-item.is-unread>button:hover{background:var(--accent-soft)}
+.editor-actions{background:var(--bg)}
+.option-preview li.is-correct{border-color:var(--success)}
+.breadcrumb li+li::before{color:var(--text-muted)}

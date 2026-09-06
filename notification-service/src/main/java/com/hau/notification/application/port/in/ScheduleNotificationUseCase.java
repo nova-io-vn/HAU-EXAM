@@ -1,1 +1,0 @@
-package com.hau.notification.application.port.in;import com.hau.notification.domain.model.ScheduledNotification;import java.time.Instant;import java.util.UUID;public interface ScheduleNotificationUseCase{ScheduledNotification schedule(String role,String faculty,String title,String content,Instant at,UUID creator);void dispatchDue();}

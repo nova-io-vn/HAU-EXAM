@@ -1,0 +1,1 @@
+package com.examservice.domain.model;import java.time.Instant;import java.util.UUID;public record ExamTemplate(UUID id,String name,String facultyId,UUID matrixId,String header,String instructions,UUID createdBy,Instant createdAt,Instant updatedAt){}

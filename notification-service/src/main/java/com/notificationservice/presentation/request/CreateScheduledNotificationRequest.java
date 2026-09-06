@@ -1,0 +1,1 @@
+package com.notificationservice.presentation.request;import jakarta.validation.constraints.*;import java.time.Instant;public record CreateScheduledNotificationRequest(@Size(max=32)String targetRole,@Size(max=50)String targetFaculty,@NotBlank@Size(max=200)String title,@NotBlank@Size(max=2000)String content,@NotNull@Future Instant scheduledAt){}

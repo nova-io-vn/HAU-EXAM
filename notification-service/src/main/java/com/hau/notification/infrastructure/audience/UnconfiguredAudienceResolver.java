@@ -1,2 +1,0 @@
-package com.hau.notification.infrastructure.audience;import com.hau.notification.application.dto.Recipient;import com.hau.notification.application.port.out.AudienceResolver;import org.springframework.stereotype.Component;import java.util.List;
-@Component public class UnconfiguredAudienceResolver implements AudienceResolver{public List<Recipient> resolve(String role,String faculty){return List.of();}}

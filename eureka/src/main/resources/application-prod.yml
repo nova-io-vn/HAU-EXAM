@@ -1,0 +1,11 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+eureka:
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME}
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
