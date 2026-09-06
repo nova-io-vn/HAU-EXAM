@@ -20,6 +20,28 @@ x-service-healthcheck: &service-healthcheck
   start_period: 60s
 
 services:
+  web:
+    build:
+      context: ./hau-exam
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+        VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost:8080}
+        VITE_AI_DOCUMENT_MAX_SIZE_BYTES: ${VITE_AI_DOCUMENT_MAX_SIZE_BYTES:-10485760}
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - hau-exam-network
+
   postgres:
     image: postgres:17-alpine
     environment:
