@@ -18,7 +18,6 @@ public class InternalServiceTokenVerifier {
     }
 
     public boolean matches(String presentedToken) {
-        return presentedToken != null && MessageDigest.isEqual(
-                expectedToken, presentedToken.getBytes(StandardCharsets.UTF_8));
+        return presentedToken != null && MessageDigest.isEqual(expectedToken, presentedToken.getBytes(StandardCharsets.UTF_8));
     }
 }

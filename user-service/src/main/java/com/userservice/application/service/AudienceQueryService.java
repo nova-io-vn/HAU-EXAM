@@ -13,7 +13,9 @@ import java.util.List;
 public class AudienceQueryService implements AudienceQueryUseCase {
     private final UserProfileRepository users;
 
-    public AudienceQueryService(UserProfileRepository users) { this.users = users; }
+    public AudienceQueryService(UserProfileRepository users) {
+        this.users = users;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -22,7 +24,6 @@ public class AudienceQueryService implements AudienceQueryUseCase {
         if (parsedRole == null && (facultyId == null || facultyId.isBlank())) {
             throw new IllegalArgumentException("Scheduled audience requires role and/or facultyId");
         }
-        return users.findActiveAudience(parsedRole, facultyId).stream()
-                .map(user -> new AudienceMember(user.getId(), user.getEmail())).toList();
+        return users.findActiveAudience(parsedRole, facultyId).stream().map(user -> new AudienceMember(user.getId(), user.getEmail())).toList();
     }
 }

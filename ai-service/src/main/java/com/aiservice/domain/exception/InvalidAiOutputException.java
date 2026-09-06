@@ -1,1 +1,11 @@
-package com.aiservice.domain.exception; public class InvalidAiOutputException extends DomainException{public InvalidAiOutputException(String m){super(m);}public InvalidAiOutputException(String m,Throwable c){super(m,c);}}
+package com.aiservice.domain.exception;
+
+public class InvalidAiOutputException extends DomainException {
+    public InvalidAiOutputException(String m) {
+        super(m);
+    }
+
+    public InvalidAiOutputException(String m, Throwable c) {
+        super(m, c);
+    }
+}

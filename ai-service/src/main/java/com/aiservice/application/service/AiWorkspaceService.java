@@ -4,7 +4,9 @@ import com.aiservice.application.model.WorkspacePage;
 import com.aiservice.application.port.out.*;
 import com.aiservice.domain.exception.*;
 import com.aiservice.domain.model.*;
+
 import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +18,7 @@ public class AiWorkspaceService {
     private final AiResultRepository results;
     private final AiJobService jobService;
 
-    public AiWorkspaceService(DocumentRepository documents, AiJobRepository jobs,
-                              AiResultRepository results, AiJobService jobService) {
+    public AiWorkspaceService(DocumentRepository documents, AiJobRepository jobs, AiResultRepository results, AiJobService jobService) {
         this.documents = documents;
         this.jobs = jobs;
         this.results = results;

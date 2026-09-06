@@ -1,1 +1,11 @@
-package com.aiservice.infrastructure.persistence.repository;import com.aiservice.infrastructure.persistence.entity.AiJobEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface AiJobJpaRepository extends JpaRepository<AiJobEntity,UUID>{org.springframework.data.domain.Page<AiJobEntity> findByRequestedBy(UUID owner,org.springframework.data.domain.Pageable pageable);}
+package com.aiservice.infrastructure.persistence.repository;
+
+import com.aiservice.infrastructure.persistence.entity.AiJobEntity;
+
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AiJobJpaRepository extends JpaRepository<AiJobEntity, UUID> {
+    org.springframework.data.domain.Page<AiJobEntity> findByRequestedBy(UUID owner, org.springframework.data.domain.Pageable pageable);
+}

@@ -19,14 +19,14 @@ import java.util.List;
 public class InternalAudienceController {
     private final AudienceQueryUseCase audience;
     private final InternalServiceTokenVerifier tokens;
+
     public InternalAudienceController(AudienceQueryUseCase audience, InternalServiceTokenVerifier tokens) {
-        this.audience = audience; this.tokens = tokens;
+        this.audience = audience;
+        this.tokens = tokens;
     }
+
     @GetMapping("/audience")
-    public ApiResponse<List<AudienceMember>> audience(
-            @RequestHeader(value = "X-Internal-Service-Token", required = false) String token,
-            @RequestParam(required = false) String role,
-            @RequestParam(required = false) String facultyId) {
+    public ApiResponse<List<AudienceMember>> audience(@RequestHeader(value = "X-Internal-Service-Token", required = false) String token, @RequestParam(required = false) String role, @RequestParam(required = false) String facultyId) {
         if (!tokens.matches(token)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid service token");
         return ApiResponse.success(audience.resolve(role, facultyId));
     }

@@ -23,8 +23,7 @@ public class AiJobConsumer {
     private final RabbitTemplate rabbit;
     private final int maxRetries;
 
-    public AiJobConsumer(AiJobProcessor processor, RabbitTemplate rabbit,
-                         @Value("${ai.rabbitmq.max-retries}") int maxRetries) {
+    public AiJobConsumer(AiJobProcessor processor, RabbitTemplate rabbit, @Value("${ai.rabbitmq.max-retries}") int maxRetries) {
         this.processor = processor;
         this.rabbit = rabbit;
         this.maxRetries = maxRetries;
@@ -60,21 +59,17 @@ public class AiJobConsumer {
     }
 
     private ParsedEvent parse(EventEnvelope event) {
-        if (event == null || event.eventId() == null || event.version() != 1 || event.payload() == null
-                || !event.payload().isObject() || event.payload().get("jobId") == null
-                || !event.payload().get("jobId").isTextual()) {
+        if (event == null || event.eventId() == null || event.version() != 1 || event.payload() == null || !event.payload().isObject() || event.payload().get("jobId") == null || !event.payload().get("jobId").isTextual()) {
             throw new IllegalArgumentException("Invalid AI generation event envelope");
         }
         try {
-            return new ParsedEvent(event.eventId(), UUID.fromString(event.payload().get("jobId").asText()),
-                    event.correlationId());
+            return new ParsedEvent(event.eventId(), UUID.fromString(event.payload().get("jobId").asText()), event.correlationId());
         } catch (RuntimeException exception) {
             throw new IllegalArgumentException("Invalid AI generation jobId", exception);
         }
     }
 
-    private void retryOrDeadLetter(ParsedEvent event, Message message, Channel channel, long deliveryTag,
-                                   String reason) throws IOException {
+    private void retryOrDeadLetter(ParsedEvent event, Message message, Channel channel, long deliveryTag, String reason) throws IOException {
         int attempt = retryCount(message) + 1;
         message.getMessageProperties().setHeader(RETRY_COUNT, attempt);
         log.warn("{}; jobId={}, attempt={}", reason, event.jobId(), attempt);
@@ -91,8 +86,7 @@ public class AiJobConsumer {
         channel.basicAck(deliveryTag, false);
     }
 
-    private void deadLetter(Message message, Channel channel, long deliveryTag, ParsedEvent event,
-                            String reason) throws IOException {
+    private void deadLetter(Message message, Channel channel, long deliveryTag, ParsedEvent event, String reason) throws IOException {
         log.warn("{}; jobId={}", reason, event.jobId());
         rabbit.send("ai.dlx", RabbitConfiguration.DLQ, message);
         channel.basicAck(deliveryTag, false);
@@ -103,5 +97,6 @@ public class AiJobConsumer {
         return count instanceof Number number ? number.intValue() : 0;
     }
 
-    private record ParsedEvent(UUID eventId, UUID jobId, UUID correlationId) { }
+    private record ParsedEvent(UUID eventId, UUID jobId, UUID correlationId) {
+    }
 }

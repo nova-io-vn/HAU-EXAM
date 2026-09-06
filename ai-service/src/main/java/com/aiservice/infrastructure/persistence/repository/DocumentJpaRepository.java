@@ -1,1 +1,11 @@
-package com.aiservice.infrastructure.persistence.repository;import com.aiservice.infrastructure.persistence.entity.DocumentEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface DocumentJpaRepository extends JpaRepository<DocumentEntity,UUID>{org.springframework.data.domain.Page<DocumentEntity> findByOwnerId(UUID owner,org.springframework.data.domain.Pageable pageable);}
+package com.aiservice.infrastructure.persistence.repository;
+
+import com.aiservice.infrastructure.persistence.entity.DocumentEntity;
+
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface DocumentJpaRepository extends JpaRepository<DocumentEntity, UUID> {
+    org.springframework.data.domain.Page<DocumentEntity> findByOwnerId(UUID owner, org.springframework.data.domain.Pageable pageable);
+}

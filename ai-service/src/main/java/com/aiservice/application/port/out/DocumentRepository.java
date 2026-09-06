@@ -1,1 +1,10 @@
-package com.aiservice.application.port.out;import com.aiservice.domain.model.DocumentMetadata;import java.util.*;public interface DocumentRepository{DocumentMetadata save(DocumentMetadata d);Optional<DocumentMetadata> findById(UUID id);com.aiservice.application.model.WorkspacePage<DocumentMetadata> findByOwner(UUID owner,int page,int size);}
+package com.aiservice.application.port.out;
+
+import com.aiservice.domain.model.DocumentMetadata;
+import java.util.*;
+
+public interface DocumentRepository {
+    DocumentMetadata save(DocumentMetadata d);
+    Optional<DocumentMetadata> findById(UUID id);
+    com.aiservice.application.model.WorkspacePage<DocumentMetadata> findByOwner(UUID owner, int page, int size);
+}

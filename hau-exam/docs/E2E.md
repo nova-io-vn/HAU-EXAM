@@ -1,5 +1,7 @@
 # Browser E2E
 
+> Tài liệu tiếng Việt và trạng thái kiểm thử cập nhật nằm tại [KIEM-THU.md](KIEM-THU.md).
+
 HAU-EXAM uses Playwright for browser-level critical-flow coverage. Tests drive the real React UI and mock only the API Gateway boundary; they never call internal microservice ports or an external AI provider.
 
 ## Commands
