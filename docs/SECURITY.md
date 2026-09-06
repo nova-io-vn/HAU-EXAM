@@ -2,6 +2,8 @@
 
 # Security Baseline
 
+> Bản giải thích tiếng Việt dùng cho bàn giao/báo cáo nằm tại [07-BAO-MAT.md](07-BAO-MAT.md).
+
 ## Authentication
 
 JWT access/refresh token do Auth Service ký bằng RS256. Private key chỉ tồn tại

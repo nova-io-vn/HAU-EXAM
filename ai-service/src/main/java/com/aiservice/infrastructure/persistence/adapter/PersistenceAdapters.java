@@ -1,6 +1,111 @@
-package com.aiservice.infrastructure.persistence.adapter;import com.aiservice.application.port.out.*;import com.aiservice.domain.model.*;import com.aiservice.infrastructure.persistence.entity.*;import com.aiservice.infrastructure.persistence.mapper.*;import com.aiservice.infrastructure.persistence.repository.*;import java.time.Instant;import java.util.*;import org.springframework.stereotype.Component;
-public final class PersistenceAdapters{private PersistenceAdapters(){}
-@Component public static class Documents implements DocumentRepository{private final DocumentJpaRepository r;private final DocumentMapper m;public Documents(DocumentJpaRepository r,DocumentMapper m){this.r=r;this.m=m;}public com.aiservice.application.model.WorkspacePage<DocumentMetadata> findByOwner(UUID owner,int page,int size){var p=r.findByOwnerId(owner,org.springframework.data.domain.PageRequest.of(page,size,org.springframework.data.domain.Sort.by("createdAt").descending().and(org.springframework.data.domain.Sort.by("id"))));return new com.aiservice.application.model.WorkspacePage<>(p.getContent().stream().map(m::toDomain).toList(),page,size,p.getTotalElements(),p.getTotalPages());}public DocumentMetadata save(DocumentMetadata d){return m.toDomain(r.save(m.toEntity(d)));}public Optional<DocumentMetadata>findById(UUID id){return r.findById(id).map(m::toDomain);}}
-@Component public static class Jobs implements AiJobRepository{private final AiJobJpaRepository r;private final AiJobMapper m;public Jobs(AiJobJpaRepository r,AiJobMapper m){this.r=r;this.m=m;}public com.aiservice.application.model.WorkspacePage<AiJob> findByOwner(UUID owner,int page,int size){var p=r.findByRequestedBy(owner,org.springframework.data.domain.PageRequest.of(page,size,org.springframework.data.domain.Sort.by("createdAt").descending().and(org.springframework.data.domain.Sort.by("id"))));return new com.aiservice.application.model.WorkspacePage<>(p.getContent().stream().map(m::toDomain).toList(),page,size,p.getTotalElements(),p.getTotalPages());}public AiJob save(AiJob j){var e=m.toEntity(j);r.findById(j.id()).ifPresent(old->e.version=old.version);return m.toDomain(r.save(e));}public Optional<AiJob>findById(UUID id){return r.findById(id).map(m::toDomain);}}
-@Component public static class Results implements AiResultRepository{private final AiResultJpaRepository r;public Results(AiResultJpaRepository r){this.r=r;}public String save(UUID job,String json){var e=new AiResultEntity();e.id=UUID.randomUUID();e.jobId=job;e.resultJson=json;e.createdAt=Instant.now();r.save(e);return "db:ai-results:"+job;}public Optional<String>findByJobId(UUID id){return r.findByJobId(id).map(e->e.resultJson);}}
-@Component public static class Inbox implements ProcessedEventRepository{private final ProcessedEventJpaRepository r;public Inbox(ProcessedEventJpaRepository r){this.r=r;}public boolean exists(UUID id){return r.existsById(id);}public void record(UUID id,String type){var e=new ProcessedEventEntity();e.eventId=id;e.eventType=type;e.processedAt=Instant.now();r.save(e);}}}
+package com.aiservice.infrastructure.persistence.adapter;
+
+import com.aiservice.application.port.out.*;
+import com.aiservice.domain.model.*;
+import com.aiservice.infrastructure.persistence.entity.*;
+import com.aiservice.infrastructure.persistence.mapper.*;
+import com.aiservice.infrastructure.persistence.repository.*;
+
+import java.time.Instant;
+import java.util.*;
+
+import org.springframework.stereotype.Component;
+
+public final class PersistenceAdapters {
+    private PersistenceAdapters() {
+    }
+
+    @Component
+    public static class Documents implements DocumentRepository {
+        private final DocumentJpaRepository r;
+        private final DocumentMapper m;
+
+        public Documents(DocumentJpaRepository r, DocumentMapper m) {
+            this.r = r;
+            this.m = m;
+        }
+
+        public com.aiservice.application.model.WorkspacePage<DocumentMetadata> findByOwner(UUID owner, int page, int size) {
+            var p = r.findByOwnerId(owner, org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending().and(org.springframework.data.domain.Sort.by("id"))));
+            return new com.aiservice.application.model.WorkspacePage<>(p.getContent().stream().map(m::toDomain).toList(), page, size, p.getTotalElements(), p.getTotalPages());
+        }
+
+        public DocumentMetadata save(DocumentMetadata d) {
+            return m.toDomain(r.save(m.toEntity(d)));
+        }
+
+        public Optional<DocumentMetadata> findById(UUID id) {
+            return r.findById(id).map(m::toDomain);
+        }
+    }
+
+    @Component
+    public static class Jobs implements AiJobRepository {
+        private final AiJobJpaRepository r;
+        private final AiJobMapper m;
+
+        public Jobs(AiJobJpaRepository r, AiJobMapper m) {
+            this.r = r;
+            this.m = m;
+        }
+
+        public com.aiservice.application.model.WorkspacePage<AiJob> findByOwner(UUID owner, int page, int size) {
+            var p = r.findByRequestedBy(owner, org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending().and(org.springframework.data.domain.Sort.by("id"))));
+            return new com.aiservice.application.model.WorkspacePage<>(p.getContent().stream().map(m::toDomain).toList(), page, size, p.getTotalElements(), p.getTotalPages());
+        }
+
+        public AiJob save(AiJob j) {
+            var e = m.toEntity(j);
+            r.findById(j.id()).ifPresent(old -> e.version = old.version);
+            return m.toDomain(r.save(e));
+        }
+
+        public Optional<AiJob> findById(UUID id) {
+            return r.findById(id).map(m::toDomain);
+        }
+    }
+
+    @Component
+    public static class Results implements AiResultRepository {
+        private final AiResultJpaRepository r;
+
+        public Results(AiResultJpaRepository r) {
+            this.r = r;
+        }
+
+        public String save(UUID job, String json) {
+            var e = new AiResultEntity();
+            e.id = UUID.randomUUID();
+            e.jobId = job;
+            e.resultJson = json;
+            e.createdAt = Instant.now();
+            r.save(e);
+            return "db:ai-results:" + job;
+        }
+
+        public Optional<String> findByJobId(UUID id) {
+            return r.findByJobId(id).map(e -> e.resultJson);
+        }
+    }
+
+    @Component
+    public static class Inbox implements ProcessedEventRepository {
+        private final ProcessedEventJpaRepository r;
+
+        public Inbox(ProcessedEventJpaRepository r) {
+            this.r = r;
+        }
+
+        public boolean exists(UUID id) {
+            return r.existsById(id);
+        }
+
+        public void record(UUID id, String type) {
+            var e = new ProcessedEventEntity();
+            e.eventId = id;
+            e.eventType = type;
+            e.processedAt = Instant.now();
+            r.save(e);
+        }
+    }
+}

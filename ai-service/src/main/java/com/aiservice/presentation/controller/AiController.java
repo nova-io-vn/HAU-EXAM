@@ -1,2 +1,56 @@
-package com.aiservice.presentation.controller;import com.aiservice.application.service.AiJobService;import com.aiservice.domain.model.JobType;import com.aiservice.presentation.request.AiRequests.*;import com.aiservice.presentation.response.*;import com.aiservice.presentation.response.AiResponses.JobView;import jakarta.validation.Valid;import java.util.UUID;import org.springframework.http.*;import org.springframework.security.core.annotation.AuthenticationPrincipal;import org.springframework.security.oauth2.jwt.Jwt;import org.springframework.web.bind.annotation.*;import tools.jackson.databind.ObjectMapper;
-@RestController@RequestMapping("/api/v1")public class AiController{private final AiJobService jobs;private final ObjectMapper mapper;public AiController(AiJobService j,ObjectMapper m){jobs=j;mapper=m;}@PostMapping("/ai/generate/questions")public ResponseEntity<ApiResponse<JobView>>generate(@AuthenticationPrincipal Jwt jwt,@RequestHeader(value="X-Correlation-Id",required=false)UUID c,@Valid@RequestBody GenerateRequest r){return accepted(JobView.from(jobs.create(UUID.fromString(jwt.getSubject()),r.documentId(),JobType.QUESTION_GENERATION,mapper.writeValueAsString(r),c,jwt.getClaimAsString("facultyId"),r.subjectId(),r.chapterId(),r.topicId())));}@PostMapping("/ai/analyze")public ResponseEntity<ApiResponse<JobView>>analyze(@AuthenticationPrincipal Jwt jwt,@RequestHeader(value="X-Correlation-Id",required=false)UUID c,@Valid@RequestBody AnalyzeRequest r){return accepted(create(jwt,r.documentId(),JobType.ANALYSIS,r,c));}@PostMapping("/chat")public ResponseEntity<ApiResponse<JobView>>chat(@AuthenticationPrincipal Jwt jwt,@RequestHeader(value="X-Correlation-Id",required=false)UUID c,@Valid@RequestBody ChatRequest r){return accepted(create(jwt,r.documentId(),JobType.CHAT,r,c));}@GetMapping("/ai/jobs/{id}")public ApiResponse<JobView>get(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt){return ApiResponse.ok(JobView.from(jobs.get(id,UUID.fromString(jwt.getSubject()))));}private JobView create(Jwt jwt,UUID doc,JobType type,Object body,UUID c){return JobView.from(jobs.create(UUID.fromString(jwt.getSubject()),doc,type,mapper.writeValueAsString(body),c));}private ResponseEntity<ApiResponse<JobView>>accepted(JobView j){return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse<>(true,"AI_JOB_ACCEPTED","AI job accepted",j));}}
+package com.aiservice.presentation.controller;
+
+import com.aiservice.application.service.AiJobService;
+import com.aiservice.domain.model.JobType;
+import com.aiservice.presentation.request.AiRequests.*;
+import com.aiservice.presentation.response.*;
+import com.aiservice.presentation.response.AiResponses.JobView;
+import jakarta.validation.Valid;
+
+import java.util.UUID;
+
+import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.ObjectMapper;
+
+@RestController
+@RequestMapping("/api/v1")
+public class AiController {
+    private final AiJobService jobs;
+    private final ObjectMapper mapper;
+
+    public AiController(AiJobService j, ObjectMapper m) {
+        jobs = j;
+        mapper = m;
+    }
+
+    @PostMapping("/ai/generate/questions")
+    public ResponseEntity<ApiResponse<JobView>> generate(@AuthenticationPrincipal Jwt jwt, @RequestHeader(value = "X-Correlation-Id", required = false) UUID c, @Valid @RequestBody GenerateRequest r) {
+        return accepted(JobView.from(jobs.create(UUID.fromString(jwt.getSubject()), r.documentId(), JobType.QUESTION_GENERATION, mapper.writeValueAsString(r), c, jwt.getClaimAsString("facultyId"), r.subjectId(), r.chapterId(), r.topicId())));
+    }
+
+    @PostMapping("/ai/analyze")
+    public ResponseEntity<ApiResponse<JobView>> analyze(@AuthenticationPrincipal Jwt jwt, @RequestHeader(value = "X-Correlation-Id", required = false) UUID c, @Valid @RequestBody AnalyzeRequest r) {
+        return accepted(create(jwt, r.documentId(), JobType.ANALYSIS, r, c));
+    }
+
+    @PostMapping("/chat")
+    public ResponseEntity<ApiResponse<JobView>> chat(@AuthenticationPrincipal Jwt jwt, @RequestHeader(value = "X-Correlation-Id", required = false) UUID c, @Valid @RequestBody ChatRequest r) {
+        return accepted(create(jwt, r.documentId(), JobType.CHAT, r, c));
+    }
+
+    @GetMapping("/ai/jobs/{id}")
+    public ApiResponse<JobView> get(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.ok(JobView.from(jobs.get(id, UUID.fromString(jwt.getSubject()))));
+    }
+
+    private JobView create(Jwt jwt, UUID doc, JobType type, Object body, UUID c) {
+        return JobView.from(jobs.create(UUID.fromString(jwt.getSubject()), doc, type, mapper.writeValueAsString(body), c));
+    }
+
+    private ResponseEntity<ApiResponse<JobView>> accepted(JobView j) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse<>(true, "AI_JOB_ACCEPTED", "AI job accepted", j));
+    }
+}

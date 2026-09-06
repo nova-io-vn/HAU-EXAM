@@ -2,6 +2,8 @@
 
 # Architecture
 
+> Bản tổng hợp tiếng Việt được chuẩn hóa tại [01-KIEN-TRUC-HE-THONG.md](01-KIEN-TRUC-HE-THONG.md) và tài liệu từng service trong [services/](services/).
+
 ## Tổng quan
 
 Hệ thống dùng Microservices + Clean Architecture + Event-Driven
