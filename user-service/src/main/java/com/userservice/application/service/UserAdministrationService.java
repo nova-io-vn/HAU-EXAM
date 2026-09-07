@@ -12,6 +12,7 @@ import com.userservice.domain.repository.PageResult;
 import com.userservice.domain.repository.UserProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -23,11 +24,15 @@ public class UserAdministrationService implements UserAdministrationUseCase {
     private final UserProfileRepository repository;
     private final UserEventPublisher publisher;
     private final Clock clock;
+    private final com.userservice.domain.repository.FacultyRepository faculties;
 
-    public UserAdministrationService(UserProfileRepository repository, UserEventPublisher publisher, Clock clock) {
+    public UserAdministrationService(UserProfileRepository repository, UserEventPublisher publisher, Clock clock) { this(repository,publisher,clock,null); }
+    @Autowired
+    public UserAdministrationService(UserProfileRepository repository, UserEventPublisher publisher, Clock clock, com.userservice.domain.repository.FacultyRepository faculties) {
         this.repository = repository;
         this.publisher = publisher;
         this.clock = clock;
+        this.faculties = faculties;
     }
 
     @Override
@@ -52,6 +57,16 @@ public class UserAdministrationService implements UserAdministrationUseCase {
 
     @Override
     @Transactional
+    public UserProfile approve(ActorContext a, UUID id, String facultyId, Role role, UUID c) {
+        requireAdmin(a);
+        if (role == null || role == Role.SYSTEM_ADMIN) throw new IllegalArgumentException("Only USER or SUBJECT_ADMIN can be assigned during approval");
+        if (faculties == null || facultyId == null || faculties.findByCode(facultyId).filter(f -> f.active()).isEmpty())
+            throw new IllegalArgumentException("Active faculty not found");
+        return change(a, id, u -> u.assignFaculty(facultyId, now()).assignRole(role, now()).approve(now()), u -> publisher.userApproved(u, c));
+    }
+
+    @Override
+    @Transactional
     public UserProfile reject(ActorContext a, UUID id, UUID c) {
         return change(a, id, u -> u.reject(now()), u -> publisher.userRejected(u, c));
     }
@@ -59,12 +74,14 @@ public class UserAdministrationService implements UserAdministrationUseCase {
     @Override
     @Transactional
     public UserProfile assignRole(ActorContext a, UUID id, Role role, UUID c) {
+        if (role == Role.SYSTEM_ADMIN) throw new ForbiddenOperationException("SYSTEM_ADMIN cannot be assigned through this API");
         return change(a, id, u -> u.assignRole(role, now()), u -> publisher.roleChanged(u, c));
     }
 
     @Override
     @Transactional
     public UserProfile assignFaculty(ActorContext a, UUID id, String faculty, UUID c) {
+        if (faculties != null && faculties.findByCode(faculty).filter(Faculty -> Faculty.active()).isEmpty()) throw new IllegalArgumentException("Active faculty not found");
         return change(a, id, u -> u.assignFaculty(faculty, now()), u -> publisher.facultyChanged(u, c));
     }
 

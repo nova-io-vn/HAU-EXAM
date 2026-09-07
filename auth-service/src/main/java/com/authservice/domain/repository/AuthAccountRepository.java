@@ -13,5 +13,7 @@ public interface AuthAccountRepository {
 
     Optional<AuthAccount> findByLecturerCode(String lecturerCode);
 
+    Optional<AuthAccount> findBySecurityEmail(String securityEmail);
+
     boolean existsByLecturerCode(String lecturerCode);
 }

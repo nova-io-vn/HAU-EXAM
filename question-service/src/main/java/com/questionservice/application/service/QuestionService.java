@@ -17,25 +17,30 @@ public class QuestionService {
     private final QuestionRepository repository;
     private final QuestionEventPublisher publisher;
     private final Clock clock;
+    private final CatalogRepository catalog;
 
     public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock) {
-        this.repository = repository;
-        this.publisher = publisher;
-        this.clock = clock;
+        this(repository, publisher, clock, null);
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog) {
+        this.repository = repository; this.publisher = publisher; this.clock = clock; this.catalog = catalog;
     }
 
     public Question create(Actor actor, QuestionInput in) {
         requireRole(actor, Role.USER);
         require(actor.userId() != null, "Authenticated user is required");
-        if (actor.facultyId() == null || !actor.facultyId().equals(in.facultyId()))
-            throw new ForbiddenException("Question faculty must match creator faculty");
-        var q = Question.create(UUID.randomUUID(), in.facultyId(), in.subjectId(), in.chapterId(), in.topicId(), in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), QuestionSource.MANUAL, null, actor.userId(), withIds(in.options()), Instant.now(clock));
+        if (actor.facultyId() == null || actor.facultyId().isBlank())
+            throw new ForbiddenException("Question creator must have a faculty assignment");
+        validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), actor.facultyId());
+        var q = Question.create(UUID.randomUUID(), actor.facultyId(), in.subjectId(), in.chapterId(), in.topicId(), in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), QuestionSource.MANUAL, null, actor.userId(), withIds(in.options()), Instant.now(clock));
         return repository.save(q);
     }
 
     public Question update(UUID id, Actor actor, QuestionInput in) {
         var q = get(id);
         owner(q, actor);
+        validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), actor.facultyId());
         q.edit(in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), withIds(in.options()), Instant.now(clock));
         return repository.save(q);
     }
@@ -108,6 +113,17 @@ public class QuestionService {
         return repository.search(scoped);
     }
 
+    @Transactional(readOnly = true)
+    public QuestionStatistics statistics(Actor actor) {
+        if (actor == null || actor.role() == Role.SYSTEM_ADMIN) return repository.statistics(null, null);
+        if (actor.role() == Role.USER) {
+            if (actor.userId() == null) throw new ForbiddenException("Authenticated user is required");
+            return repository.statistics(null, actor.userId());
+        }
+        if (actor.facultyId() == null || actor.facultyId().isBlank()) throw new ForbiddenException("Faculty assignment is required");
+        return repository.statistics(actor.facultyId(), null);
+    }
+
     private Question reviewable(UUID id, Actor a) {
         var q = get(id);
         facultyReviewer(q, a);
@@ -135,5 +151,17 @@ public class QuestionService {
 
     private static List<QuestionOption> withIds(List<QuestionOption> options) {
         return options.stream().map(o -> new QuestionOption(o.id() == null ? UUID.randomUUID() : o.id(), o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList();
+    }
+
+    private void validateTaxonomy(UUID subjectId, UUID chapterId, UUID topicId, String facultyId) {
+        if (catalog == null) return;
+        var subject = catalog.findSubject(subjectId).orElseThrow(() -> new NotFoundException("Subject not found"));
+        if (!Objects.equals(subject.facultyId(), facultyId)) throw new ForbiddenException("Subject is outside faculty scope");
+        var chapter = catalog.findChapter(chapterId).orElseThrow(() -> new NotFoundException("Chapter not found"));
+        if (!Objects.equals(chapter.subjectId(), subjectId)) throw new IllegalArgumentException("Chapter does not belong to subject");
+        if (topicId != null) {
+            var topic = catalog.findTopic(topicId).orElseThrow(() -> new NotFoundException("Topic not found"));
+            if (!Objects.equals(topic.chapterId(), chapterId)) throw new IllegalArgumentException("Topic does not belong to chapter");
+        }
     }
 }

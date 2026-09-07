@@ -27,3 +27,10 @@ Payload: `recipientUserId`, `email`, `otp`, `expiresAt`. Notification Service d�
 
 Payload chung: `userId`, `lecturerCode`, `role`, `facultyId`, `status`, `email`, `recipientUserId`.
 Auth cập nhật security snapshot `status/role/facultyId` và security contact. Consumer chỉ nhận version 1, idempotent theo `eventId`, retry hữu hạn và chuyển DLQ khi hết retry.
+# Bootstrap SYSTEM_ADMIN
+
+Khi `BOOTSTRAP_ADMIN_ENABLED=true`, Auth Service tạo idempotent một credential
+`SYSTEM_ADMIN` ở trạng thái `ACTIVE` từ biến môi trường. Auth không ghi trực tiếp
+vào `user_db`, mà phát event `user.bootstrap-admin.requested` trên `auth.exchange`.
+Event không chứa password hoặc password hash. User Service tạo profile ACTIVE và
+ghi nhận `eventId`; event phát lại không tạo profile trùng.

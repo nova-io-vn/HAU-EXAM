@@ -22,6 +22,8 @@ spring:
         auto-startup: false
 
 auth:
+  bootstrap:
+    enabled: false
   jwt:
     generate-ephemeral-key: true
 

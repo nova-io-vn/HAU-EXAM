@@ -44,6 +44,12 @@ public class AuthAccountPersistenceAdapter implements AuthAccountRepository {
         return repository.existsByLecturerCode(normalize(lecturerCode));
     }
 
+    @Override
+    public Optional<AuthAccount> findBySecurityEmail(String securityEmail) {
+        if (securityEmail == null || securityEmail.isBlank()) return Optional.empty();
+        return repository.findBySecurityEmailIgnoreCase(securityEmail.trim()).map(mapper::toDomain);
+    }
+
     private String normalize(String lecturerCode) {
         return lecturerCode == null ? null : lecturerCode.trim().toUpperCase(Locale.ROOT);
     }
