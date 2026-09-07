@@ -1,0 +1,15 @@
+/* Shared Stitch finishing layer: one shell, compact density, HAU red. */
+a{color:inherit}
+.sidebar nav a.active,.sidebar-bottom a.active{background:var(--hau-primary);color:#fff}
+.sidebar nav a.active .nav-icon{background:transparent;border:0;color:#fff}
+.nav-icon{border:0!important;background:transparent!important;color:currentColor!important}
+.nav-group{display:grid;gap:3px}.nav-section-label{margin:15px 10px 4px;color:#9b9294;font-size:10px;font-weight:800;letter-spacing:.1em}.sidebar-nav{overflow:auto;padding-bottom:92px}.sidebar-bottom{z-index:1;background:var(--surface)}
+.user-menu summary{max-width:320px}.user-menu .profile-copy{min-width:0}.user-menu .profile-copy strong,.user-menu .profile-copy small{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-menu-popover button{display:flex;align-items:center;gap:8px}.topbar-identity{display:none}
+.surface{min-height:0}.empty-state{min-height:180px}.admin-kpi,.stat-card{min-height:0}
+.ai-list{min-height:0}.ai-list .table-wrap{min-height:0}.ai-tabs a{text-decoration:none}.ai-tabs a.active{background:var(--hau-primary);color:#fff}
+.help-page .surface{padding:20px}.help-page .help-item button{font-size:14px}.help-page .help-item p{max-width:780px}
+.status-chart{display:grid;gap:16px;padding:22px}.status-chart-row{display:grid;grid-template-columns:120px 1fr 34px;align-items:center;gap:12px;font-size:12px}.status-chart-track{height:10px;border-radius:5px;background:var(--surface-muted);overflow:hidden}.status-chart-bar{display:block;height:100%;border-radius:5px;background:var(--hau-primary)}.status-chart-bar.approved{background:var(--success)}.status-chart-bar.pending{background:var(--warning)}.status-chart-bar.revision{background:var(--danger)}.status-chart-bar.draft{background:var(--text-muted)}
+.notification-bell>button{position:relative;display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:5px;background:transparent;color:var(--text);cursor:pointer;font-size:0}.notification-bell>button:hover{background:var(--surface-muted)}.unread-badge{position:absolute;top:0;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--hau-primary);color:#fff;font-size:10px;line-height:16px}
+.notification-bell>button::before{content:'\1F514';font-size:16px}
+.global-search kbd{display:none}
+@media(max-width:800px){.user-menu .profile-copy{display:none}.topbar{padding-inline:14px}.sidebar-bottom{position:absolute}.sidebar{overflow:auto}.app-content{padding:22px 18px}}

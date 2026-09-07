@@ -16,6 +16,13 @@ spring:
     enabled: true
 
 auth:
+  bootstrap:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+    lecturer-code: ${BOOTSTRAP_ADMIN_LECTURER_CODE:}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    full-name: ${BOOTSTRAP_ADMIN_FULL_NAME:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+    faculty-id: ${BOOTSTRAP_ADMIN_FACULTY_ID:}
   jwt:
     issuer: ${JWT_ISSUER:hau-exam-auth}
     key-id: ${JWT_KEY_ID:hau-exam-auth-key}

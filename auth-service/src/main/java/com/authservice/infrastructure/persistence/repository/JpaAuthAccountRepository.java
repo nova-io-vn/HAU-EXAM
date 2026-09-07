@@ -10,5 +10,7 @@ public interface JpaAuthAccountRepository extends JpaRepository<AuthAccountEntit
 
     Optional<AuthAccountEntity> findByLecturerCode(String lecturerCode);
 
+    Optional<AuthAccountEntity> findBySecurityEmailIgnoreCase(String securityEmail);
+
     boolean existsByLecturerCode(String lecturerCode);
 }

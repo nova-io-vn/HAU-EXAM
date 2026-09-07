@@ -14,7 +14,7 @@ class UserRabbitEventPublisherTest {
     @Test void publishesApprovalToExpectedExchangeAndRoutingKey(){
         RabbitTemplate template=mock(RabbitTemplate.class);
         var publisher=new UserRabbitEventPublisher(template,Clock.fixed(Instant.parse("2026-09-05T00:00:00Z"),ZoneOffset.UTC));
-        var user=UserProfile.pending(UUID.randomUUID(),"GV1","User",null,null,"u@hau.edu.vn",null,null,null,Instant.parse("2026-09-04T00:00:00Z")).approve(Instant.parse("2026-09-05T00:00:00Z"));
+        var user=UserProfile.pending(UUID.randomUUID(),"GV1","User",null,null,"u@hau.edu.vn",null,null,"CNTT",Instant.parse("2026-09-04T00:00:00Z")).approve(Instant.parse("2026-09-05T00:00:00Z"));
         publisher.userApproved(user,UUID.randomUUID());
         verify(template).convertAndSend(eq(RabbitNames.USER_EXCHANGE),eq("user.approved"),any(EventEnvelope.class),any(MessagePostProcessor.class));
     }

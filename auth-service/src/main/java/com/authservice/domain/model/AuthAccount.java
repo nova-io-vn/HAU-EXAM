@@ -72,6 +72,12 @@ public final class AuthAccount {
         return new AuthAccount(id, lecturerCode, newPasswordHash, status, role, facultyId, securityEmail, createdAt, changedAt, version);
     }
 
+    public static AuthAccount bootstrapAdmin(UUID id, String lecturerCode, String passwordHash,
+                                             String securityEmail, String facultyId, Instant now) {
+        return new AuthAccount(id, lecturerCode, passwordHash, AccountStatus.ACTIVE,
+                "SYSTEM_ADMIN", facultyId, securityEmail, now, now, 0);
+    }
+
     public AuthAccount synchronize(AccountStatus newStatus, String newRole, String newFacultyId,
                                    String newSecurityEmail, Instant changedAt) {
         return new AuthAccount(id, lecturerCode, passwordHash, Objects.requireNonNull(newStatus),

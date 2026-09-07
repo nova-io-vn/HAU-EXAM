@@ -6,3 +6,5 @@ export {QuestionPreview} from './components/QuestionPreview'
 
 export {ReviewQueuePage} from './pages/ReviewQueuePage'
 export {QuestionReviewPage} from './pages/QuestionReviewPage'
+export {KnowledgeStructurePage} from './pages/KnowledgeStructurePage'
+export {CoveragePage} from './pages/CoveragePage'

@@ -15,8 +15,14 @@ public class RabbitMqConfiguration {
     @Bean Queue registrationQueue(){return QueueBuilder.durable(RabbitNames.REGISTRATION_QUEUE).deadLetterExchange(RabbitNames.RETRY_EXCHANGE).deadLetterRoutingKey(RabbitNames.RETRY_KEY).build();}
     @Bean Queue registrationRetryQueue(@Value("${user.messaging.retry-delay-ms}") int delay){return QueueBuilder.durable(RabbitNames.RETRY_QUEUE).ttl(delay).deadLetterExchange(RabbitNames.AUTH_EXCHANGE).deadLetterRoutingKey(RabbitNames.REGISTRATION_KEY).build();}
     @Bean Queue registrationDlq(){return QueueBuilder.durable(RabbitNames.DLQ).build();}
+    @Bean Queue bootstrapQueue(){return QueueBuilder.durable(RabbitNames.BOOTSTRAP_QUEUE).deadLetterExchange(RabbitNames.RETRY_EXCHANGE).deadLetterRoutingKey(RabbitNames.BOOTSTRAP_RETRY_KEY).build();}
+    @Bean Queue bootstrapRetryQueue(@Value("${user.messaging.retry-delay-ms}") int delay){return QueueBuilder.durable(RabbitNames.BOOTSTRAP_RETRY_QUEUE).ttl(delay).deadLetterExchange(RabbitNames.AUTH_EXCHANGE).deadLetterRoutingKey(RabbitNames.BOOTSTRAP_KEY).build();}
+    @Bean Queue bootstrapDlq(){return QueueBuilder.durable(RabbitNames.BOOTSTRAP_DLQ).build();}
     @Bean Binding registrationBinding(Queue registrationQueue,TopicExchange authExchange){return BindingBuilder.bind(registrationQueue).to(authExchange).with(RabbitNames.REGISTRATION_KEY);}
     @Bean Binding retryBinding(Queue registrationRetryQueue,DirectExchange retryExchange){return BindingBuilder.bind(registrationRetryQueue).to(retryExchange).with(RabbitNames.RETRY_KEY);}
     @Bean Binding dlqBinding(Queue registrationDlq,DirectExchange userDeadLetterExchange){return BindingBuilder.bind(registrationDlq).to(userDeadLetterExchange).with(RabbitNames.DLQ_KEY);}
+    @Bean Binding bootstrapBinding(Queue bootstrapQueue,TopicExchange authExchange){return BindingBuilder.bind(bootstrapQueue).to(authExchange).with(RabbitNames.BOOTSTRAP_KEY);}
+    @Bean Binding bootstrapRetryBinding(Queue bootstrapRetryQueue,DirectExchange retryExchange){return BindingBuilder.bind(bootstrapRetryQueue).to(retryExchange).with(RabbitNames.BOOTSTRAP_RETRY_KEY);}
+    @Bean Binding bootstrapDlqBinding(Queue bootstrapDlq,DirectExchange userDeadLetterExchange){return BindingBuilder.bind(bootstrapDlq).to(userDeadLetterExchange).with(RabbitNames.BOOTSTRAP_DLQ_KEY);}
     @Bean JacksonJsonMessageConverter rabbitJsonMessageConverter(){return new JacksonJsonMessageConverter();}
 }

@@ -10,6 +10,11 @@ import './styles/questions.css'
 import './styles/ai.css'
 import './styles/exams.css'
 import './styles/ui-consistency.css'
+import './styles/admin.css'
+import './styles/faculty.css'
+import './styles/user.css'
+import './styles/subject-admin.css'
+import './styles/stabilization.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(

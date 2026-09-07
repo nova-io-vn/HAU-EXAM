@@ -10,6 +10,7 @@ public interface UserAdministrationUseCase {
     PageResult<UserProfile> list(ActorContext actor, PageQuery query);
     UserProfile get(ActorContext actor, UUID id);
     UserProfile approve(ActorContext actor, UUID id, UUID correlationId);
+    UserProfile approve(ActorContext actor, UUID id, String facultyId, Role role, UUID correlationId);
     UserProfile reject(ActorContext actor, UUID id, UUID correlationId);
     UserProfile assignRole(ActorContext actor, UUID id, Role role, UUID correlationId);
     UserProfile assignFaculty(ActorContext actor, UUID id, String facultyId, UUID correlationId);

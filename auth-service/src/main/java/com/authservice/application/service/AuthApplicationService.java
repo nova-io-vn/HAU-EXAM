@@ -4,6 +4,7 @@ import com.authservice.application.dto.AuthDtos;
 import com.authservice.application.port.out.AuthEventPublisher;
 import com.authservice.application.port.out.OtpStore;
 import com.authservice.application.port.out.PasswordHasher;
+import com.authservice.application.port.out.RefreshTokenHasher;
 import com.authservice.application.port.out.RefreshTokenStore;
 import com.authservice.application.port.out.TokenService;
 import com.authservice.domain.exception.AuthAccountNotFoundException;
@@ -28,16 +29,19 @@ public class AuthApplicationService {
 
     private final AuthAccountRepository accounts;
     private final PasswordHasher passwordHasher;
+    private final RefreshTokenHasher refreshTokenHasher;
     private final TokenService tokens;
     private final RefreshTokenStore refreshTokens;
     private final OtpStore otpStore;
     private final AuthEventPublisher events;
 
     public AuthApplicationService(AuthAccountRepository accounts, PasswordHasher passwordHasher,
+                                 RefreshTokenHasher refreshTokenHasher,
                                  TokenService tokens, RefreshTokenStore refreshTokens,
                                  OtpStore otpStore, AuthEventPublisher events) {
         this.accounts = accounts;
         this.passwordHasher = passwordHasher;
+        this.refreshTokenHasher = refreshTokenHasher;
         this.tokens = tokens;
         this.refreshTokens = refreshTokens;
         this.otpStore = otpStore;
@@ -82,7 +86,7 @@ public class AuthApplicationService {
         TokenService.RefreshClaims claims = tokens.parseRefreshToken(refreshToken);
         RefreshTokenStore.StoredRefreshToken stored = refreshTokens.find(claims.tokenId())
                 .filter(value -> value.isUsable(Instant.now()))
-                .filter(value -> passwordHasher.matches(refreshToken, value.tokenHash()))
+                .filter(value -> refreshTokenHasher.matches(refreshToken, value.tokenHash()))
                 .orElseThrow(() -> new AuthException("INVALID_REFRESH_TOKEN", "Refresh token is invalid"));
         AuthAccount account = accounts.findById(stored.accountId())
                 .orElseThrow(() -> new AuthAccountNotFoundException(stored.accountId()));
@@ -135,7 +139,7 @@ public class AuthApplicationService {
 
     private AuthDtos.Session issueSession(AuthAccount account) {
         TokenService.IssuedTokens issued = tokens.issue(account);
-        refreshTokens.save(issued.refreshTokenId(), account.getId(), passwordHasher.hash(issued.refreshToken()), issued.refreshExpiresAt());
+        refreshTokens.save(issued.refreshTokenId(), account.getId(), refreshTokenHasher.hash(issued.refreshToken()), issued.refreshExpiresAt());
         return new AuthDtos.Session(account.getId(), account.getLecturerCode(), account.getRole(), account.getFacultyId(),
                 issued.accessToken(), issued.refreshToken(), issued.accessExpiresAt(), issued.refreshExpiresAt());
     }
