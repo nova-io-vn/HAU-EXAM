@@ -25,7 +25,7 @@ export function RegisterPage(){
     }catch(reason){setError(getAuthErrorMessage(reason,'Không thể đăng ký tài khoản.'))}
     finally{setLoading(false)}
   }
-  return <AuthLayout title="Đăng ký tài khoản" description="Tài khoản mới cần được quản trị viên hệ thống xác nhận." footer={<span>Đã có tài khoản? <Link to={routes.login}>Đăng nhập</Link></span>}>
+  return <AuthLayout activeTab="register" title="Đăng ký tài khoản" description="Tài khoản mới cần được quản trị viên hệ thống xác nhận." footer={<span>Đã có tài khoản? <Link to={routes.login}>Đăng nhập</Link></span>}>
     <AuthAlert>{error}</AuthAlert><form className="auth-form" onSubmit={submit}>
       <Input label="Mã giảng viên" name="lecturerCode" autoComplete="username" required value={form.lecturerCode} onChange={change('lecturerCode')}/>
       <Input label="Họ và tên" name="fullName" autoComplete="name" required value={form.fullName} onChange={change('fullName')}/>

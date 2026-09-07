@@ -21,3 +21,9 @@ User Service publish lên `user.exchange`:
 
 Payload chung: `userId`, `lecturerCode`, `role`, `facultyId`, `status`, `email`, `recipientUserId`.
 `recipientUserId` là applicant/user nhận thông báo cho approval/rejection; `userId` vẫn là identity được Auth đồng bộ.
+# Bootstrap SYSTEM_ADMIN
+
+User Service consume `user.bootstrap-admin.requested` từ `auth.exchange`. Payload
+chỉ gồm `userId`, `lecturerCode`, `email`, `fullName`, `role`, `status` và
+`facultyId`. Consumer tạo profile `SYSTEM_ADMIN/ACTIVE` idempotent theo event và
+logical identity; không nhận hoặc lưu password.

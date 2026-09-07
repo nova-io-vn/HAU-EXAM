@@ -21,8 +21,9 @@ public class CatalogService {
         clock = c;
     }
 
-    public Subject saveSubject(UUID id, String faculty, String code, String name, Actor a) {
-        catalogAdmin(a, faculty);
+    public Subject saveSubject(UUID id, String code, String name, Actor a) {
+        String faculty = requiredFaculty(a);
+        if (id != null) { Subject existing = repo.findSubject(id).orElseThrow(() -> new NotFoundException("Subject not found")); catalogAdmin(a, existing.facultyId()); }
         Instant now = Instant.now(clock);
         Subject old = id == null ? null : repo.findSubject(id).orElseThrow(() -> new NotFoundException("Subject not found"));
         return repo.saveSubject(new Subject(id == null ? UUID.randomUUID() : id, faculty, required(code), required(name), old == null ? now : old.createdAt(), now));
@@ -47,17 +48,20 @@ public class CatalogService {
 
     @Transactional(readOnly = true)
     public List<Subject> subjects(Actor a, String f) {
-        return repo.findSubjects(a.role() == Role.SUBJECT_ADMIN ? a.facultyId() : f);
+        return repo.findSubjects(a.role() == Role.SUBJECT_ADMIN || a.role() == Role.USER ? a.facultyId() : f);
     }
 
     @Transactional(readOnly = true)
-    public List<Chapter> chapters(UUID id) {
-        return repo.findChapters(id);
+    public List<Chapter> chapters(UUID id, Actor a) {
+        Subject s=repo.findSubject(id).orElseThrow(()->new NotFoundException("Subject not found"));
+        requireReadScope(a,s.facultyId()); return repo.findChapters(id);
     }
 
     @Transactional(readOnly = true)
-    public List<Topic> topics(UUID id) {
-        return repo.findTopics(id);
+    public List<Topic> topics(UUID id, Actor a) {
+        Chapter c=repo.findChapter(id).orElseThrow(()->new NotFoundException("Chapter not found"));
+        Subject s=repo.findSubject(c.subjectId()).orElseThrow(()->new NotFoundException("Subject not found"));
+        requireReadScope(a,s.facultyId()); return repo.findTopics(id);
     }
 
     public void deleteSubject(UUID id, Actor a) {
@@ -85,6 +89,8 @@ public class CatalogService {
         if (a.role() != Role.SUBJECT_ADMIN || a.facultyId() == null || !a.facultyId().equals(f))
             throw new ForbiddenException("Catalog is outside administrator faculty scope");
     }
+    private static String requiredFaculty(Actor a) { if (a == null || a.facultyId() == null || a.facultyId().isBlank()) throw new ForbiddenException("A faculty assignment is required"); return a.facultyId(); }
+    private static void requireReadScope(Actor a,String faculty){if(a==null||a.facultyId()==null||!a.facultyId().equals(faculty))throw new ForbiddenException("Catalog is outside faculty scope");}
 
     private static String required(String v) {
         if (v == null || v.isBlank()) throw new IllegalArgumentException("Value is required");

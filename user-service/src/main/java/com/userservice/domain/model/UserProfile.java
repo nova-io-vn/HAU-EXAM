@@ -55,11 +55,18 @@ public final class UserProfile {
         return new UserProfile(id, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar, facultyId,
                 Role.USER, UserStatus.PENDING_APPROVAL, now, now, 0);
     }
+
+    public static UserProfile bootstrapAdmin(UUID id, String lecturerCode, String fullName,
+                                             String email, String facultyId, Instant now) {
+        return new UserProfile(id, lecturerCode, fullName, null, null, email, null, null, facultyId,
+                Role.SYSTEM_ADMIN, UserStatus.ACTIVE, now, now, 0);
+    }
     public UserProfile updateProfile(String fullName, LocalDate dob, String phone, String email, String address, String avatar, Instant at) {
         return new UserProfile(id, lecturerCode, fullName, dob, phone, email, address, avatar, facultyId, role, status, createdAt, at, version);
     }
     public UserProfile approve(Instant at) {
         if (status != UserStatus.PENDING_APPROVAL) throw new InvalidStatusTransitionException("Only pending users can be approved");
+        if (facultyId == null) throw new InvalidUserProfileException("A faculty must be assigned before approval");
         return copy(role, UserStatus.ACTIVE, facultyId, at);
     }
     public UserProfile reject(Instant at) {

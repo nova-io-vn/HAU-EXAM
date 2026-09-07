@@ -12,6 +12,7 @@ function page(data){return ok({items:data,page:0,totalPages:1,totalElements:data
 
 export const test=base.extend({gateway:async({context},use)=>{
   Object.assign(state,initialState)
+  await context.addInitScript(()=>{window.__HAU_DISABLE_ONBOARDING__=true})
   await context.route('**/api/v1/**',async route=>{
     const request=route.request(),url=new URL(request.url()),path=url.pathname,method=request.method()
     let body

@@ -27,13 +27,14 @@ import static org.mockito.Mockito.*;
 class AuthApplicationServiceTest {
     @Mock AuthAccountRepository accounts;
     @Mock PasswordHasher hasher;
+    @Mock RefreshTokenHasher refreshTokenHasher;
     @Mock TokenService tokenService;
     @Mock RefreshTokenStore refreshTokens;
     @Mock OtpStore otpStore;
     @Mock AuthEventPublisher events;
     private AuthApplicationService service;
 
-    @BeforeEach void setUp() { service = new AuthApplicationService(accounts, hasher, tokenService, refreshTokens, otpStore, events); }
+    @BeforeEach void setUp() { service = new AuthApplicationService(accounts, hasher, refreshTokenHasher, tokenService, refreshTokens, otpStore, events); }
 
     @Test void registerCreatesPendingCredentialAndPublishesEvent() {
         when(accounts.existsByLecturerCode("GV001")).thenReturn(false);
@@ -69,7 +70,7 @@ class AuthApplicationServiceTest {
         when(hasher.matches("password123", "hash")).thenReturn(true);
         TokenService.IssuedTokens issued = new TokenService.IssuedTokens("access", "refresh", UUID.randomUUID(), Instant.now().plusSeconds(60), Instant.now().plusSeconds(3600));
         when(tokenService.issue(account)).thenReturn(issued);
-        when(hasher.hash("refresh")).thenReturn("refresh-hash");
+        when(refreshTokenHasher.hash("refresh")).thenReturn("refresh-hash");
         AuthDtos.Session session = service.login("GV001", "password123");
         assertThat(session.accessToken()).isEqualTo("access");
         verify(refreshTokens).save(any(), eq(account.getId()), eq("refresh-hash"), eq(issued.refreshExpiresAt()));
@@ -97,11 +98,11 @@ class AuthApplicationServiceTest {
         UUID tokenId = UUID.randomUUID();
         when(tokenService.parseRefreshToken("refresh")).thenReturn(new TokenService.RefreshClaims(account.getId(), tokenId, Instant.now().plusSeconds(60)));
         when(refreshTokens.find(tokenId)).thenReturn(Optional.of(new RefreshTokenStore.StoredRefreshToken(tokenId, account.getId(), "hash", Instant.now().plusSeconds(60), null)));
-        when(hasher.matches("refresh", "hash")).thenReturn(true);
+        when(refreshTokenHasher.matches("refresh", "hash")).thenReturn(true);
         when(accounts.findById(account.getId())).thenReturn(Optional.of(account));
         TokenService.IssuedTokens issued = new TokenService.IssuedTokens("new-access", "new-refresh", UUID.randomUUID(), Instant.now().plusSeconds(60), Instant.now().plusSeconds(3600));
         when(tokenService.issue(account)).thenReturn(issued);
-        when(hasher.hash("new-refresh")).thenReturn("new-hash");
+        when(refreshTokenHasher.hash("new-refresh")).thenReturn("new-hash");
         assertThat(service.refresh("refresh").accessToken()).isEqualTo("new-access");
         verify(refreshTokens).revoke(eq(tokenId), any());
     }
