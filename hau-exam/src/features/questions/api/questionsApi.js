@@ -2,6 +2,7 @@ import {api} from '../../../services/api/client'
 
 function queryString(params){const query=new URLSearchParams(Object.entries(params).filter(([,value])=>value!==''&&value!==undefined&&value!==null));return query.size?`?${query}`:''}
 export const questionsApi={
+  uploadImage:(file,kind='question')=>{const body=new FormData();body.append('file',file);return api.post(`/api/v1/questions/images?kind=${encodeURIComponent(kind)}`,body)},
   list:async params=>{const result=await api.get(`/api/v1/questions${queryString(params)}`);return {...result,items:await catalogNames(result.items)}} ,
   get:async id=>(await catalogNames([await api.get(`/api/v1/questions/${id}`)]))[0],
   create:question=>api.post('/api/v1/questions',question),

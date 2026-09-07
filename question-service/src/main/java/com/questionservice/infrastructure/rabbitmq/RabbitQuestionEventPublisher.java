@@ -1,3 +1,38 @@
 package com.questionservice.infrastructure.rabbitmq;
-import com.questionservice.application.port.out.QuestionEventPublisher; import com.questionservice.domain.model.Question; import java.time.*; import java.util.*; import org.springframework.amqp.rabbit.core.RabbitTemplate; import org.springframework.stereotype.Component;
-@Component public class RabbitQuestionEventPublisher implements QuestionEventPublisher {private final RabbitTemplate rabbit;public RabbitQuestionEventPublisher(RabbitTemplate r){rabbit=r;}public void publish(String key,String type,Question q,UUID correlation){Map<String,Object> payload=new HashMap<>();payload.put("questionId",q.id());payload.put("facultyId",q.facultyId());payload.put("createdBy",q.createdBy());payload.put("authorUserId",q.createdBy());payload.put("subjectId",q.subjectId());payload.put("chapterId",q.chapterId());payload.put("topicId",q.topicId());payload.put("status",q.status().name());if(!q.reviewHistory().isEmpty())payload.put("reviewComment",q.reviewHistory().get(q.reviewHistory().size()-1).comment());rabbit.convertAndSend(RabbitTopology.QUESTION_EXCHANGE,key,new OutboundEnvelope(UUID.randomUUID(),type,correlation==null?UUID.randomUUID():correlation,OffsetDateTime.now(ZoneOffset.UTC),1,payload));}public record OutboundEnvelope(UUID eventId,String eventType,UUID correlationId,OffsetDateTime occurredAt,int version,Object payload){}}
+
+import com.questionservice.application.port.out.QuestionEventPublisher;
+import com.questionservice.domain.model.Question;
+
+import java.time.*;
+import java.util.*;
+
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+public class RabbitQuestionEventPublisher implements QuestionEventPublisher {
+    private final RabbitTemplate rabbit;
+
+    public RabbitQuestionEventPublisher(RabbitTemplate r) {
+        rabbit = r;
+    }
+
+    public void publish(String key, String type, Question q, UUID correlation) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("questionId", q.id());
+        payload.put("facultyId", q.facultyId());
+        payload.put("createdBy", q.createdBy());
+        payload.put("authorUserId", q.createdBy());
+        payload.put("subjectId", q.subjectId());
+        payload.put("chapterId", q.chapterId());
+        payload.put("topicId", q.topicId());
+        payload.put("status", q.status().name());
+        if (!q.reviewHistory().isEmpty())
+            payload.put("reviewComment", q.reviewHistory().get(q.reviewHistory().size() - 1).comment());
+        rabbit.convertAndSend(RabbitTopology.QUESTION_EXCHANGE, key, new OutboundEnvelope(UUID.randomUUID(), type, correlation == null ? UUID.randomUUID() : correlation, OffsetDateTime.now(ZoneOffset.UTC), 1, payload));
+    }
+
+    public record OutboundEnvelope(UUID eventId, String eventType, UUID correlationId, OffsetDateTime occurredAt,
+                                   int version, Object payload) {
+    }
+}

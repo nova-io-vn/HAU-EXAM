@@ -51,8 +51,8 @@ public class CatalogController {
     }
 
     @GetMapping("/chapters")
-    public ApiResponse<List<ChapterView>> chapters(@AuthenticationPrincipal Jwt j,@RequestParam UUID subjectId) {
-        return ApiResponse.ok(service.chapters(subjectId,actors.from(j)).stream().map(ChapterView::from).toList());
+    public ApiResponse<List<ChapterView>> chapters(@AuthenticationPrincipal Jwt j, @RequestParam UUID subjectId) {
+        return ApiResponse.ok(service.chapters(subjectId, actors.from(j)).stream().map(ChapterView::from).toList());
     }
 
     @PostMapping("/chapters")
@@ -75,8 +75,8 @@ public class CatalogController {
     }
 
     @GetMapping("/topics")
-    public ApiResponse<List<TopicView>> topics(@AuthenticationPrincipal Jwt j,@RequestParam UUID chapterId) {
-        return ApiResponse.ok(service.topics(chapterId,actors.from(j)).stream().map(TopicView::from).toList());
+    public ApiResponse<List<TopicView>> topics(@AuthenticationPrincipal Jwt j, @RequestParam UUID chapterId) {
+        return ApiResponse.ok(service.topics(chapterId, actors.from(j)).stream().map(TopicView::from).toList());
     }
 
     @PostMapping("/topics")
