@@ -1,6 +1,5 @@
-import {classNames} from '../../utils/classNames'
+import { classNames } from "../../utils/classNames";
 
-export function AppShell({children,className}){
-  return <div className={classNames('app-shell',className)}>{children}</div>
+export function AppShell({ children, className }) {
+  return <div className={classNames("app-shell", className)}>{children}</div>;
 }
-
