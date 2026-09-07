@@ -18,7 +18,6 @@ export const navigationByRole={
   {section:'TỔNG QUAN',items:[item('Tổng quan',routes.dashboard,'dashboard')]},
   {section:'CÂU HỎI',items:[item('Câu hỏi của tôi',routes.myQuestions,'file',{end:true,tour:'my-questions-menu'}),item('Tạo câu hỏi',routes.newQuestion,'plus',{tour:'new-question-menu'}),item('Ngân hàng câu hỏi',routes.questions,'database')]},
   {section:'TRỢ LÝ AI',items:[item('Tạo câu hỏi bằng AI',routes.generate,'sparkles',{tour:'ai-menu'}),item('Tài liệu của tôi',routes.documents,'folder')]},
-  {section:'ĐỀ THI',items:[item('Ma trận đề',routes.matrices,'grid'),item('Phiên bản đề',routes.exams,'file')]},
   {section:'HỆ THỐNG',items:[item('Thông báo',routes.notifications,'bell')]}
  ]
 }

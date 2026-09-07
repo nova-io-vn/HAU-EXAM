@@ -1,6 +1,7 @@
 package com.userservice.application.service;
 
 import com.userservice.application.dto.UpdateProfileCommand;
+import com.userservice.application.model.StoredImage;
 import com.userservice.application.port.in.UserProfileUseCase;
 import com.userservice.domain.exception.DuplicateUserException;
 import com.userservice.domain.exception.UserNotFoundException;
@@ -35,7 +36,14 @@ public class UserProfileService implements UserProfileUseCase {
         UserProfile current = find(id);
         if (!current.getEmail().equalsIgnoreCase(c.email()) && repository.existsByEmail(c.email()))
             throw new DuplicateUserException("Email is already in use");
-        return repository.save(current.updateProfile(c.fullName(), c.dateOfBirth(), c.phone(), c.email(), c.address(), c.avatar(), Instant.now(clock)));
+        return repository.save(current.updateProfile(c.fullName(), c.dateOfBirth(), c.phone(), c.email(), c.address(), c.avatar(), c.academicRank(), c.academicDegree(), current.getAvatarPublicId(), Instant.now(clock)));
+    }
+
+    @Override
+    @Transactional
+    public UserProfile updateOwnAvatar(UUID id, StoredImage image) {
+        UserProfile current = find(id);
+        return repository.save(current.replaceAvatar(image.secureUrl() != null ? image.secureUrl() : image.url(), image.publicId(), Instant.now(clock)));
     }
 
     private UserProfile find(UUID id) {

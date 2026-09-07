@@ -1,6 +1,7 @@
 package com.userservice.presentation.advice;
 
 import com.userservice.domain.exception.*;
+import com.userservice.application.exception.ImageUploadException;
 import com.userservice.presentation.response.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -22,6 +23,8 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiErrorResponse> domain(DomainException ex,HttpServletRequest req){HttpStatus status=switch(ex){case UserNotFoundException ignored->HttpStatus.NOT_FOUND;case ForbiddenOperationException ignored->HttpStatus.FORBIDDEN;case DuplicateUserException ignored->HttpStatus.CONFLICT;default->HttpStatus.BAD_REQUEST;};return error(status,ex.getCode(),ex.getMessage(),List.of(),req);}
     @ExceptionHandler(IllegalArgumentException.class)
     ResponseEntity<ApiErrorResponse> invalid(IllegalArgumentException ex,HttpServletRequest req){return error(HttpStatus.BAD_REQUEST,"INVALID_REQUEST","Invalid request",List.of(),req);}
+    @ExceptionHandler(ImageUploadException.class)
+    ResponseEntity<ApiErrorResponse> image(ImageUploadException ex,HttpServletRequest req){return error(HttpStatus.BAD_REQUEST,"IMAGE_UPLOAD_FAILED",ex.getMessage(),List.of(),req);}
     @ExceptionHandler(Exception.class)
     ResponseEntity<ApiErrorResponse> unexpected(Exception ex,HttpServletRequest req){log.error("Unexpected user service error",ex);return error(HttpStatus.INTERNAL_SERVER_ERROR,"INTERNAL_ERROR","An unexpected error occurred",List.of(),req);}
     private ResponseEntity<ApiErrorResponse> error(HttpStatus s,String code,String msg,List<FieldValidationError> errors,HttpServletRequest req){return ResponseEntity.status(s).body(ApiErrorResponse.of(code,msg,req.getRequestURI(),req.getHeader("X-Correlation-Id"),errors));}

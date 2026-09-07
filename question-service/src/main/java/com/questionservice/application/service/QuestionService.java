@@ -18,13 +18,17 @@ public class QuestionService {
     private final QuestionEventPublisher publisher;
     private final Clock clock;
     private final CatalogRepository catalog;
+    private final ImageStoragePort imageStorage;
 
     public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock) {
-        this(repository, publisher, clock, null);
+        this(repository, publisher, clock, null, null);
+    }
+    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog) {
+        this(repository, publisher, clock, catalog, null);
     }
     @org.springframework.beans.factory.annotation.Autowired
-    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog) {
-        this.repository = repository; this.publisher = publisher; this.clock = clock; this.catalog = catalog;
+    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog, ImageStoragePort imageStorage) {
+        this.repository = repository; this.publisher = publisher; this.clock = clock; this.catalog = catalog; this.imageStorage = imageStorage;
     }
 
     public Question create(Actor actor, QuestionInput in) {
@@ -40,9 +44,14 @@ public class QuestionService {
     public Question update(UUID id, Actor actor, QuestionInput in) {
         var q = get(id);
         owner(q, actor);
+        String oldImage = q.storageKey();
+        var oldOptionImages = q.options().stream().map(QuestionOption::storageKey).filter(Objects::nonNull).toList();
         validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), actor.facultyId());
         q.edit(in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), withIds(in.options()), Instant.now(clock));
-        return repository.save(q);
+        var saved = repository.save(q);
+        if (oldImage != null && !Objects.equals(oldImage, saved.storageKey())) deleteImage(oldImage);
+        saved.options().forEach(option -> oldOptionImages.stream().filter(old -> !Objects.equals(old, option.storageKey())).forEach(this::deleteImage));
+        return saved;
     }
 
     public void delete(UUID id, Actor actor) {
@@ -50,6 +59,8 @@ public class QuestionService {
         owner(q, actor);
         if (q.status() != QuestionStatus.DRAFT) throw new InvalidTransitionException("Only DRAFT can be deleted");
         repository.delete(id);
+        deleteImage(q.storageKey());
+        q.options().forEach(option -> deleteImage(option.storageKey()));
     }
 
     public Question submit(UUID id, Actor actor, UUID correlationId) {
@@ -152,6 +163,8 @@ public class QuestionService {
     private static List<QuestionOption> withIds(List<QuestionOption> options) {
         return options.stream().map(o -> new QuestionOption(o.id() == null ? UUID.randomUUID() : o.id(), o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList();
     }
+
+    private void deleteImage(String publicId) { if (imageStorage != null) imageStorage.delete(publicId); }
 
     private void validateTaxonomy(UUID subjectId, UUID chapterId, UUID topicId, String facultyId) {
         if (catalog == null) return;

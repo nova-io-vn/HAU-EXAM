@@ -5,4 +5,5 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record ApproveUserRequest(@NotBlank @Size(max = 50) String facultyId, @NotNull Role role) { }
+public record ApproveUserRequest(@NotBlank @Size(max = 50) String facultyId, @NotNull Role role) {
+}

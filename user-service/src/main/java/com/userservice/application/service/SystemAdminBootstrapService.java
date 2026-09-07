@@ -19,9 +19,13 @@ public class SystemAdminBootstrapService {
     private final UserProfileRepository repository;
     private final ProcessedEventStore events;
     private final Clock clock;
+
     public SystemAdminBootstrapService(UserProfileRepository repository, ProcessedEventStore events, Clock clock) {
-        this.repository = repository; this.events = events; this.clock = clock;
+        this.repository = repository;
+        this.events = events;
+        this.clock = clock;
     }
+
     @Transactional
     public boolean createIfAbsent(UUID eventId, BootstrapAdminRequestedPayload payload) {
         if (events.exists(eventId)) return false;
@@ -31,7 +35,8 @@ public class SystemAdminBootstrapService {
             events.record(eventId, EVENT_TYPE, Instant.now(clock));
             return false;
         }
-        if (repository.existsByEmail(payload.email())) throw new IllegalStateException("Bootstrap admin email is already assigned to another profile");
+        if (repository.existsByEmail(payload.email()))
+            throw new IllegalStateException("Bootstrap admin email is already assigned to another profile");
         Instant now = Instant.now(clock);
         repository.save(UserProfile.bootstrapAdmin(payload.userId(), payload.lecturerCode(), payload.fullName(), payload.email(), payload.facultyId(), now));
         events.record(eventId, EVENT_TYPE, now);
