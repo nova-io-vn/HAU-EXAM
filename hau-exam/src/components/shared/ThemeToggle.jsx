@@ -1,0 +1,2 @@
+import {useTheme} from '../../app/providers/ThemeProvider'
+export function ThemeToggle(){const theme=useTheme();if(!theme)return null;return <label className="theme-toggle"><span className="sr-only">Chủ đề giao diện</span><select aria-label="Chủ đề giao diện" value={theme.preference} onChange={event=>theme.setPreference(event.target.value)}><option value="light">Sáng</option><option value="dark">Tối</option><option value="system">Theo hệ thống</option></select></label>}

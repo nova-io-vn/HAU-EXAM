@@ -15,6 +15,7 @@ import './styles/faculty.css'
 import './styles/user.css'
 import './styles/subject-admin.css'
 import './styles/stabilization.css'
+import 'intro.js/introjs.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(

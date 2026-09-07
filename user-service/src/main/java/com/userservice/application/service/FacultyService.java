@@ -28,6 +28,11 @@ public class FacultyService {
     }
 
     @Transactional(readOnly = true)
+    public PageResult<Faculty> publicActive(FacultyQuery q) {
+        return repo.search(new FacultyQuery(q.keyword(), true, q.page(), q.size()));
+    }
+
+    @Transactional(readOnly = true)
     public Faculty get(ActorContext a, UUID id) {
         admin(a);
         return repo.findById(id).orElseThrow(() -> new IllegalArgumentException("Faculty not found"));

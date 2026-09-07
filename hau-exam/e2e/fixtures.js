@@ -21,6 +21,7 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(method==='OPTIONS')return route.fulfill({status:204,headers:corsHeaders})
     const respond=(data,status=200)=>route.fulfill({status,headers:{...corsHeaders,'Content-Type':'application/json'},body:JSON.stringify(data)})
     if(path==='/api/v1/auth/login'&&method==='POST'){const code=String(body?.lecturerCode||'').toLowerCase();const role=code==='e2e_subject_admin'?'SUBJECT_ADMIN':code==='e2e_admin'?'SYSTEM_ADMIN':'USER';state.currentRole=role;return respond(ok(session(role),'LOGIN_SUCCESS'))}
+    if(path==='/api/v1/public/faculties'&&method==='GET')return respond(ok({content:[{id:'faculty-cntt',code:'CNTT',name:'Công nghệ thông tin',active:true}],page:0,size:100,totalElements:1,totalPages:1}))
     if(path==='/api/v1/auth/refresh'&&method==='POST')return respond(ok(session(state.currentRole),'TOKEN_REFRESHED'))
     if(path==='/api/v1/auth/logout'&&method==='POST')return respond(ok(null,'LOGOUT_SUCCESS'))
     if(path==='/api/v1/auth/register'&&method==='POST'){
@@ -30,7 +31,7 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path==='/api/v1/auth/forgot-password'&&method==='POST')return respond(ok({status:'OTP_REQUESTED'},'OTP_REQUESTED'))
     if(path==='/api/v1/auth/verify-otp'&&method==='POST')return respond(ok({verified:true,resetToken:'e2e-reset'},'OTP_VERIFIED'))
     if(path==='/api/v1/auth/reset-password'&&method==='POST')return respond(ok(null,'PASSWORD_RESET'))
-    if(path==='/api/v1/users'&&method==='GET')return respond(page([{id:ids.user,lecturerCode:'E2E_USER',fullName:'E2E User',email:'e2e@example.test',facultyId:'CNTT',role:'USER',status:state.approved?'ACTIVE':'PENDING_APPROVAL',updatedAt:'2026-01-01T00:00:00Z'}]))
+    if(path.startsWith('/api/v1/users')&&method==='GET')return respond(page([{id:ids.user,lecturerCode:'E2E_USER',fullName:'E2E User',email:'e2e@example.test',facultyId:'CNTT',role:'USER',status:state.approved?'ACTIVE':'PENDING_APPROVAL',updatedAt:'2026-01-01T00:00:00Z'}]))
     if(path===`/api/v1/users/${ids.user}/approve`&&method==='POST'){state.approved=true;return respond(ok(null,'USER_APPROVED'))}
     if(path==='/api/v1/subjects'&&method==='GET')return respond([{id:ids.subject,name:'E2E Subject'}])
     if(path==='/api/v1/chapters'&&method==='GET')return respond([{id:ids.chapter,name:'E2E Chapter'}])
