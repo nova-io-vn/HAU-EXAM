@@ -10,6 +10,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record UserProfileResponse(UUID id, String lecturerCode, String fullName, LocalDate dateOfBirth, Integer age,
-                                  String phone, String email, String address, String avatar, String avatarPublicId, AcademicRank academicRank, AcademicDegree academicDegree, String facultyId,
+                                  String phone, String email, String address, String avatar, String avatarPublicId, AcademicRank academicRank, AcademicDegree academicDegree, String facultyId, String facultyName,
                                   Role role, UserStatus status, Instant createdAt, Instant updatedAt) {
 }

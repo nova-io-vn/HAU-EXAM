@@ -31,9 +31,19 @@ public class SystemAdminBootstrapService {
         if (events.exists(eventId)) return false;
         if (payload.role() != Role.SYSTEM_ADMIN || payload.status() != UserStatus.ACTIVE)
             throw new IllegalArgumentException("Bootstrap event must create an active SYSTEM_ADMIN");
-        if (repository.existsById(payload.userId()) || repository.existsByLecturerCode(payload.lecturerCode())) {
+        if (repository.existsById(payload.userId())) {
             events.record(eventId, EVENT_TYPE, Instant.now(clock));
             return false;
+        }
+        var existingByCode = repository.findByLecturerCode(payload.lecturerCode());
+        if (existingByCode.isPresent()) {
+            var existing = existingByCode.get();
+            if (!existing.getId().equals(payload.userId())) {
+                repository.deleteById(existing.getId());
+                repository.save(existing.rekey(payload.userId()));
+            }
+            events.record(eventId, EVENT_TYPE, Instant.now(clock));
+            return true;
         }
         if (repository.existsByEmail(payload.email()))
             throw new IllegalStateException("Bootstrap admin email is already assigned to another profile");

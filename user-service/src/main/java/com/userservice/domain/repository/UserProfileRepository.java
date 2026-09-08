@@ -18,6 +18,8 @@ public interface UserProfileRepository {
 
     boolean existsByLecturerCode(String lecturerCode);
 
+    void deleteById(UUID id);
+
     boolean existsByEmail(String email);
 
     PageResult<UserProfile> findAll(PageQuery query);

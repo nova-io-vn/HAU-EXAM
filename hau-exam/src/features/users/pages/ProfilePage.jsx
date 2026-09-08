@@ -6,6 +6,7 @@ import {usersApi} from '../api/usersApi'
 import {RequestState} from '../components/RequestState'
 import {calculateAge} from '../model/userModel'
 import {formatAcademicName,formatRoleFaculty} from '../model/academic'
+import {authStore} from '../../../stores/authStore'
 
 const roleLabel={SYSTEM_ADMIN:'Quản trị viên hệ thống',SUBJECT_ADMIN:'Quản trị viên chuyên môn',USER:'Giảng viên'}
 const rankOptions=[{value:'NONE',label:'Không có'},{value:'PGS',label:'PGS'},{value:'GS',label:'GS'}]
@@ -14,7 +15,7 @@ const degreeOptions=[{value:'NONE',label:'Không có'},{value:'CN',label:'Cử n
 export function ProfilePage(){
   const[profile,setProfile]=useState(null);const[form,setForm]=useState({});const[loading,setLoading]=useState(true);const[saving,setSaving]=useState(false);const[avatarUploading,setAvatarUploading]=useState(false);const[previewUrl,setPreviewUrl]=useState('');const[error,setError]=useState(null);const[success,setSuccess]=useState('')
   const load=useCallback(async()=>{setLoading(true);setError(null);try{const result=await usersApi.getMe();setProfile(result);setForm({...result,fullName:result.fullName||'',dateOfBirth:result.dateOfBirth||'',phone:result.phone||'',email:result.email||'',address:result.address||'',academicRank:result.academicRank||'NONE',academicDegree:result.academicDegree||'NONE'})}catch(reason){setError(reason)}finally{setLoading(false)}},[])
-  useEffect(()=>{const timer=setTimeout(load,0);return()=>clearTimeout(timer)},[load]);useEffect(()=>()=>{if(previewUrl)URL.revokeObjectURL(previewUrl)},[previewUrl])
+  useEffect(()=>{const timer=setTimeout(load,0);return()=>clearTimeout(timer)},[load]);useEffect(()=>{if(profile)authStore.updateCurrentUser(profile)},[profile]);useEffect(()=>()=>{if(previewUrl)URL.revokeObjectURL(previewUrl)},[previewUrl])
   function setField(field,value){setForm(current=>({...current,[field]:value}));setSuccess('')}
   async function submit(event){event.preventDefault();setSaving(true);setError(null);setSuccess('');try{const updated=await usersApi.updateMe({fullName:form.fullName,dateOfBirth:form.dateOfBirth||null,phone:form.phone||null,email:form.email,address:form.address||null,avatar:profile?.avatar||null,academicRank:form.academicRank,academicDegree:form.academicDegree});setProfile(updated||{...profile,...form});setSuccess('Hồ sơ đã được cập nhật.')}catch(reason){setError(reason)}finally{setSaving(false)}}
   async function uploadAvatar(event){const file=event.target.files?.[0];if(!file)return;if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)){setError(new Error('Tệp ảnh không hợp lệ.'));return}if(file.size>5*1024*1024){setError(new Error('Ảnh phải nhỏ hơn 5 MB.'));return}const local=URL.createObjectURL(file);setPreviewUrl(local);setAvatarUploading(true);setError(null);setSuccess('');try{const updated=await usersApi.uploadAvatar(file);setProfile(updated);setForm(current=>({...current,avatar:updated.avatar}));setSuccess('Ảnh đại diện đã được cập nhật.')}catch(reason){setError(reason)}finally{setAvatarUploading(false);event.target.value=''}}
