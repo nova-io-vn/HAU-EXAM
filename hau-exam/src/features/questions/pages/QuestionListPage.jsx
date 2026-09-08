@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, ConfirmDialog, Drawer, Loading } from "../../../components/ui";
+import { Button, ConfirmDialog, Drawer, TableSkeleton } from "../../../components/ui";
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { routes } from "../../../constants/routes";
 import { roles } from "../../../constants/roles";
@@ -111,9 +111,7 @@ export function QuestionListPage() {
       />
       <div className="surface question-table-surface">
         {loading ? (
-          <div className="question-state">
-            <Loading label="Đang tải câu hỏi" />
-          </div>
+          <TableSkeleton rows={6} columns={7}/>
         ) : error ? (
           <div className="question-state request-error" role="alert">
             <strong>Không thể tải câu hỏi</strong>

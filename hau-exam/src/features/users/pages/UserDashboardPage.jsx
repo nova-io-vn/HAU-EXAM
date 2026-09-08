@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Button,
-  DataTable,
-  Loading,
-  StatusBadge,
-} from "../../../components/ui";
+import {Button,DataTable,DashboardMetricSkeleton,TableSkeleton,ChartSkeleton,NotificationSkeleton,StatusBadge} from "../../../components/ui";
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { routes } from "../../../constants/routes";
 import { useAuth } from "../../auth/hooks/useAuth";
@@ -14,6 +9,9 @@ import { aiApi } from "../../ai/api/aiApi";
 import { notificationsApi } from "../../notifications/api/notificationsApi";
 import { normalizePage, formatDateTime } from "../model/userModel";
 import { formatAcademicName } from "../model/academic";
+import { QuestionStatusChart } from "../../../components/shared/QuestionStatusChart";
+import { AsyncProgressCard } from "../../../components/shared/AsyncProgressCard";
+import { isActiveJob, jobTypeLabels } from "../../ai/model/aiModel";
 
 const statusLabels = {
   APPROVED: "Đã duyệt",
@@ -42,6 +40,7 @@ export function UserDashboardPage() {
         draft,
         documents,
         notifications,
+        jobs,
       ] = await Promise.all([
         questionsApi.list({ page: 0, size: 5 }),
         questionsApi.list({ status: "APPROVED", page: 0, size: 1 }),
@@ -50,6 +49,7 @@ export function UserDashboardPage() {
         questionsApi.list({ status: "DRAFT", page: 0, size: 1 }),
         aiApi.documents(0),
         notificationsApi.list({ page: 0, size: 5 }),
+        aiApi.jobs(0),
       ]);
       setData({
         all: normalizePage(all),
@@ -59,6 +59,7 @@ export function UserDashboardPage() {
         draft: normalizePage(draft),
         documents: normalizePage(documents),
         notifications: normalizePage(notifications),
+        jobs: normalizePage(jobs),
       });
     } catch (e) {
       setError(e);
@@ -90,15 +91,7 @@ export function UserDashboardPage() {
         </div>
       </section>
     );
-  if (!data)
-    return (
-      <section>
-        {header}
-        <div className="surface admin-loading">
-          <Loading label="Đang tải không gian giảng viên" />
-        </div>
-      </section>
-    );
+  if (!data) return <section className="user-dashboard">{header}<DashboardMetricSkeleton count={5}/><div className="user-dashboard-grid"><section className="surface admin-panel"><ChartSkeleton/></section><section className="surface admin-panel"><NotificationSkeleton count={4}/></section></div><section className="surface admin-panel"><TableSkeleton rows={6} columns={7}/></section></section>;
   const stats = [
     ["Tổng câu hỏi", data.all.totalElements, routes.myQuestions],
     ["Đã phê duyệt", data.approved.totalElements, routes.myQuestions],
@@ -106,13 +99,7 @@ export function UserDashboardPage() {
     ["Cần chỉnh sửa", data.revision.totalElements, routes.myQuestions],
     ["Tài liệu học thuật", data.documents.totalElements, routes.documents],
   ];
-  const chart = [
-    ["approved", "Đã phê duyệt", data.approved.totalElements],
-    ["pending", "Đang chờ duyệt", data.pending.totalElements],
-    ["revision", "Cần chỉnh sửa", data.revision.totalElements],
-    ["draft", "Bản nháp", data.draft.totalElements],
-  ];
-  const max = Math.max(...chart.map(([, , value]) => value), 1);
+  const chartCounts = { APPROVED: data.approved.totalElements, PENDING_REVIEW: data.pending.totalElements, NEED_REVISION: data.revision.totalElements, DRAFT: data.draft.totalElements };
   return (
     <section className="user-dashboard">
       <PageHeader
@@ -142,6 +129,7 @@ export function UserDashboardPage() {
           </Link>
         ))}
       </div>
+      {data.jobs.items.filter(isActiveJob).slice(0,2).map(job=><Link className="async-progress-link dashboard-active-job" key={job.jobId} to={`/ai/jobs/${job.jobId}`}><AsyncProgressCard compact title={jobTypeLabels[job.type]||job.type} status={job.status} progress={job.progressPercent??job.progress} startedAt={job.startedAt||job.createdAt} currentStep={job.currentStep} canLeave/></Link>)}
       <div className="user-dashboard-grid">
         <section className="surface admin-panel">
           <header>
@@ -150,22 +138,7 @@ export function UserDashboardPage() {
               <h2>Phân bố trạng thái câu hỏi</h2>
             </div>
           </header>
-          <div className="status-chart">
-            {chart.map(([key, label, value]) => (
-              <div className="status-chart-row" key={key}>
-                <span>{label}</span>
-                <div className="status-chart-track">
-                  <i
-                    className={`status-chart-bar ${key}`}
-                    style={{
-                      width: `${value ? Math.max(8, (value / max) * 100) : 0}%`,
-                    }}
-                  />
-                </div>
-                <strong>{value}</strong>
-              </div>
-            ))}
-          </div>
+          <div className="chart-card-body"><QuestionStatusChart counts={chartCounts}/></div>
         </section>
         <section className="surface admin-panel">
           <header>

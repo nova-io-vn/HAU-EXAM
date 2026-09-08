@@ -108,4 +108,21 @@ public final class PersistenceAdapters {
             r.save(e);
         }
     }
+
+    @Component
+    public static class Chats implements ChatRepository {
+        private final ChatConversationJpaRepository conversations;
+        private final ChatMessageJpaRepository messages;
+        private final ChatAttachmentJpaRepository attachments;
+        public Chats(ChatConversationJpaRepository c, ChatMessageJpaRepository m, ChatAttachmentJpaRepository a) { conversations=c; messages=m; attachments=a; }
+        public ChatConversation save(ChatConversation d) { var e=new ChatConversationEntity(); e.id=d.id(); e.userId=d.userId(); e.title=d.title(); e.createdAt=d.createdAt(); e.updatedAt=d.updatedAt(); conversations.save(e); return d; }
+        public Optional<ChatConversation> findConversation(UUID id) { return conversations.findById(id).map(e->new ChatConversation(e.id,e.userId,e.title,e.createdAt,e.updatedAt)); }
+        public List<ChatConversation> findConversations(UUID u) { return conversations.findByUserIdOrderByUpdatedAtDesc(u).stream().map(e->new ChatConversation(e.id,e.userId,e.title,e.createdAt,e.updatedAt)).toList(); }
+        public void deleteConversation(UUID id) { conversations.deleteById(id); }
+        public ChatMessage saveMessage(ChatMessage d) { var e=new ChatMessageEntity(); e.id=d.id(); e.conversationId=d.conversationId(); e.role=d.role(); e.content=d.content(); e.status=d.status(); e.createdAt=d.createdAt(); messages.save(e); return d; }
+        public List<ChatMessage> findMessages(UUID id) { return messages.findByConversationIdOrderByCreatedAtAsc(id).stream().map(e->new ChatMessage(e.id,e.conversationId,e.role,e.content,e.status,e.createdAt)).toList(); }
+        public void attachDocument(UUID c, UUID d) { var e=new ChatAttachmentEntity(); e.id=UUID.randomUUID(); e.conversationId=c; e.documentId=d; e.attachedAt=Instant.now(); attachments.save(e); }
+        public void detachDocument(UUID c, UUID d) { attachments.deleteByConversationIdAndDocumentId(c,d); }
+        public List<UUID> findDocumentIds(UUID c) { return attachments.findByConversationId(c).stream().map(e->e.documentId).toList(); }
+    }
 }

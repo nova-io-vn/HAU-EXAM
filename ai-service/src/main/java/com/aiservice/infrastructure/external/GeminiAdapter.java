@@ -24,7 +24,8 @@ public class GeminiAdapter implements AiProvider {
     }
 
     public String generateQuestions(String source, String request) {
-        return invoke("Return only valid JSON questions with question, options(label/content), correctAnswer, difficulty, topicId and explanation.\nSOURCE:\n" + source + "\nREQUEST:\n" + request);
+        String language = request.contains("\"language\":\"EN\"") ? "English" : "Vietnamese";
+        return invoke("Return only valid JSON questions with question, options(label/content), correctAnswer, difficulty, topicId, explanation, language, requiresImage and optional imagePrompt/imageUrl. Generate the question, answer options and explanation entirely in " + language + ". Do not translate only the labels.\nSOURCE:\n" + source + "\nREQUEST:\n" + request);
     }
 
     public String analyze(String source, String request) {

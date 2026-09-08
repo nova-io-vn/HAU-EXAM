@@ -1,4 +1,5 @@
 import {Button,Loading,StatusBadge} from '../../../components/ui'
+import {AsyncProgressCard} from '../../../components/shared/AsyncProgressCard'
 import {useAiJob} from '../hooks/useAiJob'
 import {isActiveJob,jobTypeLabels} from '../model/aiModel'
 import {formatDateTime} from '../../questions/model/questionModel'
@@ -35,7 +36,7 @@ export function AiJobPanel({id}) {
   return <section className="ai-job-panel" aria-live="polite">
     <header><h2>{jobTypeLabels[job.type]||job.type}</h2><StatusBadge status={job.status}/></header>
     <p className="ai-id">Job ID: {job.jobId}</p><p>Tạo lúc {formatDateTime(job.createdAt)}</p>
-    {isActiveJob(job)&&<Loading label={job.status==='PENDING'?'PENDING · Đang chờ xử lý':'PROCESSING · AI đang xử lý'}/>}
+    {isActiveJob(job)&&<AsyncProgressCard title={jobTypeLabels[job.type]||job.type} status={job.status} progress={job.progressPercent??job.progress} startedAt={job.startedAt||job.createdAt} currentStep={job.currentStep} steps={Array.isArray(job.steps)?job.steps:undefined} message={job.status==='PENDING'?'Tác vụ đang chờ được tiếp nhận.':'AI đang xử lý dữ liệu.'} canLeave/>}
     {job.status==='FAILED'&&<div role="alert" className="ai-error"><strong>Tác vụ thất bại</strong><p>{getErrorMessage({code:job.errorCode},'Không thể xử lý tác vụ AI.')}</p><small>{job.errorCode}</small></div>}
     {job.status==='COMPLETED'&&(result===undefined?<Loading label="Đang tải kết quả"/>:<AiResult type={job.type} result={result}/>)}
   </section>
