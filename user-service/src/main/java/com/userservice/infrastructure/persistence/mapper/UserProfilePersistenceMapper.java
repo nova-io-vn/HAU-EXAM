@@ -14,5 +14,6 @@ public interface UserProfilePersistenceMapper {
     @Mapping(target = "reject", ignore = true)
     @Mapping(target = "lock", ignore = true)
     @Mapping(target = "unlock", ignore = true)
+    @Mapping(target = "rekey", ignore = true)
     UserProfile toDomain(UserProfileEntity entity);
 }

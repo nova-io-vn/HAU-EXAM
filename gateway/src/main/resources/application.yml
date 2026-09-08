@@ -50,6 +50,10 @@ spring:
               uri: lb://USER-SERVICE
               predicates:
                 - Path=/api/v1/users/**,/api/v1/faculties/**
+            - id: user-public-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/v1/public/faculties
             - id: question-service
               uri: lb://QUESTION-SERVICE
               predicates:
@@ -69,7 +73,7 @@ spring:
             - id: notification-service
               uri: lb://NOTIFICATION-SERVICE
               predicates:
-                - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**
+                - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**,/api/v1/public/contact,/api/v1/admin/contact/**,/api/v1/admin/email-settings/**
               filters:
                 - name: RequestRateLimiter
                   args:

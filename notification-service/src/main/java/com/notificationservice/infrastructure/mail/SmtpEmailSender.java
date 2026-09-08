@@ -1,2 +1,17 @@
-package com.notificationservice.infrastructure.mail;import com.notificationservice.application.port.out.EmailSender;import org.springframework.beans.factory.annotation.Value;import org.springframework.mail.SimpleMailMessage;import org.springframework.mail.javamail.JavaMailSender;import org.springframework.stereotype.Component;
-@Component public class SmtpEmailSender implements EmailSender{private final JavaMailSender sender;private final String from;public SmtpEmailSender(JavaMailSender s,@Value("${notification.mail-from}")String f){sender=s;from=f;}public void send(String recipient,String subject,String content){SimpleMailMessage m=new SimpleMailMessage();m.setFrom(from);m.setTo(recipient);m.setSubject(subject);m.setText(content);sender.send(m);}}
+package com.notificationservice.infrastructure.mail;
+
+import com.notificationservice.application.port.out.EmailSender;
+import com.notificationservice.application.service.EmailSettingsService;
+import org.springframework.stereotype.Component;
+
+@Component
+public class SmtpEmailSender implements EmailSender {
+    private final EmailSettingsService settings;
+
+    public SmtpEmailSender(EmailSettingsService settings) { this.settings = settings; }
+
+    @Override
+    public void send(String recipient, String subject, String content) {
+        settings.send(recipient, subject, content);
+    }
+}

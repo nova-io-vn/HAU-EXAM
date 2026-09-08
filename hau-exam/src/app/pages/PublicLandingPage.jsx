@@ -1,3 +1,188 @@
-import {Link} from 'react-router-dom'
-import {routes} from '../../constants/routes'
-export function PublicLandingPage(){return <main className="public-landing"><header className="public-header"><Link className="public-logo" to="/"><span>H</span><strong>HAU QM</strong></Link><nav><a href="#features">Tính năng</a><a href="#workflow">Quy trình</a><a href="#roles">Vai trò</a><Link className="button button-secondary" to={routes.login}>Đăng nhập</Link></nav></header><section className="public-hero"><div><span className="eyebrow">HỆ THỐNG QUẢN LÝ KHẢO THÍ</span><h1>Tạo dựng ngân hàng câu hỏi rõ ràng, chính xác và cộng tác.</h1><p>Không gian học thuật dành cho giảng viên HAU quản lý học liệu, tạo câu hỏi, hỗ trợ AI và phối hợp phê duyệt theo Khoa.</p><div className="public-actions"><Link className="button button-primary" to={routes.login}>Bắt đầu làm việc</Link><Link className="button button-secondary" to={routes.register}>Đăng ký tài khoản</Link></div></div><div className="public-architecture" aria-hidden="true"><span/><span/><span/><span/></div></section><section id="features" className="public-section"><span className="eyebrow">MỘT KHÔNG GIAN THỐNG NHẤT</span><h2>Tập trung vào nội dung chuyên môn.</h2><div className="public-feature-grid"><article><strong>Ngân hàng câu hỏi</strong><p>Soạn thảo, phân loại và theo dõi trạng thái câu hỏi trong phạm vi được phân công.</p></article><article><strong>Trợ lý AI</strong><p>Đưa học liệu vào quy trình tạo sinh bất đồng bộ, luôn giữ bước kiểm duyệt trước khi sử dụng.</p></article><article><strong>Ma trận đề</strong><p>Thiết kế phân bố câu hỏi và sinh phiên bản đề từ ngân hàng đã được phê duyệt.</p></article></div></section><section id="workflow" className="public-section public-workflow"><span className="eyebrow">QUY TRÌNH</span><h2>Từ học liệu đến câu hỏi được phê duyệt.</h2><ol><li><b>01</b><span>Tải học liệu và tạo câu hỏi thủ công hoặc bằng AI.</span></li><li><b>02</b><span>Gửi câu hỏi để quản trị viên chuyên môn trong Khoa xem xét.</span></li><li><b>03</b><span>Chọn câu hỏi đã duyệt để xây dựng ma trận và phiên bản đề.</span></li></ol></section><section id="roles" className="public-section"><span className="eyebrow">PHÂN QUYỀN RÕ RÀNG</span><h2>Mỗi vai trò có một phạm vi trách nhiệm.</h2><div className="public-role-grid"><article><strong>Quản trị viên hệ thống</strong><p>Quản lý Khoa, tài khoản, vai trò và phê duyệt đăng ký.</p></article><article><strong>Quản trị viên chuyên môn</strong><p>Quản lý nội dung và phê duyệt câu hỏi trong Khoa được phân công.</p></article><article><strong>Giảng viên</strong><p>Tạo nội dung, khai thác học liệu và theo dõi quá trình phê duyệt.</p></article></div></section><footer className="public-footer"><span>HAU QM · Hệ thống Quản lý Khảo thí</span><Link to={routes.login}>Đăng nhập hệ thống →</Link></footer></main>}
+import { Link } from "react-router-dom";
+import { routes } from "../../constants/routes";
+const features = [
+  [
+    "Ngân hàng câu hỏi",
+    "Soạn thảo, phân loại và theo dõi workflow trong phạm vi Khoa.",
+  ],
+  [
+    "AI hỗ trợ tạo sinh",
+    "Đưa học liệu vào quy trình tạo câu hỏi có cấu trúc và kiểm duyệt.",
+  ],
+  [
+    "Phê duyệt chuyên môn",
+    "Quản trị viên chuyên môn xem xét, phản hồi và đưa câu hỏi vào ngân hàng chính thức.",
+  ],
+  [
+    "Độ bao phủ kiến thức",
+    "Theo dõi nội dung theo Môn học, Chương và Chủ đề khi dữ liệu hỗ trợ.",
+  ],
+  [
+    "Ma trận đề",
+    "Xây dựng phân bố câu hỏi và phiên bản đề từ ngân hàng đã duyệt.",
+  ],
+  [
+    "Thông báo tập trung",
+    "Nhận cập nhật workflow qua in-app, realtime và email khi được cấu hình.",
+  ],
+];
+const roles = [
+  [
+    "Quản trị viên hệ thống",
+    "Quản lý Khoa, tài khoản, phê duyệt đăng ký và cấu hình hệ thống.",
+  ],
+  [
+    "Quản trị viên chuyên môn",
+    "Quản lý nội dung và phê duyệt câu hỏi trong Khoa được phân công.",
+  ],
+  [
+    "Giảng viên",
+    "Tạo nội dung, khai thác học liệu và theo dõi quá trình phê duyệt.",
+  ],
+];
+export function PublicLandingPage() {
+  return (
+    <main className="public-landing">
+      <header className="public-header">
+        <Link className="public-logo" to="/">
+          <span>H</span>
+          <strong>HAU QM</strong>
+        </Link>
+        <nav>
+          <a href="#features">Tính năng</a>
+          <a href="#workflow">Quy trình</a>
+          <a href="#roles">Vai trò</a>
+          <Link to={routes.support}>Trung tâm hỗ trợ</Link>
+          <Link to={routes.contact}>Liên hệ</Link>
+        </nav>
+        <div className="public-header-actions">
+          <Link className="button button-ghost" to={routes.login}>
+            Đăng nhập
+          </Link>
+          <Link className="button button-primary" to={routes.register}>
+            Bắt đầu sử dụng
+          </Link>
+        </div>
+      </header>
+      <section className="public-hero">
+        <div>
+          <span className="eyebrow">HỆ THỐNG QUẢN LÝ KHẢO THÍ</span>
+          <h1>Xây dựng ngân hàng câu hỏi thông minh và có hệ thống.</h1>
+          <p>
+            Nền tảng hỗ trợ giảng viên HAU quản lý học liệu, tạo câu hỏi, AI,
+            phê duyệt và xây dựng ma trận theo phạm vi chuyên môn.
+          </p>
+          <div className="public-actions">
+            <Link className="button button-primary" to={routes.login}>
+              Đăng nhập hệ thống
+            </Link>
+            <a className="button button-secondary" href="#features">
+              Khám phá tính năng
+            </a>
+          </div>
+          <div className="public-proof">
+            <span>HAU QM</span>
+            <span>Học liệu có cấu trúc</span>
+            <span>Phê duyệt theo Khoa</span>
+          </div>
+        </div>
+        <div
+          className="public-product-preview"
+          aria-label="Xem trước giao diện HAU QM"
+        >
+          <div className="preview-top">
+            <b>HAU QM</b>
+            <span>Dashboard</span>
+            <i />
+          </div>
+          <div className="preview-body">
+            <aside>
+              <em />
+              <em />
+              <em />
+              <em />
+            </aside>
+            <div>
+              <div className="preview-title" />
+              <div className="preview-kpis">
+                <i />
+                <i />
+                <i />
+              </div>
+              <div className="preview-table">
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="features" className="public-section">
+        <span className="eyebrow">MỘT KHÔNG GIAN THỐNG NHẤT</span>
+        <h2>Tập trung vào nội dung chuyên môn.</h2>
+        <div className="public-feature-grid">
+          {features.map(([title, text]) => (
+            <article key={title}>
+              <strong>{title}</strong>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section id="workflow" className="public-section public-workflow">
+        <span className="eyebrow">QUY TRÌNH RÕ RÀNG</span>
+        <h2>Từ học liệu đến câu hỏi được phê duyệt.</h2>
+        <ol>
+          {[
+            "Tải tài liệu và tạo câu hỏi thủ công hoặc bằng AI.",
+            "Chỉnh sửa, phân loại và gửi câu hỏi cho quản trị viên chuyên môn.",
+            "Review theo phạm vi Khoa, sau đó đưa câu hỏi đã duyệt vào ngân hàng.",
+            "Khai thác ngân hàng để theo dõi độ bao phủ và xây dựng ma trận đề.",
+          ].map((text, index) => (
+            <li key={text}>
+              <b>{String(index + 1).padStart(2, "0")}</b>
+              <span>{text}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <section id="roles" className="public-section">
+        <span className="eyebrow">PHÂN QUYỀN RÕ RÀNG</span>
+        <h2>Mỗi vai trò có một phạm vi trách nhiệm.</h2>
+        <div className="public-role-grid">
+          {roles.map(([title, text]) => (
+            <article key={title}>
+              <strong>{title}</strong>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="public-section public-support">
+        <div>
+          <span className="eyebrow">CẦN HỖ TRỢ?</span>
+          <h2>Luôn có một nơi để bắt đầu.</h2>
+          <p>Tra cứu hướng dẫn hoặc gửi yêu cầu tới đội ngũ hỗ trợ HAU QM.</p>
+        </div>
+        <div className="public-actions">
+          <Link className="button button-secondary" to={routes.support}>
+            Trung tâm hỗ trợ
+          </Link>
+          <Link className="button button-primary" to={routes.contact}>
+            Gửi yêu cầu hỗ trợ
+          </Link>
+        </div>
+      </section>
+      <footer className="public-footer">
+        <span>HAU QM · Hệ thống Quản lý Khảo thí</span>
+        <span>
+          <Link to={routes.terms}>Điều khoản</Link> ·{" "}
+          <Link to={routes.privacy}>Chính sách</Link> ·{" "}
+          <Link to={routes.login}>Đăng nhập hệ thống →</Link>
+        </span>
+      </footer>
+    </main>
+  );
+}

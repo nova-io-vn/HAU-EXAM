@@ -48,6 +48,11 @@ public class UserProfilePersistenceAdapter implements UserProfileRepository {
         return repository.existsByLecturerCode(normalize(code));
     }
 
+    public void deleteById(UUID id) {
+        repository.deleteById(id);
+        repository.flush();
+    }
+
     public boolean existsByEmail(String email) {
         return email != null && repository.existsByEmailIgnoreCase(email.trim());
     }

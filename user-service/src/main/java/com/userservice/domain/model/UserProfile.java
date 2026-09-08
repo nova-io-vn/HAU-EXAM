@@ -20,6 +20,9 @@ public final class UserProfile {
     private final String email;
     private final String address;
     private final String avatar;
+    private final String avatarPublicId;
+    private final AcademicRank academicRank;
+    private final AcademicDegree academicDegree;
     private final String facultyId;
     private final Role role;
     private final UserStatus status;
@@ -28,7 +31,7 @@ public final class UserProfile {
     private final long version;
 
     public UserProfile(UUID id, String lecturerCode, String fullName, LocalDate dateOfBirth,
-                       String phone, String email, String address, String avatar, String facultyId,
+                       String phone, String email, String address, String avatar, String avatarPublicId, AcademicRank academicRank, AcademicDegree academicDegree, String facultyId,
                        Role role, UserStatus status, Instant createdAt, Instant updatedAt, long version) {
         this.id = Objects.requireNonNull(id, "id must not be null");
         this.lecturerCode = required(lecturerCode, "lecturerCode", 50).toUpperCase(Locale.ROOT);
@@ -39,6 +42,9 @@ public final class UserProfile {
         this.email = required(email, "email", 254).toLowerCase(Locale.ROOT);
         this.address = optional(address, 500, "address");
         this.avatar = optional(avatar, 1000, "avatar");
+        this.avatarPublicId = optional(avatarPublicId, 255, "avatarPublicId");
+        this.academicRank = Objects.requireNonNullElse(academicRank, AcademicRank.NONE);
+        this.academicDegree = Objects.requireNonNullElse(academicDegree, AcademicDegree.NONE);
         this.facultyId = optional(facultyId, 50, "facultyId");
         this.role = Objects.requireNonNull(role, "role must not be null");
         if (role == Role.SUBJECT_ADMIN && this.facultyId == null) throw new InvalidUserProfileException("SUBJECT_ADMIN must have a facultyId");
@@ -52,17 +58,26 @@ public final class UserProfile {
 
     public static UserProfile pending(UUID id, String lecturerCode, String fullName, LocalDate dateOfBirth,
                                       String phone, String email, String address, String avatar, String facultyId, Instant now) {
-        return new UserProfile(id, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar, facultyId,
+        return new UserProfile(id, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar, null, AcademicRank.NONE, AcademicDegree.NONE, facultyId,
                 Role.USER, UserStatus.PENDING_APPROVAL, now, now, 0);
     }
 
     public static UserProfile bootstrapAdmin(UUID id, String lecturerCode, String fullName,
                                              String email, String facultyId, Instant now) {
-        return new UserProfile(id, lecturerCode, fullName, null, null, email, null, null, facultyId,
+        return new UserProfile(id, lecturerCode, fullName, null, null, email, null, null, null, AcademicRank.NONE, AcademicDegree.NONE, facultyId,
                 Role.SYSTEM_ADMIN, UserStatus.ACTIVE, now, now, 0);
     }
     public UserProfile updateProfile(String fullName, LocalDate dob, String phone, String email, String address, String avatar, Instant at) {
-        return new UserProfile(id, lecturerCode, fullName, dob, phone, email, address, avatar, facultyId, role, status, createdAt, at, version);
+        return updateProfile(fullName, dob, phone, email, address, avatar, academicRank, academicDegree, avatarPublicId, at);
+    }
+    public UserProfile updateProfile(String fullName, LocalDate dob, String phone, String email, String address, String avatar, AcademicRank academicRank, AcademicDegree academicDegree, String avatarPublicId, Instant at) {
+        return new UserProfile(id, lecturerCode, fullName, dob, phone, email, address, avatar, avatarPublicId, academicRank, academicDegree, facultyId, role, status, createdAt, at, version);
+    }
+    public UserProfile replaceAvatar(String avatar, String avatarPublicId, Instant at) {
+        return new UserProfile(id, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar, avatarPublicId, academicRank, academicDegree, facultyId, role, status, createdAt, at, version);
+    }
+    public UserProfile rekey(UUID newId) {
+        return new UserProfile(newId, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar, avatarPublicId, academicRank, academicDegree, facultyId, role, status, createdAt, updatedAt, version);
     }
     public UserProfile approve(Instant at) {
         if (status != UserStatus.PENDING_APPROVAL) throw new InvalidStatusTransitionException("Only pending users can be approved");
@@ -85,7 +100,7 @@ public final class UserProfile {
     public UserProfile assignFaculty(String facultyId, Instant at) { return copy(role, status, facultyId, at); }
     public int age(Clock clock) { return dateOfBirth == null ? 0 : Period.between(dateOfBirth, LocalDate.now(clock)).getYears(); }
     private UserProfile copy(Role newRole, UserStatus newStatus, String newFaculty, Instant at) {
-        return new UserProfile(id, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar,
+        return new UserProfile(id, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar, avatarPublicId, academicRank, academicDegree,
                 newFaculty, newRole, newStatus, createdAt, at, version);
     }
     private static String required(String value, String field, int max) {
@@ -99,7 +114,8 @@ public final class UserProfile {
     public UUID getId() { return id; } public String getLecturerCode() { return lecturerCode; }
     public String getFullName() { return fullName; } public LocalDate getDateOfBirth() { return dateOfBirth; }
     public String getPhone() { return phone; } public String getEmail() { return email; }
-    public String getAddress() { return address; } public String getAvatar() { return avatar; }
+    public String getAddress() { return address; } public String getAvatar() { return avatar; } public String getAvatarPublicId() { return avatarPublicId; }
+    public AcademicRank getAcademicRank() { return academicRank; } public AcademicDegree getAcademicDegree() { return academicDegree; }
     public String getFacultyId() { return facultyId; } public Role getRole() { return role; }
     public UserStatus getStatus() { return status; } public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; } public long getVersion() { return version; }

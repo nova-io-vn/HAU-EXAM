@@ -19,6 +19,7 @@ spring:
 notification:
   retry-delay-ms: ${NOTIFICATION_RETRY_DELAY_MS:5000}
   scheduler-delay-ms: ${NOTIFICATION_SCHEDULER_DELAY_MS:5000}
+  mail-from-name: ${SMTP_FROM_NAME:HAU QM}
 
 push:
   expo:

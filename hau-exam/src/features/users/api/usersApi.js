@@ -8,6 +8,7 @@ export const usersApi={
   get:id=>api.get(`${USERS_PATH}/${id}`),
   getMe:()=>api.get(`${USERS_PATH}/me`),
   updateMe:profile=>api.put(`${USERS_PATH}/me`,profile),
+  uploadAvatar:file=>{const body=new FormData();body.append('file',file);return api.put(`${USERS_PATH}/me/avatar`,body)},
   approve:id=>api.post(`${USERS_PATH}/${id}/approve`),
   reject:id=>api.post(`${USERS_PATH}/${id}/reject`),
   assignRole:(id,role)=>api.put(`${USERS_PATH}/${id}/role`,{role}),

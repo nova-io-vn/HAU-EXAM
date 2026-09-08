@@ -1,11 +1,56 @@
 package com.userservice.presentation.controller;
-import com.userservice.application.dto.ActorContext; import com.userservice.application.service.FacultyService; import com.userservice.domain.model.*; import com.userservice.domain.repository.*; import com.userservice.presentation.request.FacultyRequests.*; import com.userservice.presentation.response.*; import jakarta.validation.Valid; import org.springframework.security.access.prepost.PreAuthorize; import org.springframework.security.core.annotation.AuthenticationPrincipal; import org.springframework.security.oauth2.jwt.Jwt; import org.springframework.web.bind.annotation.*; import java.util.UUID;
-@RestController @RequestMapping("/api/v1/faculties") @PreAuthorize("hasRole('SYSTEM_ADMIN')") public class FacultyController {
- private final FacultyService service; public FacultyController(FacultyService s){service=s;}
- @GetMapping public ApiResponse<PageResponse<FacultyResponse>> list(@AuthenticationPrincipal Jwt j,@RequestParam(required=false) String keyword,@RequestParam(required=false) Boolean active,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size){var p=service.search(actor(j),new FacultyQuery(keyword,active,page,size));return ApiResponse.success(new PageResponse<>(p.content().stream().map(FacultyResponse::from).toList(),p.page(),p.size(),p.totalElements(),p.totalPages()));}
- @GetMapping("/{id}") public ApiResponse<FacultyResponse> get(@AuthenticationPrincipal Jwt j,@PathVariable UUID id){return ApiResponse.success(FacultyResponse.from(service.get(actor(j),id)));}
- @PostMapping public ApiResponse<FacultyResponse> create(@AuthenticationPrincipal Jwt j,@Valid @RequestBody Save r){return ApiResponse.success(FacultyResponse.from(service.save(actor(j),null,r.code(),r.name(),r.description(),r.active()==null||r.active())));}
- @PutMapping("/{id}") public ApiResponse<FacultyResponse> update(@AuthenticationPrincipal Jwt j,@PathVariable UUID id,@Valid @RequestBody Save r){return ApiResponse.success(FacultyResponse.from(service.save(actor(j),id,r.code(),r.name(),r.description(),r.active()==null||r.active())));}
- @PatchMapping("/{id}/status") public ApiResponse<FacultyResponse> status(@AuthenticationPrincipal Jwt j,@PathVariable UUID id,@Valid @RequestBody Status r){return ApiResponse.success(FacultyResponse.from(service.status(actor(j),id,r.active())));}
- private ActorContext actor(Jwt j){return new ActorContext(UUID.fromString(j.getSubject()),Role.valueOf(j.getClaimAsString("role")),j.getClaimAsString("facultyId"));}
+
+import com.userservice.application.dto.ActorContext;
+import com.userservice.application.service.FacultyService;
+import com.userservice.domain.model.*;
+import com.userservice.domain.repository.*;
+import com.userservice.presentation.request.FacultyRequests.*;
+import com.userservice.presentation.response.*;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/faculties")
+@PreAuthorize("hasRole('SYSTEM_ADMIN')")
+public class FacultyController {
+    private final FacultyService service;
+
+    public FacultyController(FacultyService s) {
+        service = s;
+    }
+
+    @GetMapping
+    public ApiResponse<PageResponse<FacultyResponse>> list(@AuthenticationPrincipal Jwt j, @RequestParam(required = false) String keyword, @RequestParam(required = false) Boolean active, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        var p = service.search(actor(j), new FacultyQuery(keyword, active, page, size));
+        return ApiResponse.success(new PageResponse<>(p.content().stream().map(FacultyResponse::from).toList(), p.page(), p.size(), p.totalElements(), p.totalPages()));
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<FacultyResponse> get(@AuthenticationPrincipal Jwt j, @PathVariable UUID id) {
+        return ApiResponse.success(FacultyResponse.from(service.get(actor(j), id)));
+    }
+
+    @PostMapping
+    public ApiResponse<FacultyResponse> create(@AuthenticationPrincipal Jwt j, @Valid @RequestBody Save r) {
+        return ApiResponse.success(FacultyResponse.from(service.save(actor(j), null, r.code(), r.name(), r.description(), r.active() == null || r.active())));
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<FacultyResponse> update(@AuthenticationPrincipal Jwt j, @PathVariable UUID id, @Valid @RequestBody Save r) {
+        return ApiResponse.success(FacultyResponse.from(service.save(actor(j), id, r.code(), r.name(), r.description(), r.active() == null || r.active())));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ApiResponse<FacultyResponse> status(@AuthenticationPrincipal Jwt j, @PathVariable UUID id, @Valid @RequestBody Status r) {
+        return ApiResponse.success(FacultyResponse.from(service.status(actor(j), id, r.active())));
+    }
+
+    private ActorContext actor(Jwt j) {
+        return new ActorContext(UUID.fromString(j.getSubject()), Role.valueOf(j.getClaimAsString("role")), j.getClaimAsString("facultyId"));
+    }
 }
