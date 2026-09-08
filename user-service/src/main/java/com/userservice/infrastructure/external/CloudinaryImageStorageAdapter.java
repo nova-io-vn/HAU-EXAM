@@ -27,7 +27,10 @@ public class CloudinaryImageStorageAdapter implements ImageStoragePort {
         try {
             Map<?, ?> result = cloudinary.uploader().upload(command.bytes(), ObjectUtils.asMap("folder", folder, "resource_type", "image", "use_filename", false, "unique_filename", true));
             return new StoredImage(value(result, "url"), value(result, "secure_url"), value(result, "public_id"), value(result, "format"), number(result, "width"), number(result, "height"), numberLong(result, "bytes"));
-        } catch (Exception ex) { throw new ImageUploadException("Could not upload image", ex); }
+        } catch (Exception ex) {
+            log.warn("Cloudinary image upload failed; type={}", ex.getClass().getSimpleName());
+            throw new ImageUploadException("Could not upload image", ex);
+        }
     }
 
     @Override

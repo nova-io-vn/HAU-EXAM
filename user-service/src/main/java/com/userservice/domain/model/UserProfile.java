@@ -76,6 +76,9 @@ public final class UserProfile {
     public UserProfile replaceAvatar(String avatar, String avatarPublicId, Instant at) {
         return new UserProfile(id, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar, avatarPublicId, academicRank, academicDegree, facultyId, role, status, createdAt, at, version);
     }
+    public UserProfile rekey(UUID newId) {
+        return new UserProfile(newId, lecturerCode, fullName, dateOfBirth, phone, email, address, avatar, avatarPublicId, academicRank, academicDegree, facultyId, role, status, createdAt, updatedAt, version);
+    }
     public UserProfile approve(Instant at) {
         if (status != UserStatus.PENDING_APPROVAL) throw new InvalidStatusTransitionException("Only pending users can be approved");
         if (facultyId == null) throw new InvalidUserProfileException("A faculty must be assigned before approval");

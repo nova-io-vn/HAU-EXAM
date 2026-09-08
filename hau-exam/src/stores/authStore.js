@@ -82,6 +82,11 @@ export const authStore = {
       bootstrapping: false,
     });
   },
+  updateCurrentUser(profile) {
+    if (!profile) return;
+    const nextUser = { ...(state.currentUser || {}), ...profile, avatar: profile.avatar || profile.avatarUrl || null };
+    publish({ ...state, currentUser: nextUser, role: profile.role || state.role, facultyId: profile.facultyId ?? state.facultyId });
+  },
   async bootstrapAuth(refresh) {
     if (bootstrapPromise) return bootstrapPromise;
     bootstrapPromise = (async () => {
