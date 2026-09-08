@@ -12,6 +12,11 @@
   },
   "dependencies": {
     "@stomp/stompjs": "^7.2.1",
+    "@tiptap/extension-text-style": "^3.31.3",
+    "@tiptap/extension-underline": "^3.31.3",
+    "@tiptap/react": "^3.31.3",
+    "@tiptap/starter-kit": "^3.31.3",
+    "dompurify": "^3.4.15",
     "intro.js": "^8.5.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
