@@ -1,0 +1,9 @@
+export const difficultyLabels = { EASY: 'Dễ', MEDIUM: 'Trung bình', HARD: 'Khó' };
+export const questionStatusLabels = { DRAFT: 'Bản nháp', PENDING_REVIEW: 'Chờ phê duyệt', APPROVED: 'Đã phê duyệt', NEED_REVISION: 'Cần chỉnh sửa', REJECTED: 'Đã từ chối', ARCHIVED: 'Đã lưu trữ' };
+export const userStatusLabels = { ACTIVE: 'Đang hoạt động', PENDING_APPROVAL: 'Chờ phê duyệt', LOCKED: 'Đã khóa', REJECTED: 'Đã từ chối', INACTIVE: 'Ngừng hoạt động' };
+export const sourceLabels = { MANUAL: 'Thủ công', AI: 'AI hỗ trợ', IMPORT: 'Nhập từ dữ liệu' };
+export const roleLabels = { SYSTEM_ADMIN: 'Quản trị viên hệ thống', SUBJECT_ADMIN: 'Quản trị viên chuyên môn', USER: 'Giảng viên' };
+export const contactStatusLabels = { NEW: 'Mới', IN_PROGRESS: 'Đang xử lý', REPLIED: 'Đã trả lời', CLOSED: 'Đã đóng' };
+export const emailSecurityLabels = { NONE: 'Không mã hóa', STARTTLS: 'STARTTLS', SSL_TLS: 'SSL/TLS' };
+export const questionTypeLabels = { SINGLE_CHOICE: 'Một đáp án', MULTIPLE_CHOICE: 'Nhiều đáp án', TRUE_FALSE: 'Đúng / Sai' };
+export function enumLabel(value, labels = {}) { return labels[value] || String(value || '').replaceAll('_', ' ') || '—'; }
