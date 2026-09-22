@@ -4,8 +4,8 @@ import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 
-export function RichTextEditor({ value = '', onChange, disabled = false, id = 'rich-text-editor' }) {
-  const editor = useEditor({ extensions: [StarterKit, Underline, TextStyle], content: value, editable: !disabled, onUpdate: ({ editor: current }) => onChange?.(current.getHTML()) });
+export function RichTextEditor({ value = '', onChange, disabled = false, id = 'rich-text-editor', ariaLabel }) {
+  const editor = useEditor({ extensions: [StarterKit, Underline, TextStyle], content: value, editable: !disabled, editorProps: ariaLabel ? { attributes: { 'aria-label': ariaLabel, role: 'textbox' } } : undefined, onUpdate: ({ editor: current }) => onChange?.(current.getHTML()) });
   useEffect(() => { if (editor && value !== editor.getHTML() && !editor.isFocused) editor.commands.setContent(value || ''); }, [editor, value]);
   useEffect(() => { editor?.setEditable(!disabled); }, [editor, disabled]);
   if (!editor) return <div className="rich-editor rich-editor-loading" aria-busy="true" />;

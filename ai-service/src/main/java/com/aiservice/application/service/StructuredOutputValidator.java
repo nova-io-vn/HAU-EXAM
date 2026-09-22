@@ -39,6 +39,8 @@ public class StructuredOutputValidator {
                 }
                 if (!labels.contains(q.get("correctAnswer").asText()))
                     throw new InvalidAiOutputException("correctAnswer must match an option label");
+                if (q.has("language") && !q.get("language").isTextual())
+                    throw new InvalidAiOutputException("language must be text when present");
             }
             return mapper.writeValueAsString(items);
         } catch (InvalidAiOutputException e) {

@@ -19,25 +19,29 @@ import jakarta.mail.internet.InternetAddress;
 import java.net.ConnectException;
 import java.time.Instant;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class EmailSettingsService {
+    private static final Logger log = LoggerFactory.getLogger(EmailSettingsService.class);
     private final JpaEmailSettingsRepository repository;
     private final SecretProtector protector;
     private final String envHost, envUsername, envPassword, envFrom, envFromName;
     private final int envPort;
-    private final boolean envAuth, envStartTls, envStartTlsRequired;
+    private final boolean envAuth, envStartTls, envStartTlsRequired, envEnabled;
 
     public EmailSettingsService(JpaEmailSettingsRepository repository, SecretProtector protector,
             @Value("${spring.mail.host:}") String envHost, @Value("${spring.mail.port:587}") int envPort,
             @Value("${spring.mail.username:}") String envUsername, @Value("${spring.mail.password:}") String envPassword,
             @Value("${notification.mail-from:}") String envFrom, @Value("${notification.mail-from-name:HAU QM}") String envFromName,
+            @Value("${notification.mail-enabled:true}") boolean envEnabled,
             @Value("${spring.mail.properties.mail.smtp.auth:false}") boolean envAuth,
             @Value("${spring.mail.properties.mail.smtp.starttls.enable:false}") boolean envStartTls,
             @Value("${spring.mail.properties.mail.smtp.starttls.required:false}") boolean envStartTlsRequired) {
         this.repository = repository; this.protector = protector; this.envHost = envHost; this.envPort = envPort;
         this.envUsername = envUsername; this.envPassword = envPassword; this.envFrom = envFrom; this.envFromName = envFromName;
-        this.envAuth = envAuth; this.envStartTls = envStartTls; this.envStartTlsRequired = envStartTlsRequired;
+        this.envEnabled = envEnabled; this.envAuth = envAuth; this.envStartTls = envStartTls; this.envStartTlsRequired = envStartTlsRequired;
     }
 
     @Transactional(readOnly = true)
@@ -66,6 +70,35 @@ public class EmailSettingsService {
         return response(repository.save(entity));
     }
 
+    @Transactional
+    public boolean bootstrapFromEnvironment() {
+        if (repository.count() > 0) {
+            log.info("SMTP settings bootstrap skipped because database configuration already exists");
+            return false;
+        }
+        if (!configuredEnv()) {
+            log.info("SMTP settings bootstrap skipped because environment configuration is incomplete");
+            return false;
+        }
+        EmailSettingsEntity entity = new EmailSettingsEntity();
+        Instant now = Instant.now();
+        entity.setId(java.util.UUID.randomUUID());
+        entity.setSmtpHost(envHost.trim());
+        entity.setSmtpPort(envPort);
+        entity.setSmtpUsername(trim(envUsername));
+        if (!trim(envPassword).isBlank()) entity.setSmtpPasswordEncrypted(protector.encrypt(envPassword.trim()));
+        entity.setFromEmail(envFrom.trim());
+        entity.setFromName(trim(envFromName).isBlank() ? "HAU QM" : envFromName.trim());
+        entity.setSecurity(envStartTls || envStartTlsRequired ? EmailSecurity.STARTTLS : EmailSecurity.NONE);
+        entity.setEnabled(envEnabled);
+        entity.setCreatedAt(now);
+        entity.setUpdatedAt(now);
+        repository.save(entity);
+        log.info("SMTP settings bootstrapped from environment; hostConfigured=true usernameConfigured={} passwordConfigured={} security={} enabled={}",
+                !trim(envUsername).isBlank(), !trim(envPassword).isBlank(), entity.getSecurity(), entity.isEnabled());
+        return true;
+    }
+
     public void sendTest(String recipient) { send(recipient, "[HAU QM] Kiểm tra cấu hình email", "Xin chào,\n\nĐây là email kiểm tra cấu hình gửi thư của hệ thống HAU QM.\n\nNếu bạn nhận được email này, cấu hình SMTP đang hoạt động bình thường.\n\nHAU QM System"); }
 
     public void send(String recipient, String subject, String content) {
@@ -77,7 +110,8 @@ public class EmailSettingsService {
             var helper = new org.springframework.mail.javamail.MimeMessageHelper(message, false, "UTF-8");
             helper.setFrom(new InternetAddress(config.fromEmail(), config.fromName(), "UTF-8")); helper.setTo(recipient); helper.setSubject(subject); helper.setText(content, false);
             sender.send(message);
-        } catch (Exception ex) { throw deliveryException(ex); }
+            log.info("SMTP delivery completed; recipientDomain={} subjectLength={}", emailDomain(recipient), subject == null ? 0 : subject.length());
+        } catch (Exception ex) { log.warn("SMTP delivery failed; recipientDomain={} errorType={}", emailDomain(recipient), ex.getClass().getSimpleName()); throw deliveryException(ex); }
     }
 
     private JavaMailSenderImpl createSender(MailConfig c) {
@@ -88,17 +122,18 @@ public class EmailSettingsService {
 
     private MailConfig activeConfig() {
         var stored = repository.findAll().stream().findFirst();
-        if (stored.isEmpty()) return new MailConfig(envHost, envPort, envUsername, envPassword, envFrom, envFromName, envStartTls ? EmailSecurity.STARTTLS : EmailSecurity.NONE, configuredEnv(), envAuth);
+        if (stored.isEmpty()) return new MailConfig(envHost, envPort, envUsername, envPassword, envFrom, envFromName, envStartTls || envStartTlsRequired ? EmailSecurity.STARTTLS : EmailSecurity.NONE, envEnabled && configuredEnv(), envAuth);
         var e = stored.get(); String password = e.getSmtpPasswordEncrypted() == null ? "" : protector.decrypt(e.getSmtpPasswordEncrypted());
         return new MailConfig(e.getSmtpHost(), e.getSmtpPort(), e.getSmtpUsername(), password, e.getFromEmail(), e.getFromName(), e.getSecurity(), e.isEnabled(), e.getSecurity() != EmailSecurity.NONE);
     }
 
-    private boolean configuredEnv() { return envHost != null && !envHost.isBlank() && envPort > 0 && envFrom != null && !envFrom.isBlank(); }
-    private EmailSettingsResponse fallbackResponse() { EmailSecurity security = envStartTls ? EmailSecurity.STARTTLS : EmailSecurity.NONE; return new EmailSettingsResponse(envHost, envPort, envUsername, envPassword != null && !envPassword.isBlank(), envFrom, envFromName, security, configuredEnv()); }
+    private boolean configuredEnv() { return envHost != null && !envHost.isBlank() && envPort > 0 && envFrom != null && !envFrom.isBlank() && (!envAuth || (!trim(envUsername).isBlank() && !trim(envPassword).isBlank())); }
+    private EmailSettingsResponse fallbackResponse() { EmailSecurity security = envStartTls || envStartTlsRequired ? EmailSecurity.STARTTLS : EmailSecurity.NONE; return new EmailSettingsResponse(envHost, envPort, envUsername, envPassword != null && !envPassword.isBlank(), envFrom, envFromName, security, envEnabled && configuredEnv()); }
     private EmailSettingsResponse response(EmailSettingsEntity e) { return new EmailSettingsResponse(e.getSmtpHost(), e.getSmtpPort(), e.getSmtpUsername(), e.getSmtpPasswordEncrypted() != null && !e.getSmtpPasswordEncrypted().isBlank(), e.getFromEmail(), e.getFromName(), e.getSecurity(), e.isEnabled()); }
     private EmailSettingsException invalid(String message) { return new EmailSettingsException("SMTP_CONFIGURATION_INVALID", message); }
     private String trim(String value) { return value == null ? "" : value.trim(); }
     private boolean isEmail(String value) { try { new InternetAddress(value).validate(); return true; } catch (Exception e) { return false; } }
+    private String emailDomain(String value) { int at = value == null ? -1 : value.lastIndexOf('@'); return at >= 0 && at + 1 < value.length() ? value.substring(at + 1) : "invalid"; }
     private EmailDeliveryException deliveryException(Exception ex) {
         Throwable root = ex; while (root.getCause() != null && root.getCause() != root) root = root.getCause();
         String name = root.getClass().getName().toLowerCase(); String code = name.contains("authentication") || name.contains("auth") ? "SMTP_AUTHENTICATION_FAILED" : name.contains("ssl") || name.contains("tls") ? "SMTP_TLS_FAILED" : root instanceof ConnectException || name.contains("connect") || name.contains("timeout") ? "SMTP_CONNECTION_FAILED" : "SMTP_SEND_FAILED";

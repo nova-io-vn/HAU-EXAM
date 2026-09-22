@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import {
   Button,
   DataTable,
-  Loading,
+  DashboardMetricSkeleton,
+  TableSkeleton,
   StatusBadge,
 } from "../../../components/ui";
 import { PageHeader } from "../../../components/shared/PageHeader";
@@ -69,18 +70,7 @@ export function AdminDashboardPage() {
         </div>
       </section>
     );
-  if (!data)
-    return (
-      <section>
-        <PageHeader
-          title="Tổng quan hệ thống"
-          description="Theo dõi người dùng, Khoa và hoạt động trên toàn hệ thống khảo thí HAU."
-        />
-        <div className="surface admin-loading">
-          <Loading label="Đang tải tổng quan hệ thống" />
-        </div>
-      </section>
-    );
+  if (!data) return <section className="admin-dashboard"><PageHeader title="Tổng quan hệ thống" description="Theo dõi người dùng, Khoa và hoạt động trên toàn hệ thống khảo thí HAU."/><DashboardMetricSkeleton count={4}/><div className="admin-dashboard-grid"><section className="surface admin-panel"><TableSkeleton rows={5} columns={4}/></section><section className="surface admin-panel"><div className="chart-empty">Đang tải dữ liệu quản trị...</div></section></div><section className="surface admin-panel"><TableSkeleton rows={6} columns={7}/></section></section>;
   const stats = [
     ["Tổng giảng viên", data.users.totalElements, "users"],
     ["Tổng số Khoa", data.faculties.totalElements, "faculties"],

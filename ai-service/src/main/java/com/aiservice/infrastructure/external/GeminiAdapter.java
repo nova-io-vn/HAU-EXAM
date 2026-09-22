@@ -24,7 +24,8 @@ public class GeminiAdapter implements AiProvider {
     }
 
     public String generateQuestions(String source, String request) {
-        return invoke("Return only valid JSON questions with question, options(label/content), correctAnswer, difficulty, topicId and explanation.\nSOURCE:\n" + source + "\nREQUEST:\n" + request);
+        String language = request.contains("\"language\":\"EN\"") ? "English" : "Vietnamese";
+        return invoke("Return only valid JSON questions with question, options(label/content), correctAnswer, difficulty, topicId, explanation, language, requiresImage and optional imagePrompt/imageUrl. Generate the question, answer options and explanation entirely in " + language + ". Do not translate only the labels.\nSOURCE:\n" + source + "\nREQUEST:\n" + request);
     }
 
     public String analyze(String source, String request) {
@@ -33,6 +34,14 @@ public class GeminiAdapter implements AiProvider {
 
     public String chat(String source, String request) {
         return invoke("Return only a valid JSON object with an answer field. Do not use knowledge outside the supplied context.\nCONTEXT:\n" + source + "\nREQUEST:\n" + request);
+    }
+
+    public String systemHelp(String roleKnowledge, String request) {
+        return invoke("You are the HAU QM system help assistant. Answer in Vietnamese unless the user writes in English. "
+                + "Only explain workflows present in ROLE_KNOWLEDGE. Give concise numbered steps. Never invent features, permissions, URLs, or route keys. "
+                + "If the question is outside HAU QM usage, briefly say this assistant only supports HAU QM. "
+                + "Return only JSON: {\"answer\":\"...\",\"actions\":[{\"type\":\"NAVIGATE\",\"label\":\"...\",\"routeKey\":\"...\"}]}. "
+                + "Actions are optional and routeKey must occur verbatim in ROLE_KNOWLEDGE.\nROLE_KNOWLEDGE:\n" + roleKnowledge + "\nREQUEST:\n" + request);
     }
 
     private String invoke(String prompt) {
