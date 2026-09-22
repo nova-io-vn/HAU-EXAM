@@ -1,0 +1,1 @@
+import {RoleGate} from '@/src/app/navigation/RoleGate';import {NotAvailableScreen} from '@/src/components/shared';export default function Subjects(){return <RoleGate roles={['SUBJECT_ADMIN']}><NotAvailableScreen title="Môn học"/></RoleGate>}
