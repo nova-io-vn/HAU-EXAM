@@ -36,6 +36,14 @@ public class GeminiAdapter implements AiProvider {
         return invoke("Return only a valid JSON object with an answer field. Do not use knowledge outside the supplied context.\nCONTEXT:\n" + source + "\nREQUEST:\n" + request);
     }
 
+    public String systemHelp(String roleKnowledge, String request) {
+        return invoke("You are the HAU QM system help assistant. Answer in Vietnamese unless the user writes in English. "
+                + "Only explain workflows present in ROLE_KNOWLEDGE. Give concise numbered steps. Never invent features, permissions, URLs, or route keys. "
+                + "If the question is outside HAU QM usage, briefly say this assistant only supports HAU QM. "
+                + "Return only JSON: {\"answer\":\"...\",\"actions\":[{\"type\":\"NAVIGATE\",\"label\":\"...\",\"routeKey\":\"...\"}]}. "
+                + "Actions are optional and routeKey must occur verbatim in ROLE_KNOWLEDGE.\nROLE_KNOWLEDGE:\n" + roleKnowledge + "\nREQUEST:\n" + request);
+    }
+
     private String invoke(String prompt) {
         if (key.isBlank()) throw new ProviderException("AI provider credential is not configured", false, null);
         try {

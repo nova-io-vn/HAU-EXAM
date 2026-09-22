@@ -29,6 +29,7 @@ export const routes = {
   coverage: "/coverage",
   settings: "/admin/settings",
   help: "/help",
+  systemHelp: "/system-help",
   support: "/support",
   contact: "/contact",
   contactAdmin: "/admin/contact",

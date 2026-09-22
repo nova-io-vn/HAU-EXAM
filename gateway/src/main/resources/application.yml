@@ -90,4 +90,7 @@ management:
 
 logging:
   level:
+    root: INFO
     com.gateway: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=%-5level service=${spring.application.name} thread=%thread correlationId=%X{correlationId:-} logger=%logger{36} message=%msg%n"

@@ -19,6 +19,7 @@ import './styles/final-polish.css'
 import './styles/loading.css'
 import './styles/async-progress.css'
 import './styles/public-experience.css'
+import './styles/ux-pass.css'
 import 'intro.js/introjs.css'
 import App from './App.jsx'
 

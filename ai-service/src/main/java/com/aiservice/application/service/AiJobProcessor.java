@@ -7,9 +7,12 @@ import java.time.*;
 import java.util.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class AiJobProcessor {
+    private static final Logger log = LoggerFactory.getLogger(AiJobProcessor.class);
     private final AiJobRepository jobs;
     private final DocumentRepository docs;
     private final StoragePort storage;
@@ -36,7 +39,8 @@ public class AiJobProcessor {
 
     @Transactional
     public void process(UUID eventId, UUID jobId, UUID correlation) {
-        if (inbox.exists(eventId)) return;
+        if (inbox.exists(eventId)) { log.debug("Skipping duplicate AI event; eventId={} jobId={} correlationId={}", eventId, jobId, correlation); return; }
+        log.info("AI job processing started; jobId={} eventId={} correlationId={}", jobId, eventId, correlation);
         var job = jobs.findById(jobId).orElseThrow(() -> new NotFoundException("AI job not found"));
         if (job.status() == JobStatus.COMPLETED || job.status() == JobStatus.FAILED) {
             inbox.record(eventId, "AI_GENERATION_REQUESTED");
@@ -63,12 +67,15 @@ public class AiJobProcessor {
             jobs.save(job);
             inbox.record(eventId, "AI_GENERATION_REQUESTED");
             events.completed(job, correlation);
+            log.info("AI job processing completed; jobId={} type={} correlationId={}", job.id(), job.type(), correlation);
         } catch (ProviderException e) {
-            if (e.retryable()) throw e;
+            if (e.retryable()) { log.warn("AI provider retryable failure; jobId={} correlationId={} errorType={}", job.id(), correlation, e.getClass().getSimpleName()); throw e; }
             fail(job, "PROVIDER_FAILURE", e.getMessage(), correlation);
+            log.warn("AI job failed with provider error; jobId={} correlationId={}", job.id(), correlation);
             inbox.record(eventId, "AI_GENERATION_REQUESTED");
         } catch (InvalidAiOutputException e) {
             fail(job, "INVALID_AI_OUTPUT", e.getMessage(), correlation);
+            log.warn("AI job failed output validation; jobId={} correlationId={}", job.id(), correlation);
             inbox.record(eventId, "AI_GENERATION_REQUESTED");
         }
     }
@@ -80,6 +87,7 @@ public class AiJobProcessor {
         if (j.status() != JobStatus.COMPLETED && j.status() != JobStatus.FAILED)
             fail(j, "PROVIDER_RETRY_EXHAUSTED", message, correlation);
         inbox.record(eventId, "AI_GENERATION_REQUESTED");
+        log.error("AI job retries exhausted; jobId={} eventId={} correlationId={}", jobId, eventId, correlation);
     }
 
     private void fail(AiJob j, String c, String m, UUID correlation) {
