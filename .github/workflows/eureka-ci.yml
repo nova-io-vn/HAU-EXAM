@@ -1,0 +1,45 @@
+name: Eureka CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "eureka/**"
+      - "pom.xml"
+      - ".github/workflows/eureka-ci.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: nova-io-vn/hau-exam-eureka
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Eureka image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./eureka/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/nova-io-vn/hau-exam-eureka:${{ github.sha }}
+            ghcr.io/nova-io-vn/hau-exam-eureka:latest
