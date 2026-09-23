@@ -5,27 +5,25 @@ import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import { AppScreen, Button, Card, Input, StatusBadge } from '@/src/components/ui';
 import { AppHeader, EmptyState, ErrorState, LoadingIndicator } from '@/src/components/shared';
-import { useAuth } from '@/src/app/providers/AppProviders';
-import { authApi } from '@/src/features/auth/api/authApi';
-import { getRefreshToken } from '@/src/services/api';
 import { normalizeError } from '@/src/services/api/errors';
-import { disableCurrentPushNotifications, enablePushNotifications } from '@/src/services/notifications/pushService';
+import { enablePushNotifications } from '@/src/services/notifications/pushService';
 import { colors, spacing, typography } from '@/src/theme/tokens';
 import { profileApi, type UpdateProfileInput, type UserProfile } from '../api/profileApi';
 import { authStore } from '@/src/stores/authStore';
 import { calculateAge, validateProfile } from '../utils/profileValidation';
+import { logoutCurrentSession } from '@/src/features/auth/services/logoutCurrentSession';
 
 function toForm(profile: UserProfile): UpdateProfileInput { return { fullName: profile.fullName || '', dateOfBirth: profile.dateOfBirth, phone: profile.phone, email: profile.email || '', address: profile.address, avatar: profile.avatar || profile.avatarUrl || null }; }
 
 export function ProfileScreen() {
-  const router = useRouter(); const { clear } = useAuth(); const [profile, setProfile] = useState<UserProfile | null>(null); const [form, setForm] = useState<UpdateProfileInput | null>(null); const [editing, setEditing] = useState(false); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [avatarUploading, setAvatarUploading] = useState(false); const [loggingOut, setLoggingOut] = useState(false); const [error, setError] = useState<string | null>(null); const [savedMessage, setSavedMessage] = useState<string | null>(null); const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof UpdateProfileInput, string>>>({}); const [pushLoading, setPushLoading] = useState(false); const [pushMessage, setPushMessage] = useState<string | null>(null);
+  const router = useRouter(); const [profile, setProfile] = useState<UserProfile | null>(null); const [form, setForm] = useState<UpdateProfileInput | null>(null); const [editing, setEditing] = useState(false); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [avatarUploading, setAvatarUploading] = useState(false); const [loggingOut, setLoggingOut] = useState(false); const [error, setError] = useState<string | null>(null); const [savedMessage, setSavedMessage] = useState<string | null>(null); const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof UpdateProfileInput, string>>>({}); const [pushLoading, setPushLoading] = useState(false); const [pushMessage, setPushMessage] = useState<string | null>(null);
   const loadProfile = useCallback(async () => { setLoading(true); setError(null); try { const next = await profileApi.getMe(); setProfile(next); setForm(toForm(next)); } catch (cause) { setError(normalizeError(cause).message); } finally { setLoading(false); } }, []);
   useEffect(() => { void loadProfile(); }, [loadProfile]);
   useEffect(() => { if (profile) authStore.updateProfile(profile); }, [profile]);
   function updateField(field: keyof UpdateProfileInput, value: string) { const nullable = field === 'dateOfBirth' || field === 'phone' || field === 'address' || field === 'avatar'; setForm(current => current ? { ...current, [field]: value || (nullable ? null : value) } : current); setFieldErrors(current => ({ ...current, [field]: undefined })); setSavedMessage(null); }
   async function pickAvatar() { const result = await DocumentPicker.getDocumentAsync({ type: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], copyToCacheDirectory: true, multiple: false }); if (result.canceled || !result.assets[0]) return; const file = result.assets[0]; if (file.size && file.size > 5 * 1024 * 1024) { setError('Ảnh phải nhỏ hơn hoặc bằng 5MB.'); return; } setAvatarUploading(true); setError(null); try { const updated = await profileApi.uploadAvatar({ uri: file.uri, name: file.name || 'avatar.jpg', mimeType: file.mimeType || 'image/jpeg' }); setProfile(updated); setForm(toForm(updated)); setSavedMessage('Đã cập nhật ảnh đại diện.'); } catch (cause) { setError(normalizeError(cause).message); } finally { setAvatarUploading(false); } }
   async function saveProfile() { if (!form) return; const validation = validateProfile(form); setFieldErrors(validation); if (Object.keys(validation).length > 0) return; setSaving(true); setError(null); setSavedMessage(null); try { const updated = await profileApi.updateMe(form); setProfile(updated); setForm(toForm(updated)); setEditing(false); setSavedMessage('Đã lưu thay đổi hồ sơ.'); } catch (cause) { setError(normalizeError(cause).message); } finally { setSaving(false); } }
-  async function logout() { setLoggingOut(true); try { await disableCurrentPushNotifications(); const token = await getRefreshToken(); if (token) await authApi.logout(token); } catch { /* local clear still protects the session */ } finally { await clear(); setLoggingOut(false); router.replace('/(auth)/login'); } }
+  async function logout() { setLoggingOut(true); try { await logoutCurrentSession(); } finally { setLoggingOut(false); router.replace('/(auth)/login'); } }
   async function enablePush() { setPushLoading(true); setPushMessage(null); try { await enablePushNotifications(); setPushMessage('Đã bật thông báo trên thiết bị.'); } catch (cause) { setPushMessage(normalizeError(cause).message); } finally { setPushLoading(false); } }
   if (loading) return <AppScreen><AppHeader title="Hồ sơ cá nhân" showIdentity={false} /><LoadingIndicator label="Đang tải hồ sơ" /></AppScreen>;
   if (error && !profile) return <AppScreen><AppHeader title="Hồ sơ cá nhân" showIdentity={false} /><ErrorState title={error} onRetry={() => void loadProfile()} /></AppScreen>;

@@ -23,19 +23,28 @@ jobs:
         working-directory: mobile
 
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.22.2
-          
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Expo Doctor
+        run: npx expo-doctor
 
       - name: TypeScript check
         run: npm run typecheck
 
       - name: Lint
         run: npm run lint
+
+      - name: Validate Expo export
+        run: npm run validate:export
 
       - name: Setup Expo and EAS
         uses: expo/expo-github-action@v8
