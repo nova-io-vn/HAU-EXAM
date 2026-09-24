@@ -1,0 +1,61 @@
+name: Backend Services CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "gateway/**"
+      - "auth-service/**"
+      - "user-service/**"
+      - "question-service/**"
+      - "exam-service/**"
+      - "ai-service/**"
+      - "notification-service/**"
+      - "pom.xml"
+      - ".github/workflows/backend-services-ci.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-images:
+    name: Build ${{ matrix.service }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        service:
+          - gateway
+          - auth-service
+          - user-service
+          - question-service
+          - exam-service
+          - ai-service
+          - notification-service
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.service }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./${{ matrix.service }}/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/nova-io-vn/hau-exam-${{ matrix.service }}:${{ github.sha }}
+            ghcr.io/nova-io-vn/hau-exam-${{ matrix.service }}:latest
