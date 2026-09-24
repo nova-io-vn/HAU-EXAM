@@ -1,0 +1,45 @@
+@'
+name: K3s Runner Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-k3s-runner:
+    runs-on: self-hosted
+
+    steps:
+      - name: Runner information
+        run: |
+          echo "===== USER ====="
+          whoami
+
+          echo "===== HOST ====="
+          hostname
+
+          echo "===== KUBECTL ====="
+          which kubectl
+          kubectl version --client
+
+      - name: Check K3s node
+        run: |
+          echo "===== NODES ====="
+          kubectl get nodes
+
+      - name: Check HAU namespace
+        run: |
+          echo "===== DEPLOYMENTS ====="
+          kubectl get deployments -n hau-exam
+
+          echo "===== PODS ====="
+          kubectl get pods -n hau-exam
+
+      - name: Check production API
+        run: |
+          echo "===== PUBLIC API ====="
+          curl --fail --silent --show-error \
+            https://api.nova.io.vn/actuator/health
+
+          echo
+          echo "Runner -> K3s test completed successfully."
+'@ | Set-Content .github\workflows\k3s-runner-test.yml
