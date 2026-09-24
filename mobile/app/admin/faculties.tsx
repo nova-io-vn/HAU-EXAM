@@ -1,1 +1,0 @@
-import {RoleGate} from '@/src/app/navigation/RoleGate';import {NotAvailableScreen} from '@/src/components/shared';export default function Faculties(){return <RoleGate roles={['SYSTEM_ADMIN']}><NotAvailableScreen title="Quản lý khoa"/></RoleGate>}

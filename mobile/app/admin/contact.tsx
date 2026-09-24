@@ -1,1 +1,0 @@
-import {RoleGate} from '@/src/app/navigation/RoleGate';import {NotAvailableScreen} from '@/src/components/shared';export default function Contact(){return <RoleGate roles={['SYSTEM_ADMIN']}><NotAvailableScreen title="Yêu cầu liên hệ"/></RoleGate>}

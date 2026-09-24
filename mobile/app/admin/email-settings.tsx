@@ -1,1 +1,0 @@
-import {RoleGate} from '@/src/app/navigation/RoleGate';import {NotAvailableScreen} from '@/src/components/shared';export default function EmailSettings(){return <RoleGate roles={['SYSTEM_ADMIN']}><NotAvailableScreen title="Cấu hình Email"/></RoleGate>}

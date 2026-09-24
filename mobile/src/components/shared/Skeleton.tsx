@@ -1,7 +1,0 @@
-import { StyleSheet, View } from 'react-native';
-import { radius } from '@/src/theme/tokens';
-import {useThemeColors} from '@/src/theme/useThemeColors';
-export function Skeleton({ height = 20, width = '100%' }: { height?: number; width?: number | `${number}%` }) { const colors=useThemeColors();return <View accessibilityLabel="Đang tải" style={[styles.base,{backgroundColor:colors.muted}, { height, width }]} />; }
-export function DashboardMetricSkeleton({ count = 4 }: { count?: number }) { const colors=useThemeColors();return <View style={styles.metricGrid}>{Array.from({ length: count }, (_, index) => <View key={index} style={[styles.metric,{backgroundColor:colors.surface,borderColor:colors.border}]}><Skeleton height={12} width="58%" /><Skeleton height={26} width="42%" /><Skeleton height={10} width="68%" /></View>)}</View>; }
-export function ListSkeleton({ count = 4 }: { count?: number }) { const colors=useThemeColors();return <View style={styles.list}>{Array.from({ length: count }, (_, index) => <View key={index} style={[styles.row,{backgroundColor:colors.surface,borderColor:colors.border}]}><Skeleton height={16} width="78%" /><Skeleton height={12} width="42%" /></View>)}</View>; }
-const styles = StyleSheet.create({ base: { borderRadius: radius.sm }, metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, metric: { borderRadius: radius.md, borderWidth: 1, flexBasis: '48%', gap: 10, padding: 16 }, list: { gap: 12 }, row: { borderRadius: radius.md, borderWidth: 1, gap: 10, padding: 16 } });

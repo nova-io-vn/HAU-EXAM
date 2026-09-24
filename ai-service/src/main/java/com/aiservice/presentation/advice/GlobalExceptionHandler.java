@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -22,7 +23,11 @@ public class GlobalExceptionHandler {
     ApiResponse<Void> bad(Exception e) {
         return err("VALIDATION_ERROR", e instanceof MethodArgumentNotValidException ? "Request validation failed" : e.getMessage());
     }
-
+@ExceptionHandler(ResponseStatusException.class)
+public ResponseEntity<ApiResponse<Void>> responseStatus(ResponseStatusException e) {
+    return ResponseEntity.status(e.getStatusCode())
+            .body(err("HTTP_ERROR", e.getReason() == null ? "Request failed" : e.getReason()));
+}
     @ExceptionHandler(InvalidJobTransitionException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     ApiResponse<Void> conflict(Exception e) {
