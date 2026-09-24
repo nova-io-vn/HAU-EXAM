@@ -9,22 +9,28 @@ import com.notificationservice.infrastructure.persistence.repository.JpaEmailSet
 import com.notificationservice.presentation.request.SmtpSettingsRequest;
 import com.notificationservice.presentation.response.EmailSettingsResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
+import jakarta.mail.AuthenticationFailedException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailSendException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Properties;
+import javax.net.ssl.SSLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 @Service
 public class EmailSettingsService {
     private static final Logger log = LoggerFactory.getLogger(EmailSettingsService.class);
+    private static final List<String> PASSWORD_PLACEHOLDERS = List.of("••••••••", "••••••••••••");
     private final JpaEmailSettingsRepository repository;
     private final SecretProtector protector;
     private final String envHost, envUsername, envPassword, envFrom, envFromName;
@@ -63,11 +69,12 @@ public class EmailSettingsService {
             EmailSettingsEntity e = new EmailSettingsEntity(); e.setId(java.util.UUID.randomUUID()); e.setCreatedAt(Instant.now()); return e;
         });
         boolean hasOldPassword = entity.getSmtpPasswordEncrypted() != null && !entity.getSmtpPasswordEncrypted().isBlank();
-        if (enabled && !hasOldPassword && trim(request.smtpPassword()).isBlank() && security != EmailSecurity.NONE)
+        String submittedPassword = normalizedPassword(request.smtpPassword());
+        if (enabled && !hasOldPassword && submittedPassword.isBlank() && security != EmailSecurity.NONE)
             throw invalid("Mật khẩu SMTP là bắt buộc khi bật gửi email lần đầu.");
         entity.setSmtpHost(host); entity.setSmtpPort(port); entity.setSmtpUsername(username); entity.setFromEmail(from);
         entity.setFromName(fromName.isBlank() ? "HAU QM" : fromName); entity.setSecurity(security); entity.setEnabled(enabled); entity.setUpdatedAt(Instant.now());
-        if (!trim(request.smtpPassword()).isBlank()) entity.setSmtpPasswordEncrypted(protector.encrypt(request.smtpPassword().trim()));
+        if (!submittedPassword.isBlank()) entity.setSmtpPasswordEncrypted(protector.encrypt(submittedPassword));
         return response(repository.save(entity));
     }
 
@@ -100,16 +107,16 @@ public class EmailSettingsService {
         return true;
     }
 
-    public void sendTest(String recipient) { sendInternal(recipient, "[HAU QM] Kiểm tra cấu hình email", "Xin chào,\n\nĐây là email kiểm tra cấu hình gửi thư của hệ thống HAU QM.\n\nNếu bạn nhận được email này, cấu hình SMTP đang hoạt động bình thường.\n\nHAU QM System", false); }
+    public void sendTest(String recipient) { sendInternal(recipient, "[HAU QM] Kiểm tra cấu hình email", "Xin chào,\n\nĐây là email kiểm tra cấu hình gửi thư của hệ thống HAU QM.\n\nNếu bạn nhận được email này, cấu hình SMTP đang hoạt động bình thường.\n\nHAU QM System", "test-email"); }
 
     public void send(String recipient, String subject, String content) {
-        sendInternal(recipient, subject, content, true);
+        sendInternal(recipient, subject, content, "notification-email");
     }
 
-    private void sendInternal(String recipient, String subject, String content, boolean requireEnabled) {
+    private void sendInternal(String recipient, String subject, String content, String operation) {
         MailConfig config = activeConfig();
         validateProviderConfiguration(config.host(), config.port(), config.security());
-        if (requireEnabled && !config.enabled()) throw new EmailDeliveryException("EMAIL_DELIVERY_DISABLED", "Gửi email hiện đang bị tắt.");
+        if (!config.enabled()) throw new EmailDeliveryException("EMAIL_DELIVERY_DISABLED", "Gửi email hiện đang bị tắt.");
         if (config.security() != EmailSecurity.NONE && (config.username().isBlank() || config.password().isBlank()))
             throw new EmailDeliveryException("SMTP_CONFIGURATION_INVALID", "Thiếu thông tin xác thực SMTP.");
         JavaMailSenderImpl sender = createSender(config);
@@ -118,16 +125,19 @@ public class EmailSettingsService {
             var helper = new org.springframework.mail.javamail.MimeMessageHelper(message, false, "UTF-8");
             helper.setFrom(new InternetAddress(effectiveFrom(config), config.fromName(), "UTF-8")); helper.setTo(recipient); helper.setSubject(subject); helper.setText(content, false);
             sender.send(message);
-            log.info("SMTP delivery completed; event=test-email recipientDomain={} smtpHost={} smtpPort={} security={}", emailDomain(recipient), config.host(), config.port(), config.security());
+            log.info("SMTP delivery completed; operation={} result=SMTP_ACCEPTED recipientDomain={} smtpHost={} smtpPort={} security={} correlationId={}",
+                    operation, emailDomain(recipient), config.host(), config.port(), config.security(), correlationId());
         } catch (Exception ex) {
             Throwable root = rootCause(ex);
-            log.warn("SMTP delivery failed; event=test-email smtpHost={} smtpPort={} security={} recipientDomain={} errorType={} rootCauseType={} rootCauseMessage={}",
-                    config.host(), config.port(), config.security(), emailDomain(recipient), ex.getClass().getSimpleName(), root.getClass().getSimpleName(), safeMessage(root));
-            throw deliveryException(ex);
+            EmailDeliveryException classified = deliveryException(ex);
+            log.warn("SMTP delivery failed; operation={} smtpHost={} smtpPort={} security={} recipientDomain={} correlationId={} exception={} rootException={} result={}",
+                    operation, config.host(), config.port(), config.security(), emailDomain(recipient), correlationId(),
+                    ex.getClass().getSimpleName(), root.getClass().getSimpleName(), classified.getCode());
+            throw classified;
         }
     }
 
-    private JavaMailSenderImpl createSender(MailConfig c) {
+    JavaMailSenderImpl createSender(MailConfig c) {
         JavaMailSenderImpl sender = new JavaMailSenderImpl(); sender.setHost(c.host()); sender.setPort(c.port()); sender.setUsername(c.username()); sender.setPassword(c.password());
         Properties p = sender.getJavaMailProperties(); p.put("mail.smtp.auth", Boolean.toString(c.auth())); p.put("mail.smtp.starttls.enable", Boolean.toString(c.security() == EmailSecurity.STARTTLS)); p.put("mail.smtp.starttls.required", Boolean.toString(c.security() == EmailSecurity.STARTTLS)); p.put("mail.smtp.ssl.enable", Boolean.toString(c.security() == EmailSecurity.SSL_TLS));
         p.put("mail.smtp.connectiontimeout", "7000"); p.put("mail.smtp.timeout", "10000"); p.put("mail.smtp.writetimeout", "10000"); return sender;
@@ -159,22 +169,51 @@ public class EmailSettingsService {
         return config.fromEmail();
     }
 
-    private void validateProviderConfiguration(String host, int port, EmailSecurity security) {
+    void validateProviderConfiguration(String host, int port, EmailSecurity security) {
         if (host == null || host.isBlank() || port < 1 || port > 65535 || security == null)
             throw invalid("Cấu hình SMTP chưa hợp lệ.");
+        if (isGmail(host) && port == 587 && security != EmailSecurity.STARTTLS)
+            throw invalid("Gmail cổng 587 sử dụng STARTTLS. SSL/TLS sử dụng cổng 465.");
+        if (isGmail(host) && port == 465 && security != EmailSecurity.SSL_TLS)
+            throw invalid("Gmail cổng 465 sử dụng SSL/TLS. STARTTLS sử dụng cổng 587.");
         if (isGmail(host) && security == EmailSecurity.STARTTLS && port != 587)
-            throw invalid("Với Gmail, STARTTLS sử dụng cổng 587.");
+            throw invalid("Gmail STARTTLS sử dụng cổng 587.");
         if (isGmail(host) && security == EmailSecurity.SSL_TLS && port != 465)
-            throw invalid("Với Gmail, SSL/TLS sử dụng cổng 465.");
+            throw invalid("Gmail SSL/TLS sử dụng cổng 465.");
     }
 
     private boolean isGmail(String host) { return "smtp.gmail.com".equalsIgnoreCase(trim(host)); }
     private Throwable rootCause(Throwable ex) { Throwable root = ex; while (root.getCause() != null && root.getCause() != root) root = root.getCause(); return root; }
-    private String safeMessage(Throwable ex) { String value = ex.getMessage(); return value == null ? "" : value.replaceAll("(?i)(password|pass|credential|authorization)\\s*[:=]\\s*[^,; ]+", "$1=[REDACTED]"); }
-    private EmailDeliveryException deliveryException(Exception ex) {
-        String name = ex.toString().toLowerCase() + " " + rootCause(ex).toString().toLowerCase();
-        String code = name.contains("authentication") || name.contains("auth") ? "SMTP_AUTHENTICATION_FAILED" : name.contains("ssl") || name.contains("tls") || name.contains("handshake") ? "SMTP_TLS_FAILED" : ex instanceof ConnectException || name.contains("connect") || name.contains("timeout") ? "SMTP_CONNECTION_FAILED" : "EMAIL_SEND_FAILED";
+    private String normalizedPassword(String value) {
+        String normalized = trim(value);
+        return PASSWORD_PLACEHOLDERS.contains(normalized) ? "" : normalized;
+    }
+    private String correlationId() { String value = MDC.get("correlationId"); return value == null || value.isBlank() ? "-" : value; }
+    EmailDeliveryException deliveryException(Exception ex) {
+        String code;
+        if (hasCause(ex, MailAuthenticationException.class) || hasCause(ex, AuthenticationFailedException.class) || containsAny(ex, "535", "authentication failed", "authentication unsuccessful")) {
+            code = "SMTP_AUTHENTICATION_FAILED";
+        } else if (hasCause(ex, SSLException.class) || containsAny(ex, "starttls", "could not convert socket to tls", "handshake_failure")) {
+            code = "SMTP_TLS_FAILED";
+        } else if (hasCause(ex, ConnectException.class) || hasCause(ex, SocketTimeoutException.class) || containsAny(ex, "couldn't connect", "could not connect", "connection timed out")) {
+            code = "SMTP_CONNECTION_FAILED";
+        } else {
+            code = "EMAIL_SEND_FAILED";
+        }
         return new EmailDeliveryException(code, "SMTP delivery failed", ex);
     }
-    private record MailConfig(String host, int port, String username, String password, String fromEmail, String fromName, EmailSecurity security, boolean enabled, boolean auth) {}
+    private boolean hasCause(Throwable error, Class<? extends Throwable> type) {
+        for (Throwable current = error; current != null; current = current.getCause()) if (type.isInstance(current)) return true;
+        if (error instanceof MailSendException sendException)
+            for (Throwable failure : sendException.getMessageExceptions()) if (hasCause(failure, type)) return true;
+        return false;
+    }
+    private boolean containsAny(Throwable error, String... needles) {
+        for (Throwable current = error; current != null; current = current.getCause()) {
+            String text = (current.getClass().getName() + " " + current.getMessage()).toLowerCase();
+            for (String needle : needles) if (text.contains(needle)) return true;
+        }
+        return false;
+    }
+    record MailConfig(String host, int port, String username, String password, String fromEmail, String fromName, EmailSecurity security, boolean enabled, boolean auth) {}
 }

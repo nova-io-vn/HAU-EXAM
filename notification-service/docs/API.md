@@ -43,3 +43,31 @@ them as revoked.
 
 Expo delivery is disabled by default. Enable it with `EXPO_PUSH_ENABLED=true`
 and configure `EXPO_PUSH_URL` when the deployment is ready for provider delivery.
+
+## Email settings API
+
+All endpoints require `SYSTEM_ADMIN`:
+
+- `GET /api/v1/admin/email-settings` returns the persisted SMTP settings and
+  `passwordConfigured`; it never returns the SMTP password.
+- `PUT /api/v1/admin/email-settings` persists runtime SMTP settings. A missing,
+  blank, or UI placeholder password retains the existing encrypted password.
+- `POST /api/v1/admin/email-settings/test` sends one test message with the
+  current persisted settings.
+
+Gmail supports `STARTTLS` on port `587` and implicit `SSL_TLS` on port `465`.
+Invalid combinations return `SMTP_CONFIGURATION_INVALID` before a connection is
+attempted. Delivery errors use `SMTP_CONNECTION_FAILED`,
+`SMTP_AUTHENTICATION_FAILED`, `SMTP_TLS_FAILED`,
+`SMTP_CREDENTIAL_DECRYPTION_FAILED`, `EMAIL_DELIVERY_DISABLED`, or
+`EMAIL_SEND_FAILED`.
+
+## Contact API
+
+- `POST /api/v1/public/contact`
+- `GET /api/v1/admin/contact` and `GET /api/v1/admin/contact/{id}`
+- `PATCH /api/v1/admin/contact/{id}/status`
+- `POST /api/v1/admin/contact/{id}/reply`
+
+Contact replies use the same central `EmailSender` implementation as event email
+delivery and therefore use the persisted runtime SMTP settings.

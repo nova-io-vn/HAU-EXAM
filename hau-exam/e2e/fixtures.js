@@ -45,6 +45,8 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path==='/api/v1/notifications/unread-count'&&method==='GET')return respond(state.notificationRead?0:1)
     if(path.endsWith('/read')&&method==='POST'){state.notificationRead=true;return respond(ok(null,'NOTIFICATION_READ'))}
     if(path.endsWith('/read-all')&&method==='POST'){state.notificationRead=true;return respond(ok(null,'NOTIFICATIONS_READ'))}
+    if(path==='/api/v1/admin/email-settings'&&method==='GET')return respond(ok({smtpHost:'smtp.gmail.com',smtpPort:587,smtpUsername:'smtp-user@example.test',passwordConfigured:true,fromEmail:'smtp-user@example.test',fromName:'HAU QM',security:'STARTTLS',enabled:true}))
+    if(path==='/api/v1/admin/email-settings/test'&&method==='POST')return respond(ok(null))
     if(path==='/api/v1/ai/jobs'&&method==='GET')return respond(page([{jobId:ids.job,type:'QUESTION_GENERATION',status:state.jobStatus,createdAt:'2026-01-01T00:00:00Z'}]))
     if(path===`/api/v1/ai/jobs/${ids.job}`&&method==='GET'){state.jobReads+=1;const status=state.jobReads>1?'COMPLETED':state.jobStatus;return respond(ok({jobId:ids.job,type:'QUESTION_GENERATION',status,createdAt:'2026-01-01T00:00:00Z'}))}
     if(path===`/api/v1/ai/jobs/${ids.job}/result`&&method==='GET')return respond(ok([{question:'Generated question',options:[{label:'A',content:'Answer A'}],correctAnswer:'A',difficulty:'MEDIUM'}]))
@@ -53,6 +55,6 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path===`/api/v1/exams/${ids.exam}`&&method==='GET')return respond(ok({id:ids.exam,name:'E2E Exam',subjectId:ids.subject,matrixId:ids.matrix,versions:[{id:'version-1',version:1,generatedAt:'2026-01-01T00:00:00Z',questions:[]}]}))
     return respond(ok(null))
   })
-  await use({login:async(role='USER',targetPage)=>{const activePage=targetPage||context.pages()[0];await activePage.goto('/login');await activePage.getByLabel('Mã giảng viên').fill(role==='USER'?'E2E_USER':role==='SUBJECT_ADMIN'?'E2E_SUBJECT_ADMIN':'E2E_ADMIN');await activePage.getByLabel('Mật khẩu').fill('test-password');await activePage.getByRole('button',{name:'Đăng nhập'}).click();await expect(activePage).toHaveURL(/dashboard/)}})
+  await use({login:async(role='USER',targetPage)=>{const activePage=targetPage||context.pages()[0];await activePage.goto('/login');await activePage.getByLabel('Mã giảng viên').fill(role==='USER'?'E2E_USER':role==='SUBJECT_ADMIN'?'E2E_SUBJECT_ADMIN':'E2E_ADMIN');await activePage.locator('input[name="password"]').fill('test-password');await activePage.getByRole('button',{name:'Đăng nhập'}).click();await expect(activePage).toHaveURL(/dashboard/)}})
 }})
 export {expect}
