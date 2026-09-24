@@ -1,4 +1,4 @@
-name: Eureka CI
+name: Eureka CI/CD
 
 on:
   push:
@@ -21,6 +21,7 @@ env:
 
 jobs:
   build:
+    name: Build Eureka
     runs-on: ubuntu-latest
 
     steps:
@@ -43,3 +44,45 @@ jobs:
           tags: |
             ghcr.io/nova-io-vn/hau-exam-eureka:${{ github.sha }}
             ghcr.io/nova-io-vn/hau-exam-eureka:latest
+
+  deploy-k3s:
+    name: Deploy Eureka to K3s
+    needs: build
+    runs-on: self-hosted
+
+    steps:
+      - name: Show deployment version
+        run: |
+          echo "Commit: ${{ github.sha }}"
+          echo "Runner: ${{ runner.name }}"
+
+      - name: Deploy Eureka
+        run: |
+          set -e
+
+          kubectl set image \
+            deployment/eureka \
+            eureka=ghcr.io/nova-io-vn/hau-exam-eureka:${{ github.sha }} \
+            -n hau-exam
+
+      - name: Wait for Eureka rollout
+        run: |
+          kubectl rollout status \
+            deployment/eureka \
+            -n hau-exam \
+            --timeout=600s
+
+      - name: Verify Eureka
+        run: |
+          set -e
+
+          echo "===== DEPLOYMENT ====="
+          kubectl get deployment eureka -n hau-exam
+
+          echo
+          echo "===== IMAGE ====="
+          kubectl get deployment eureka \
+            -n hau-exam \
+            -o jsonpath='{.spec.template.spec.containers[0].image}'
+
+          echo
