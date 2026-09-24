@@ -1,4 +1,4 @@
-name: Backend Services CI
+name: Backend Services CI/CD
 
 on:
   push:
@@ -28,7 +28,6 @@ jobs:
 
     strategy:
       fail-fast: false
-
       matrix:
         service:
           - gateway
@@ -59,3 +58,94 @@ jobs:
           tags: |
             ghcr.io/nova-io-vn/hau-exam-${{ matrix.service }}:${{ github.sha }}
             ghcr.io/nova-io-vn/hau-exam-${{ matrix.service }}:latest
+
+  deploy-k3s:
+    name: Deploy to K3s
+    needs: build-images
+    runs-on: self-hosted
+
+    steps:
+      - name: Show deployment version
+        run: |
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Runner: ${{ runner.name }}"
+
+      - name: Deploy images to K3s
+        run: |
+          set -e
+
+          SHA="${{ github.sha }}"
+
+          for SERVICE in \
+            gateway \
+            auth-service \
+            user-service \
+            question-service \
+            exam-service \
+            ai-service \
+            notification-service
+          do
+            echo "=========================================="
+            echo "Deploying $SERVICE"
+            echo "=========================================="
+
+            kubectl set image \
+              deployment/$SERVICE \
+              $SERVICE=ghcr.io/nova-io-vn/hau-exam-$SERVICE:$SHA \
+              -n hau-exam
+          done
+
+      - name: Wait for rollouts
+        run: |
+          set -e
+
+          for SERVICE in \
+            gateway \
+            auth-service \
+            user-service \
+            question-service \
+            exam-service \
+            ai-service \
+            notification-service
+          do
+            echo "Waiting for $SERVICE..."
+
+            kubectl rollout status \
+              deployment/$SERVICE \
+              -n hau-exam \
+              --timeout=300s
+          done
+
+      - name: Show production workloads
+        if: always()
+        run: |
+          kubectl get deployments -n hau-exam
+          kubectl get pods -n hau-exam -o wide
+
+      - name: Internal gateway health check
+        run: |
+          set -e
+
+          for i in 1 2 3 4 5
+          do
+            if curl \
+              --fail \
+              --silent \
+              --show-error \
+              --connect-timeout 5 \
+              --max-time 15 \
+              -H "Host: api.nova.io.vn" \
+              http://127.0.0.1/actuator/health
+            then
+              echo
+              echo "Production gateway is healthy."
+              exit 0
+            fi
+
+            echo "Health check attempt $i failed. Retrying..."
+            sleep 10
+          done
+
+          echo "Gateway health check failed."
+          exit 1
