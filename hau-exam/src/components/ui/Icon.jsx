@@ -11,4 +11,5 @@ paths.eye='M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Zm10 3a3 3 0 1 0 0-6 3
 paths.eyeOff='m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A11.7 11.7 0 0 1 12 5c6.5 0 10 7 10 7a18.2 18.2 0 0 1-3 3.8M6.6 6.6C3.6 8.5 2 12 2 12s3.5 7 10 7c1.6 0 3-.4 4.2-1'
 paths.support='M20 11.5a8 8 0 0 0-16 0c0 4 2 6 4 7v2h8v-2c2-1 4-3 4-7ZM8 21h8M8 12h.01M12 12h.01M16 12h.01'
 paths.paperclip='m21.4 11.6-8.9 8.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5'
+paths.messages='M4 5a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H9l-5 4v-4a3 3 0 0 1-0-3V5Zm4 3h8M8 11h5'
 export function Icon({name,size=17,strokeWidth=1.8,className=''}){return <svg className={`icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]||paths.file}/></svg>}

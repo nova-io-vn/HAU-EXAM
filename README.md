@@ -48,3 +48,6 @@ Compose dựng PostgreSQL, Redis, RabbitMQ, Eureka, API Gateway và sáu busines
 ```powershell
 docker compose down --volumes
 ```
+### Faculty / SUBJECT_ADMIN
+
+User Service owns the role/faculty relationship. SYSTEM_ADMIN assigns a lecturer from the Faculty edit dialog; the assignment is persisted as `SUBJECT_ADMIN` plus the selected faculty and synchronized to Auth through the existing user role/faculty RabbitMQ events.

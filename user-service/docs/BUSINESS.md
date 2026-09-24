@@ -25,3 +25,8 @@
 -   Không Permission entity.
 -   Lưu `dateOfBirth`, không lưu `age`.
 -   SYSTEM_ADMIN không tự động trở thành SUBJECT_ADMIN.
+## Faculty and SUBJECT_ADMIN assignment
+
+`UserProfile.role` and `UserProfile.facultyId` are the source of truth. A `Faculty` does not store a competing `subjectAdminId`; faculty responses derive `subjectAdmins` and `lecturerCount` from active User profiles.
+
+Only `SYSTEM_ADMIN` may assign a lecturer through `PATCH /api/v1/faculties/{facultyId}/subject-admin`. The selected profile is updated atomically to `role=SUBJECT_ADMIN` and `facultyId=<faculty.code>`. Passing a null `userId` removes the current SUBJECT_ADMIN role for that faculty according to the User Service rule.

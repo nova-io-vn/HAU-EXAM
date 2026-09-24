@@ -15,6 +15,8 @@ import com.userservice.application.model.ImageUploadCommand;
 import com.userservice.application.service.ImageStorageService;
 
 import java.util.UUID;
+import java.util.List;
+import com.userservice.application.service.UserContactQueryService;
 
 @RestController
 @RequestMapping("/api/v1/users/me")
@@ -22,9 +24,10 @@ public class UserProfileController {
     private final UserProfileUseCase useCase;
     private final UserProfileResponseMapper mapper;
     private final ImageStorageService imageStorage;
+    private final UserContactQueryService contacts;
 
-    public UserProfileController(UserProfileUseCase useCase, UserProfileResponseMapper mapper, ImageStorageService imageStorage) {
-        this.useCase = useCase; this.mapper = mapper; this.imageStorage = imageStorage;
+    public UserProfileController(UserProfileUseCase useCase, UserProfileResponseMapper mapper, ImageStorageService imageStorage, UserContactQueryService contacts) {
+        this.useCase = useCase; this.mapper = mapper; this.imageStorage = imageStorage; this.contacts = contacts;
     }
 
     @PutMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -37,6 +40,11 @@ public class UserProfileController {
     @GetMapping
     public ApiResponse<UserProfileResponse> me(@AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.success(mapper.toResponse(useCase.getOwnProfile(userId(jwt))));
+    }
+
+    @GetMapping("/chat-contacts")
+    public ApiResponse<List<UserContactQueryService.ChatContact>> chatContacts(@AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.success(contacts.contacts(jwt.getClaimAsString("role"), jwt.getClaimAsString("facultyId")));
     }
 
     @PutMapping

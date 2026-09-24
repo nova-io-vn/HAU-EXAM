@@ -26,3 +26,14 @@ Endpoint admin phải được bảo vệ bằng role và business rule.
 | POST | `/api/v1/users/{id}/unlock` | `SYSTEM_ADMIN` |
 
 `/me` derives the user id from the authenticated JWT `sub`; it does not accept a client-supplied user id.
+### Assign faculty subject administrator
+
+```http
+PATCH /api/v1/faculties/{facultyId}/subject-admin
+Authorization: Bearer <SYSTEM_ADMIN JWT>
+Content-Type: application/json
+
+{"userId":"<active-user-uuid>"}
+```
+
+`userId` may be `null` to remove the current assignment. The endpoint validates that the faculty is active and publishes the existing `user.role.changed` and `user.faculty.changed` events. The response contains derived `lecturerCount` and `subjectAdmins` data.

@@ -1,0 +1,4 @@
+CREATE TABLE ai_knowledge_documents(id UUID PRIMARY KEY,title VARCHAR(200) NOT NULL,description VARCHAR(1000),original_file_name VARCHAR(255) NOT NULL,content_type VARCHAR(120) NOT NULL,file_size BIGINT NOT NULL,status VARCHAR(20) NOT NULL,enabled BOOLEAN NOT NULL DEFAULT TRUE,extracted_text TEXT NOT NULL,created_by UUID NOT NULL,created_at TIMESTAMP WITH TIME ZONE NOT NULL,updated_at TIMESTAMP WITH TIME ZONE NOT NULL,processing_error VARCHAR(1000));
+CREATE INDEX idx_ai_knowledge_documents_enabled ON ai_knowledge_documents(enabled,status);
+CREATE TABLE ai_knowledge_chunks(id UUID PRIMARY KEY,document_id UUID NOT NULL REFERENCES ai_knowledge_documents(id) ON DELETE CASCADE,chunk_index INT NOT NULL,text TEXT NOT NULL,embedding TEXT NOT NULL,metadata_json TEXT NOT NULL);
+CREATE INDEX idx_ai_knowledge_chunks_document ON ai_knowledge_chunks(document_id,chunk_index);

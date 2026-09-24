@@ -87,6 +87,17 @@ public class UserAdministrationService implements UserAdministrationUseCase {
 
     @Override
     @Transactional
+    public UserProfile assignSubjectAdmin(ActorContext a, UUID id, String faculty, UUID c) {
+        requireAdmin(a);
+        if (faculty == null || faculties == null || faculties.findByCode(faculty).filter(f -> f.active()).isEmpty()) throw new IllegalArgumentException("Active faculty not found");
+        if (id == null) { var current = usersForRemoval(faculty); current.forEach(u -> change(a, u.getId(), x -> x.assignRole(Role.USER, now()), x -> publisher.roleChanged(x, c))); return current.isEmpty() ? null : current.getFirst(); }
+        return change(a, id, u -> { if (u.getStatus() != com.userservice.domain.model.UserStatus.ACTIVE || u.getRole() == Role.SYSTEM_ADMIN) throw new IllegalArgumentException("Only an active non-system-admin may become SUBJECT_ADMIN"); return u.assignFaculty(faculty, now()).assignRole(Role.SUBJECT_ADMIN, now()); }, u -> { publisher.roleChanged(u, c); publisher.facultyChanged(u, c); });
+    }
+
+    private java.util.List<UserProfile> usersForRemoval(String faculty) { return repository.findAll(new PageQuery(0, 100, null, faculty, Role.SUBJECT_ADMIN, com.userservice.domain.model.UserStatus.ACTIVE, null)).content(); }
+
+    @Override
+    @Transactional
     public UserProfile lock(ActorContext a, UUID id, UUID c) {
         return change(a, id, u -> u.lock(now()), u -> publisher.statusChanged(u, c));
     }

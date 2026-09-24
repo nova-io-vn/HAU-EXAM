@@ -65,7 +65,7 @@ spring:
             - id: ai-service
               uri: lb://AI-SERVICE
               predicates:
-                - Path=/api/v1/ai/**,/api/v1/documents/**,/api/v1/chat/**,/api/v1/admin/ai-settings/**
+                - Path=/api/v1/ai/**,/api/v1/documents/**,/api/v1/chat/**,/api/v1/admin/ai-settings/**,/api/v1/admin/ai-policy/**
             - id: notification-websocket
               uri: lb:ws://NOTIFICATION-SERVICE
               predicates:

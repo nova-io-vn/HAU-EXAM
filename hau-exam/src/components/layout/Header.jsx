@@ -5,6 +5,7 @@ import { UserMenu } from "./UserMenu";
 import { GlobalSearch } from "./GlobalSearch";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { getRouteMeta } from "../../app/router/routeConfig";
+import { HumanChatDropdown } from "../../features/support/components/HumanChatDropdown";
 export function Header({ collapsed, onToggle, onMobileMenu }) {
   const { pathname } = useLocation();
   const { role, currentUser, facultyId } = useAuth();
@@ -44,6 +45,7 @@ export function Header({ collapsed, onToggle, onMobileMenu }) {
       </div>
       <GlobalSearch role={role} />
       <NotificationBell />
+      <HumanChatDropdown />
       <UserMenu />
     </header>
   );

@@ -23,3 +23,6 @@
 -   WebSocket là delivery realtime, không phải durable store.
 -   Sau reconnect, client lấy lại notification từ REST/DB.
 -   User chỉ nhận destination của mình.
+## Human chat contacts
+
+Human Chat resolves `SUBJECT_ADMIN` contacts from active User profiles filtered by the current user's faculty. Contacts are not hard-coded in the frontend; a reassignment in User Service is reflected after the next contact query.

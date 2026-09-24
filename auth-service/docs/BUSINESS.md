@@ -28,3 +28,6 @@
 -   Password không lưu plain text.
 -   OTP hết hạn, giới hạn attempt và invalidate sau khi dùng thành công.
 -   Không tự gửi SMTP.
+## Faculty-scoped role synchronization
+
+When User Service assigns `SUBJECT_ADMIN` and a faculty, Auth Service consumes the existing user role/faculty change event and updates the security projection. New access/refresh tokens therefore contain the current `role=SUBJECT_ADMIN` and `facultyId` after the normal login/refresh flow.

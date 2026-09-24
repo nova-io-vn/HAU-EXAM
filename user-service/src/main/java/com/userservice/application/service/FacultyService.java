@@ -15,10 +15,12 @@ import java.util.UUID;
 public class FacultyService {
     private final FacultyRepository repo;
     private final Clock clock;
+    private final UserProfileRepository users;
 
-    public FacultyService(FacultyRepository repo, Clock clock) {
-        this.repo = repo;
-        this.clock = clock;
+    public FacultyService(FacultyRepository repo, Clock clock) { this(repo, clock, null); }
+    @org.springframework.beans.factory.annotation.Autowired
+    public FacultyService(FacultyRepository repo, Clock clock, UserProfileRepository users) {
+        this.repo = repo; this.clock = clock; this.users = users;
     }
 
     @Transactional(readOnly = true)
@@ -50,6 +52,14 @@ public class FacultyService {
     public Faculty status(ActorContext a, UUID id, boolean active) {
         var old = get(a, id);
         return repo.save(new Faculty(old.id(), old.code(), old.name(), old.description(), active, old.createdAt(), Instant.now(clock)));
+    }
+
+    public com.userservice.presentation.response.FacultyResponse response(Faculty f) {
+        if (users == null) return com.userservice.presentation.response.FacultyResponse.from(f);
+        var all = users.findAll(new PageQuery(0, 1, null, f.code(), null, UserStatus.ACTIVE, null));
+        var admins = users.findActiveAudience(Role.SUBJECT_ADMIN, f.code()).stream().map(u ->
+                new com.userservice.presentation.response.FacultyResponse.SubjectAdmin(u.getId(), u.getFullName(), u.getLecturerCode(), u.getAvatar(), u.getFacultyId())).toList();
+        return new com.userservice.presentation.response.FacultyResponse(f.id(), f.code(), f.name(), f.description(), f.active(), f.createdAt(), f.updatedAt(), all.totalElements(), admins);
     }
 
     private void admin(ActorContext a) {

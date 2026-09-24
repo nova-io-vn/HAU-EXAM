@@ -27,3 +27,6 @@ User Service consume `user.bootstrap-admin.requested` từ `auth.exchange`. Payl
 chỉ gồm `userId`, `lecturerCode`, `email`, `fullName`, `role`, `status` và
 `facultyId`. Consumer tạo profile `SYSTEM_ADMIN/ACTIVE` idempotent theo event và
 logical identity; không nhận hoặc lưu password.
+## Subject admin assignment
+
+The assignment uses the existing User Service events; no new event type is introduced. The producer emits `user.role.changed` and `user.faculty.changed` with `userId`, `role`, `facultyId`, status and faculty metadata. Auth Service consumes these events to update its security projection. Passwords, tokens and credentials are never included.

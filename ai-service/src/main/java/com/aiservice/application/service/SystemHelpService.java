@@ -38,14 +38,17 @@ public class SystemHelpService {
 
     private final AiProvider provider;
     private final ObjectMapper mapper;
+    private final AiKnowledgeService knowledge;
 
-    public SystemHelpService(AiProvider provider, ObjectMapper mapper) { this.provider = provider; this.mapper = mapper; }
+    public SystemHelpService(AiProvider provider, ObjectMapper mapper, AiKnowledgeService knowledge) { this.provider = provider; this.mapper = mapper; this.knowledge = knowledge; }
 
     public Result ask(String role, String message) {
+        if (!inScope(message)) return new Result("Tôi là Trợ lý HAU QM và được thiết kế để hỗ trợ các nội dung liên quan đến hệ thống, dữ liệu học thuật và chính sách HAU QM.", List.of(), List.of());
         List<Article> articles = KNOWLEDGE.get(role);
         if (articles == null) throw new IllegalArgumentException("Unsupported role");
         try {
-            String source = mapper.writeValueAsString(Map.of("role", role, "articles", articles));
+            var sources = knowledge == null ? List.<AiKnowledgeService.Source>of() : knowledge.retrieve(message, 4);
+            String source = mapper.writeValueAsString(Map.of("role", role, "articles", articles, "policySources", sources));
             String request = mapper.writeValueAsString(Map.of("message", message));
             var root = mapper.readTree(provider.systemHelp(source, request));
             String answer = root.path("answer").asText("").trim();
@@ -58,7 +61,7 @@ public class SystemHelpService {
                     actions.add(new Action("NAVIGATE", node.path("label").asText("Đi tới chức năng"), routeKey));
             });
             log.info("System help answer completed; role={} actionCount={} messageLength={}", role, actions.size(), message.length());
-            return new Result(answer, List.copyOf(actions));
+            return new Result(answer, List.copyOf(actions), sources);
         } catch (com.aiservice.domain.exception.ProviderException exception) { throw exception; }
         catch (InvalidAiOutputException exception) { throw exception; }
         catch (Exception exception) { throw new InvalidAiOutputException("System help response is malformed"); }
@@ -66,5 +69,6 @@ public class SystemHelpService {
 
     public record Article(String routeKey, String title, String workflow) {}
     public record Action(String type, String label, String routeKey) {}
-    public record Result(String answer, List<Action> actions) {}
+    private boolean inScope(String message) { String m=message.toLowerCase(java.util.Locale.ROOT); return java.util.stream.Stream.of("hau qm","câu hỏi","cau hoi","môn học","mon hoc","chương","chuong","chủ đề","chu de","tài liệu","tai lieu","ai","phê duyệt","phe duyet","ma trận","ma tran","thông báo","thong bao","tài khoản","tai khoan","khoa","chính sách","chinh sach","ngân hàng","ngan hang","tạo câu hỏi","tao cau hoi","đang chờ","dang cho").anyMatch(m::contains); }
+    public record Result(String answer, List<Action> actions, List<AiKnowledgeService.Source> sources) {}
 }

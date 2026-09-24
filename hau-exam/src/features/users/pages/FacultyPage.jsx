@@ -14,6 +14,8 @@ import { routes } from "../../../constants/routes";
 import { facultiesApi } from "../api/facultiesApi";
 import { normalizePage } from "../model/userModel";
 import { Pagination } from "../components/Pagination";
+import { SubjectAdminCombobox } from "../components/SubjectAdminCombobox";
+import { usersApi } from "../api/usersApi";
 export function FacultyPage() {
   const [draft, setDraft] = useState({ keyword: "", active: "" });
   const [query, setQuery] = useState(draft);
@@ -22,6 +24,8 @@ export function FacultyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [lecturers, setLecturers] = useState([]);
+  useEffect(() => { if (!editing) return; usersApi.list({ page: 0, size: 100, status: "ACTIVE" }).then(result => setLecturers(normalizePage(result).items.filter(user => user.role === "USER" || user.role === "SUBJECT_ADMIN"))).catch(() => setLecturers([])); }, [editing]);
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -63,6 +67,7 @@ export function FacultyPage() {
       };
       if (editing?.id) await facultiesApi.update(editing.id, body);
       else await facultiesApi.create(body);
+      if (editing?.id) await facultiesApi.assignSubjectAdmin(editing.id, values.subjectAdminId || null);
       setEditing(null);
       load();
     } catch (e) {
@@ -139,9 +144,9 @@ export function FacultyPage() {
                   render: (f) => f.lecturerCount ?? "—",
                 },
                 {
-                  key: "subjectAdminCount",
+                  key: "subjectAdmins",
                   header: "Quản trị chuyên môn",
-                  render: (f) => f.subjectAdminCount ?? "—",
+                  render: (f) => f.subjectAdmins?.length ? f.subjectAdmins.map(admin => admin.fullName).join(", ") : "—",
                 },
                 {
                   key: "active",
@@ -203,6 +208,7 @@ export function FacultyPage() {
             required
             defaultValue={editing?.code || ""}
           />
+          {editing?.id && <><SubjectAdminCombobox users={lecturers} value={editing.subjectAdminId ?? editing.subjectAdmins?.[0]?.id ?? ""} onChange={value => setEditing({...editing, subjectAdminId:value})} /><input type="hidden" name="subjectAdminId" value={editing.subjectAdminId ?? editing.subjectAdmins?.[0]?.id ?? ""} readOnly /></>}
           <Input
             name="name"
             label="Tên Khoa"

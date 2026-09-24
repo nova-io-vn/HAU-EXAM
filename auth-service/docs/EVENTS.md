@@ -34,3 +34,4 @@ Khi `BOOTSTRAP_ADMIN_ENABLED=true`, Auth Service tạo idempotent một credenti
 vào `user_db`, mà phát event `user.bootstrap-admin.requested` trên `auth.exchange`.
 Event không chứa password hoặc password hash. User Service tạo profile ACTIVE và
 ghi nhận `eventId`; event phát lại không tạo profile trùng.
+`user.role.changed` and `user.faculty.changed` both synchronize the Auth security projection. The payload carries `userId`, `role` and `facultyId`; it contains no password or token.

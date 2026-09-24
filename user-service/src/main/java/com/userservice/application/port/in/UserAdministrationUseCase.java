@@ -14,6 +14,7 @@ public interface UserAdministrationUseCase {
     UserProfile reject(ActorContext actor, UUID id, UUID correlationId);
     UserProfile assignRole(ActorContext actor, UUID id, Role role, UUID correlationId);
     UserProfile assignFaculty(ActorContext actor, UUID id, String facultyId, UUID correlationId);
+    UserProfile assignSubjectAdmin(ActorContext actor, UUID userId, String facultyId, UUID correlationId);
     UserProfile lock(ActorContext actor, UUID id, UUID correlationId);
     UserProfile unlock(ActorContext actor, UUID id, UUID correlationId);
 }
