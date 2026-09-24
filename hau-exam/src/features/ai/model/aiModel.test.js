@@ -10,7 +10,7 @@ test('upload accepts only nonempty text/plain within configured size',()=>{
   assert.ok(validateDocument({type:'text/plain',size:101},100))
 })
 test('generation enforces backend count and maps only contract fields',()=>{
-  assert.deepEqual(generationPayload({documentId:'doc',count:'10',difficulty:'',topicId:''}),{documentId:'doc',count:10,difficulty:null,topicId:null})
+  assert.deepEqual(generationPayload({documentId:'doc',count:'10',difficulty:'',topicId:''}),{documentId:'doc',count:10,difficulty:null,topicId:null,subjectId:null,chapterId:null,language:'VI',includeImages:false})
   for(const count of [0,101,1.5,'invalid'])assert.throws(()=>generationPayload({documentId:'doc',count}))
   assert.throws(()=>generationPayload({documentId:'doc',count:1,topicId:'bad'}))
 })

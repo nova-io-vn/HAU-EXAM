@@ -1,0 +1,7 @@
+package com.notificationservice.presentation.response;
+import com.notificationservice.domain.model.SupportStatus; import com.notificationservice.infrastructure.persistence.entity.*; import java.time.Instant; import java.util.*;
+public final class SupportResponses { private SupportResponses(){} 
+ public record Conversation(UUID id,UUID createdByUserId,String createdByRole,String facultyId,String subject,SupportStatus status,UUID assignedAdminId,Instant createdAt,Instant updatedAt,Instant lastMessageAt) { public static Conversation from(SupportConversationEntity e){return new Conversation(e.getId(),e.getCreatedByUserId(),e.getCreatedByRole(),e.getFacultyId(),e.getSubject(),e.getStatus(),e.getAssignedAdminId(),e.getCreatedAt(),e.getUpdatedAt(),e.getLastMessageAt());}}
+ public record Attachment(UUID id,String type,String fileName,String contentType,long fileSize,String url,String publicId,Instant createdAt){public static Attachment from(SupportAttachmentEntity e){return new Attachment(e.getId(),e.getType(),e.getFileName(),e.getContentType(),e.getFileSize(),e.getUrl(),e.getPublicId(),e.getCreatedAt());}}
+ public record Message(UUID id,UUID conversationId,UUID senderId,String senderRole,String content,Instant createdAt,Instant editedAt,Instant readAt,List<Attachment> attachments){public static Message from(SupportMessageEntity e,List<SupportAttachmentEntity> a){return new Message(e.getId(),e.getConversationId(),e.getSenderId(),e.getSenderRole(),e.getContent(),e.getCreatedAt(),e.getEditedAt(),e.getReadAt(),a.stream().map(Attachment::from).toList());}}
+}

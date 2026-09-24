@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { routes } from "../../../constants/routes";
+import logo from '../../../assets/logo.jpg';
+
 export function AuthLayout({
   title,
   description,
@@ -10,7 +12,7 @@ export function AuthLayout({
   return (
     <main className="auth-page">
       <section className="auth-brand-panel">
-        <div className="auth-brand-mark">H</div>
+        <div className="auth-brand-mark"><img src={logo} alt="Hauexam" /></div>
         <span className="auth-overline">HAU QM SYSTEM</span>
         <h1>
           Không gian khảo thí
@@ -29,7 +31,7 @@ export function AuthLayout({
       </section>
       <section className="auth-card" aria-labelledby="auth-title">
         <Link className="auth-brand" to="/">
-          <span>H</span>
+          <span><img src={logo} alt="Hauexam" /></span>
           <strong>HAU QM</strong>
         </Link>
         <div className="auth-tabs">

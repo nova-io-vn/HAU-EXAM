@@ -1,7 +1,7 @@
 import {test as base,expect} from '@playwright/test'
 
 export const ids={user:'00000000-0000-0000-0000-000000000001',admin:'00000000-0000-0000-0000-000000000002',question:'00000000-0000-0000-0000-000000000010',subject:'00000000-0000-0000-0000-000000000020',chapter:'00000000-0000-0000-0000-000000000030',topic:'00000000-0000-0000-0000-000000000040',matrix:'00000000-0000-0000-0000-000000000050',exam:'00000000-0000-0000-0000-000000000060',job:'00000000-0000-0000-0000-000000000070'}
-const initialState={questionStatus:'DRAFT',notificationRead:false,approved:false,jobStatus:'PROCESSING',jobReads:0,currentRole:'USER'}
+const initialState={questionStatus:'DRAFT',notificationRead:false,approved:false,jobStatus:'PROCESSING',jobReads:0,currentRole:'USER',profileUnauthorizedOnce:false,refreshCalls:0}
 const state={...initialState}
 
 function token(role){const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url');return `${encode({alg:'none',typ:'JWT'})}.${encode({sub:role==='USER'?ids.user:ids.admin,lecturerCode:role==='USER'?'E2E_USER':'E2E_ADMIN',role,facultyId:'CNTT'})}.signature`}
@@ -22,7 +22,7 @@ export const test=base.extend({gateway:async({context},use)=>{
     const respond=(data,status=200)=>route.fulfill({status,headers:{...corsHeaders,'Content-Type':'application/json'},body:JSON.stringify(data)})
     if(path==='/api/v1/auth/login'&&method==='POST'){const code=String(body?.lecturerCode||'').toLowerCase();const role=code==='e2e_subject_admin'?'SUBJECT_ADMIN':code==='e2e_admin'?'SYSTEM_ADMIN':'USER';state.currentRole=role;return respond(ok(session(role),'LOGIN_SUCCESS'))}
     if(path==='/api/v1/public/faculties'&&method==='GET')return respond(ok({content:[{id:'faculty-cntt',code:'CNTT',name:'Công nghệ thông tin',active:true}],page:0,size:100,totalElements:1,totalPages:1}))
-    if(path==='/api/v1/auth/refresh'&&method==='POST')return respond(ok(session(state.currentRole),'TOKEN_REFRESHED'))
+    if(path==='/api/v1/auth/refresh'&&method==='POST'){state.refreshCalls+=1;return respond(ok(session(state.currentRole),'TOKEN_REFRESHED'))}
     if(path==='/api/v1/auth/logout'&&method==='POST')return respond(ok(null,'LOGOUT_SUCCESS'))
     if(path==='/api/v1/auth/register'&&method==='POST'){
       if(!body?.lecturerCode||!body?.password||!body?.fullName||!body?.email)return respond({success:false,code:'VALIDATION_FAILED',message:'Missing registration profile',data:null},400)
@@ -31,6 +31,14 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path==='/api/v1/auth/forgot-password'&&method==='POST')return respond(ok({status:'OTP_REQUESTED'},'OTP_REQUESTED'))
     if(path==='/api/v1/auth/verify-otp'&&method==='POST')return respond(ok({verified:true,resetToken:'e2e-reset'},'OTP_VERIFIED'))
     if(path==='/api/v1/auth/reset-password'&&method==='POST')return respond(ok(null,'PASSWORD_RESET'))
+    if(path==='/api/v1/users/me'&&method==='GET'&&state.profileUnauthorizedOnce){state.profileUnauthorizedOnce=false;return respond({success:false,code:'INVALID_ACCESS_TOKEN',message:'Expired',data:null},401)}
+    if(path==='/api/v1/users/me'&&method==='GET'){
+      const authorization=request.headers().authorization||''
+      let role=state.currentRole
+      try{role=JSON.parse(Buffer.from(authorization.split('.')[1]||'','base64url').toString()).role||role}catch{void 0}
+      const current=session(role).currentUser
+      return respond(ok({...current,fullName:role==='USER'?'E2E User':role==='SUBJECT_ADMIN'?'E2E Subject Admin':'E2E System Admin',email:'e2e@example.test',facultyName:'Công nghệ thông tin',status:'ACTIVE',updatedAt:'2026-01-01T00:00:00Z'}))
+    }
     if(path.startsWith('/api/v1/users')&&method==='GET')return respond(page([{id:ids.user,lecturerCode:'E2E_USER',fullName:'E2E User',email:'e2e@example.test',facultyId:'CNTT',role:'USER',status:state.approved?'ACTIVE':'PENDING_APPROVAL',updatedAt:'2026-01-01T00:00:00Z'}]))
     if(path===`/api/v1/users/${ids.user}/approve`&&method==='POST'){state.approved=true;return respond(ok(null,'USER_APPROVED'))}
     if(path==='/api/v1/subjects'&&method==='GET')return respond([{id:ids.subject,name:'E2E Subject'}])
@@ -41,12 +49,15 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path===`/api/v1/questions/${ids.question}`&&method==='GET')return respond(ok(question()))
     if(path===`/api/v1/questions/${ids.question}/submit`&&method==='POST'){state.questionStatus='PENDING_REVIEW';return respond(ok(question(),'QUESTION_SUBMITTED'))}
     if(path===`/api/v1/questions/${ids.question}/approve`&&method==='POST'){state.questionStatus='APPROVED';return respond(ok(question(),'QUESTION_APPROVED'))}
-    if(path==='/api/v1/notifications'&&method==='GET')return respond(page([{id:'notification-1',type:'QUESTION_APPROVED',title:'Question approved',content:'Your question was approved.',isRead:state.notificationRead,createdAt:'2026-01-01T00:00:00Z'}]))
+    if(path==='/api/v1/notifications'&&method==='GET')return respond(ok([{id:'notification-1',type:'QUESTION_APPROVED',title:'Question approved',content:'Your question was approved.',read:state.notificationRead,createdAt:'2026-01-01T00:00:00Z'}]))
     if(path==='/api/v1/notifications/unread-count'&&method==='GET')return respond(state.notificationRead?0:1)
     if(path.endsWith('/read')&&method==='POST'){state.notificationRead=true;return respond(ok(null,'NOTIFICATION_READ'))}
     if(path.endsWith('/read-all')&&method==='POST'){state.notificationRead=true;return respond(ok(null,'NOTIFICATIONS_READ'))}
     if(path==='/api/v1/admin/email-settings'&&method==='GET')return respond(ok({smtpHost:'smtp.gmail.com',smtpPort:587,smtpUsername:'smtp-user@example.test',passwordConfigured:true,fromEmail:'smtp-user@example.test',fromName:'HAU QM',security:'STARTTLS',enabled:true}))
+    if(path==='/api/v1/admin/email-settings'&&method==='PUT')return respond(ok({...body,passwordConfigured:true}))
     if(path==='/api/v1/admin/email-settings/test'&&method==='POST')return respond(ok(null))
+    if(path==='/api/v1/admin/contact'&&method==='GET')return respond(ok({content:[{id:'contact-1',name:'Nguyễn Văn A',email:'contact@example.test',subject:'Cần hỗ trợ',message:'Nội dung cần hỗ trợ chi tiết.',facultyId:'CNTT',status:'NEW',createdAt:'2026-01-01T00:00:00Z'}],number:0,size:20,totalElements:1,totalPages:1}))
+    if(path==='/api/v1/admin/contact/contact-1/reply'&&method==='POST')return respond({success:false,code:'EMAIL_SEND_FAILED',message:'Delivery failed',data:null},502)
     if(path==='/api/v1/ai/jobs'&&method==='GET')return respond(page([{jobId:ids.job,type:'QUESTION_GENERATION',status:state.jobStatus,createdAt:'2026-01-01T00:00:00Z'}]))
     if(path===`/api/v1/ai/jobs/${ids.job}`&&method==='GET'){state.jobReads+=1;const status=state.jobReads>1?'COMPLETED':state.jobStatus;return respond(ok({jobId:ids.job,type:'QUESTION_GENERATION',status,createdAt:'2026-01-01T00:00:00Z'}))}
     if(path===`/api/v1/ai/jobs/${ids.job}/result`&&method==='GET')return respond(ok([{question:'Generated question',options:[{label:'A',content:'Answer A'}],correctAnswer:'A',difficulty:'MEDIUM'}]))
@@ -55,6 +66,10 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path===`/api/v1/exams/${ids.exam}`&&method==='GET')return respond(ok({id:ids.exam,name:'E2E Exam',subjectId:ids.subject,matrixId:ids.matrix,versions:[{id:'version-1',version:1,generatedAt:'2026-01-01T00:00:00Z',questions:[]}]}))
     return respond(ok(null))
   })
-  await use({login:async(role='USER',targetPage)=>{const activePage=targetPage||context.pages()[0];await activePage.goto('/login');await activePage.getByLabel('Mã giảng viên').fill(role==='USER'?'E2E_USER':role==='SUBJECT_ADMIN'?'E2E_SUBJECT_ADMIN':'E2E_ADMIN');await activePage.locator('input[name="password"]').fill('test-password');await activePage.getByRole('button',{name:'Đăng nhập'}).click();await expect(activePage).toHaveURL(/dashboard/)}})
+  await use({
+    login:async(role='USER',targetPage)=>{const activePage=targetPage||context.pages()[0];await activePage.goto('/login');await activePage.getByLabel('Mã giảng viên').fill(role==='USER'?'E2E_USER':role==='SUBJECT_ADMIN'?'E2E_SUBJECT_ADMIN':'E2E_ADMIN');await activePage.locator('input[name="password"]').fill('test-password');await activePage.getByRole('button',{name:'Đăng nhập'}).click();await expect(activePage).toHaveURL(/dashboard/)},
+    expireNextProfile:()=>{state.profileUnauthorizedOnce=true},
+    refreshCalls:()=>state.refreshCalls,
+  })
 }})
 export {expect}

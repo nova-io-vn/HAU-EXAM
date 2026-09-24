@@ -1,0 +1,3 @@
+package com.notificationservice.infrastructure.persistence.repository;
+import com.notificationservice.infrastructure.persistence.entity.SupportConversationEntity; import com.notificationservice.domain.model.SupportStatus; import org.springframework.data.domain.*; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*;
+public interface SupportConversationRepository extends JpaRepository<SupportConversationEntity,UUID>{Page<SupportConversationEntity> findByCreatedByUserIdOrderByLastMessageAtDesc(UUID id,Pageable p);Page<SupportConversationEntity> findAllByOrderByLastMessageAtDesc(Pageable p);Page<SupportConversationEntity> findByStatusOrderByLastMessageAtDesc(SupportStatus s,Pageable p);}

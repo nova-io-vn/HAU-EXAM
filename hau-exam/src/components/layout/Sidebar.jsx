@@ -6,6 +6,7 @@ import { authStore } from "../../stores/authStore";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { questionsApi } from "../../features/questions/api/questionsApi";
 import { Icon } from "../ui";
+import logo from '../../assets/logo.jpg';
 
 const roleLabel = {
   SYSTEM_ADMIN: "Quản trị viên hệ thống",
@@ -31,6 +32,19 @@ export function Sidebar({ collapsed, mobileOpen, onClose }) {
       active = false;
     };
   }, [role]);
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") onClose?.();
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [mobileOpen, onClose]);
   const groups = navigationByRole[role] || [];
   const faculty =
     currentUser?.facultyName ||
@@ -80,7 +94,7 @@ export function Sidebar({ collapsed, mobileOpen, onClose }) {
         aria-label="Điều hướng chính"
       >
         <div className="brand">
-          <span className="brand-mark">H</span>
+          <span className="brand-mark"><img src={logo} alt="Hauexam" /></span>
           {!collapsed && (
             <span className="brand-copy">
               <strong>HAU QM</strong>

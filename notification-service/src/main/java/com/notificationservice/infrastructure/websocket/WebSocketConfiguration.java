@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -34,7 +35,7 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
     }
 
     @Override public void registerStompEndpoints(StompEndpointRegistry registry) { registry.addEndpoint("/ws").setAllowedOriginPatterns(origins); }
-    @Override public void configureMessageBroker(MessageBrokerRegistry registry) { registry.enableSimpleBroker("/queue"); registry.setUserDestinationPrefix("/user"); }
+    @Override public void configureMessageBroker(MessageBrokerRegistry registry) { registry.enableSimpleBroker("/queue", "/topic"); registry.setUserDestinationPrefix("/user"); }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
@@ -45,6 +46,12 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) authenticate(accessor);
                 if ((StompCommand.SUBSCRIBE.equals(accessor.getCommand()) || StompCommand.SEND.equals(accessor.getCommand())) && accessor.getUser() == null)
                     throw new BadCredentialsException("Authenticated STOMP session is required");
+                if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+                    String destination = accessor.getDestination();
+                    boolean safe = "/user/queue/notifications".equals(destination) || "/user/queue/support".equals(destination)
+                            || ("/topic/support/admin".equals(destination) && accessor.getUser() instanceof Authentication auth && auth.getAuthorities().stream().anyMatch(a -> "ROLE_SYSTEM_ADMIN".equals(a.getAuthority())));
+                    if (!safe) throw new BadCredentialsException("Unsupported STOMP destination");
+                }
                 return message;
             }
         });

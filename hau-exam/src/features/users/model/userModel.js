@@ -1,4 +1,5 @@
 export const userRoles=['SYSTEM_ADMIN','SUBJECT_ADMIN','USER']
+export const assignableUserRoles=['SUBJECT_ADMIN','USER']
 export const userStatuses=['PENDING_APPROVAL','ACTIVE','REJECTED','LOCKED']
 export function normalizePage(result){if(Array.isArray(result))return{items:result,page:0,size:result.length,totalElements:result.length,totalPages:1};return{items:result?.content||result?.items||[],page:result?.number??result?.page??0,size:result?.size??10,totalElements:result?.totalElements??0,totalPages:result?.totalPages??0}}
 export function formatDateTime(value){if(!value)return'—';const date=new Date(value);return Number.isNaN(date.getTime())?'—':new Intl.DateTimeFormat('vi-VN',{dateStyle:'short',timeStyle:'short'}).format(date)}

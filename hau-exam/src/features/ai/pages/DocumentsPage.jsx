@@ -2,7 +2,7 @@ import {useEffect,useRef,useState} from 'react'
 import {Button,DataTable,Loading} from '../../../components/ui'
 import {aiApi} from '../api/aiApi'
 import {AiError} from '../components/AiShared'
-import {DEFAULT_MAX_DOCUMENT_BYTES,validateDocument} from '../model/aiModel'
+import {DEFAULT_MAX_DOCUMENT_BYTES,validateDocument,SUPPORTED_DOCUMENT_ACCEPT} from '../model/aiModel'
 import {formatDateTime} from '../../questions/model/questionModel'
 import {AI_DOCUMENT_MAX_SIZE_BYTES} from '../../../config/env'
 import {AsyncProgressCard} from '../../../components/shared/AsyncProgressCard'
@@ -28,8 +28,6 @@ export function DocumentsPage() {
     if(message){setError(new Error(message));return}
     lock.current=true;setBusy(true);setUploadStartedAt(new Date().toISOString());setError(null);setSuccess('')
     try {
-      const bytes=await file.arrayBuffer()
-      try{new TextDecoder('utf-8',{fatal:true}).decode(bytes)}catch{throw new Error('Tài liệu phải được mã hóa UTF-8.')}
       const document=await aiApi.upload(file)
       setSuccess(`Đã lưu tài liệu ${document.originalName}.`);setFile(null);if(input.current)input.current.value=''
       setState({loading:true});setPage(0);setVersion(v=>v+1)
@@ -37,8 +35,8 @@ export function DocumentsPage() {
   }
   return <div className="ai-stack"><form className="editor-section" onSubmit={upload}><h2>Upload tài liệu</h2>
     <div className="ai-dropzone" onDragOver={event=>event.preventDefault()} onDrop={event=>{event.preventDefault();if(event.dataTransfer.files.length!==1){setError(new Error('Chọn một tài liệu mỗi lần.'));return}choose(event.dataTransfer.files[0])}}>
-      <label htmlFor="ai-file">Kéo thả tài liệu vào đây hoặc chọn tệp</label><input ref={input} id="ai-file" type="file" accept="text/plain,.txt" disabled={busy} onChange={event=>choose(event.target.files[0])}/>
-      <p>UTF-8 .txt · tối đa {(maxBytes/1048576).toFixed(1)} MiB. Chưa hỗ trợ PDF/DOCX.</p>{file&&<strong>{file.name} · {(file.size/1024).toFixed(1)} KiB</strong>}
+      <label htmlFor="ai-file">Kéo thả tài liệu vào đây hoặc chọn tệp</label><input ref={input} id="ai-file" type="file" accept={SUPPORTED_DOCUMENT_ACCEPT} disabled={busy} onChange={event=>choose(event.target.files[0])}/>
+      <p>PDF, Word, Excel, PowerPoint, TXT, Markdown · tối đa {(maxBytes/1048576).toFixed(1)} MiB.</p>{file&&<strong>{file.name} · {(file.size/1024).toFixed(1)} KiB</strong>}
     </div>{error&&<AiError error={error}/>}<Button type="submit" loading={busy} disabled={busy||!file||Boolean(validateDocument(file,maxBytes))}>Upload tài liệu</Button>{busy&&<AsyncProgressCard compact title="Đang tải tài liệu lên" status="PROCESSING" startedAt={uploadStartedAt} message="Đang truyền dữ liệu. Không rời trang trong lúc upload."/>}{success&&<p role="status" className="review-success">{success}</p>}
   </form><section className="surface ai-list"><h2>Tài liệu của tôi</h2><p>Tài liệu đã lưu sẽ được trích xuất khi tác vụ AI chạy.</p>
     {state.loading?<Loading label="Đang tải tài liệu"/>:state.error?<AiError error={state.error} onRetry={()=>{setState({loading:true});setVersion(v=>v+1)}}/>:<><DataTable rows={state.data.items} emptyTitle="Chưa có tài liệu" columns={[{key:'originalName',header:'Tên tài liệu'},{key:'size',header:'Kích thước',render:d=>`${(d.size/1024).toFixed(1)} KiB`},{key:'createdAt',header:'Upload lúc',render:d=>formatDateTime(d.createdAt)},{key:'status',header:'Trạng thái',render:()=> 'Đã tải lên'}]}/><div className="ai-inline"><Button variant="secondary" disabled={page===0} onClick={()=>{setState({loading:true});setPage(p=>p-1)}}>Trước</Button><span>Trang {page+1} · {state.data.totalElements} tài liệu</span><Button variant="secondary" disabled={page+1>=state.data.totalPages} onClick={()=>{setState({loading:true});setPage(p=>p+1)}}>Sau</Button></div></>}

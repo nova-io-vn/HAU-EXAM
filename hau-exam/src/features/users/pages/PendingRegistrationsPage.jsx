@@ -44,7 +44,12 @@ export function PendingRegistrationsPage() {
     const { action, user } = confirmation;
     setConfirmation(null);
     try {
-      await usersApi[action](user.id);
+      await usersApi[action](
+        user.id,
+        action === "approve"
+          ? { facultyId: user.facultyId, role: user.role || "USER" }
+          : undefined,
+      );
       await load();
     } catch (reason) {
       setError(reason);

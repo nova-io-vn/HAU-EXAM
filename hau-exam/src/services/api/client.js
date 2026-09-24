@@ -1,18 +1,32 @@
 import {authStore} from '../../stores/authStore'
 import {ApiError} from './ApiError'
-import {API_BASE_URL} from '../../config/env'
+import {API_BASE_URL,API_TIMEOUT_MS} from '../../config/env'
 
 let refreshPromise=null
 
 function notify(name,detail){window.dispatchEvent(new CustomEvent(name,{detail}))}
 async function parseJson(response){try{return await response.json()}catch{return null}}
 function unwrap(payload){return payload&&typeof payload.success==='boolean'?payload.data:payload}
+async function fetchWithTimeout(url,options={}){
+  const controller=new AbortController()
+  const abort=()=>controller.abort(options.signal?.reason)
+  options.signal?.addEventListener('abort',abort,{once:true})
+  const timeout=setTimeout(()=>controller.abort(),API_TIMEOUT_MS)
+  try{return await fetch(url,{...options,signal:controller.signal})}
+  catch(error){
+    if(error?.name==='AbortError'&&!options.signal?.aborted)throw new ApiError({code:'REQUEST_TIMEOUT'})
+    throw error
+  }finally{
+    clearTimeout(timeout)
+    options.signal?.removeEventListener('abort',abort)
+  }
+}
 
 async function refreshSession(){
   const refreshToken=authStore.getRefreshToken()
   if(!refreshToken)throw new Error('Missing refresh token')
   if(!refreshPromise){
-    refreshPromise=fetch(`${API_BASE_URL}/api/v1/auth/refresh`,{method:'POST',credentials:'include',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({refreshToken})})
+    refreshPromise=fetchWithTimeout(`${API_BASE_URL}/api/v1/auth/refresh`,{method:'POST',credentials:'include',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({refreshToken})})
       .then(async response=>{const payload=await parseJson(response);if(!response.ok||payload?.success===false)throw new Error('Refresh failed');const session=unwrap(payload);authStore.setSession(session);return session.accessToken})
       .finally(()=>{refreshPromise=null})
   }
@@ -23,8 +37,8 @@ export async function apiRequest(path,{body,headers={},skipRefresh=false,...opti
   const token=authStore.getAccessToken()
   let response
   try{
-    response=await fetch(`${API_BASE_URL}${path.startsWith('/')?path:`/${path}`}`,{...options,credentials:'include',body:body instanceof FormData?body:body===undefined?undefined:JSON.stringify(body),headers:{Accept:'application/json',...(body!==undefined&&!(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{}) ,...headers}})
-  }catch{throw new ApiError({message:'Không thể kết nối đến máy chủ'})}
+    response=await fetchWithTimeout(`${API_BASE_URL}${path.startsWith('/')?path:`/${path}`}`,{...options,credentials:'include',body:body instanceof FormData?body:body===undefined?undefined:JSON.stringify(body),headers:{Accept:'application/json',...(body!==undefined&&!(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{}) ,...headers}})
+  }catch(error){if(error instanceof ApiError)throw error;throw new ApiError({message:'Không thể kết nối đến máy chủ'})}
 
   if(response.status===401&&!skipRefresh&&authStore.getRefreshToken()){
     try{await refreshSession();return apiRequest(path,{body,headers,skipRefresh:true,...options})}catch{

@@ -11,13 +11,16 @@
 .user-menu summary::-webkit-details-marker{display:none}
 .user-menu summary:hover,.user-menu[open] summary{background:var(--surface-muted)}
 .user-avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface-muted);font-size:12px;font-weight:700}
-.user-menu-popover{position:absolute;top:calc(100% + 8px);right:0;width:220px;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 8px 30px rgba(0,0,0,.1)}
+.user-menu-popover{position:absolute;top:calc(100% + 8px);right:0;width:250px;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 8px 30px rgba(0,0,0,.1)}
 .user-menu-popover>div{display:grid;gap:4px;padding:9px 10px 12px;border-bottom:1px solid var(--border)}
 .user-menu-popover span{color:var(--text-muted);font-size:12px}
 .user-menu-popover button{width:100%;margin-top:6px;padding:9px 10px;border:0;border-radius:7px;background:transparent;color:var(--danger);text-align:left;cursor:pointer}
 .user-menu-popover button:hover{background:var(--danger-soft)}
 .user-menu-popover>a{display:block;margin-top:6px;padding:9px 10px;border-radius:7px;color:var(--text);font-size:13px;text-decoration:none}
 .user-menu-popover>a:hover{background:var(--surface-muted)}
+.user-menu-theme-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;padding:4px 10px;border-top:1px solid var(--border);color:var(--text);font-size:13px}
+.user-menu-theme-toggle{display:grid!important;place-items:center;width:30px;margin:0!important;padding:6px!important;border:0;border-radius:7px;background:transparent!important;color:var(--text)!important;cursor:pointer}
+.user-menu-theme-toggle:hover,.user-menu-theme-toggle:focus-visible{background:var(--surface-muted)!important;color:var(--hau-primary)!important}
 .breadcrumb ol{display:flex;align-items:center;gap:7px;margin:0;padding:0;list-style:none;color:var(--text-muted);font-size:12px}
 .breadcrumb li+li::before{content:'/';margin-right:7px;color:#aeaeb2}
 .breadcrumb a{color:var(--text-muted);text-decoration:none}

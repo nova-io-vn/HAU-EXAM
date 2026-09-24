@@ -1,21 +1,4 @@
 package com.aiservice.infrastructure.extraction;
-
-import com.aiservice.application.port.out.TextExtractor;
-import com.aiservice.domain.exception.*;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-
-import org.springframework.stereotype.Component;
-
-@Component
-public class PlainTextExtractor implements TextExtractor {
-    public String extract(String type, InputStream data) {
-        if (!"text/plain".equals(type)) throw new UnsupportedDocumentException("No extractor for " + type);
-        try {
-            return new String(data.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new DomainException("Extraction failed", e);
-        }
-    }
-}
+import com.aiservice.application.port.out.*; import com.aiservice.domain.exception.*; import org.springframework.stereotype.Component; import java.io.*; import java.util.*;
+@Component public class PlainTextExtractor implements TextExtractor { private final List<DocumentTextExtractor> extractors; public PlainTextExtractor(List<DocumentTextExtractor> e){extractors=e;}
+ public String extract(String type,InputStream data){String name=switch(type){case "text/plain"->"file.txt";case "text/markdown"->"file.md";case "application/pdf"->"file.pdf";case "application/msword"->"file.doc";case "application/vnd.openxmlformats-officedocument.wordprocessingml.document"->"file.docx";case "application/vnd.ms-excel"->"file.xls";case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"->"file.xlsx";case "application/vnd.ms-powerpoint"->"file.ppt";case "application/vnd.openxmlformats-officedocument.presentationml.presentation"->"file.pptx";default->"file";};return extractors.stream().filter(x->x.supports(name,type)).findFirst().orElseThrow(()->new UnsupportedDocumentException("No extractor for "+type)).extract(name,type,data);}}

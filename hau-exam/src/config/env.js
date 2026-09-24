@@ -12,3 +12,5 @@ export const WS_BASE_URL = (
 ).replace(/\/$/, "");
 export const AI_DOCUMENT_MAX_SIZE_BYTES =
   Number(import.meta.env.VITE_AI_DOCUMENT_MAX_SIZE_BYTES) || 10 * 1024 * 1024;
+export const API_TIMEOUT_MS =
+  Number(import.meta.env.VITE_API_TIMEOUT_MS) || 30000;

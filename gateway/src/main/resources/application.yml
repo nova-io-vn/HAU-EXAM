@@ -65,7 +65,7 @@ spring:
             - id: ai-service
               uri: lb://AI-SERVICE
               predicates:
-                - Path=/api/v1/ai/**,/api/v1/documents/**,/api/v1/chat/**
+                - Path=/api/v1/ai/**,/api/v1/documents/**,/api/v1/chat/**,/api/v1/admin/ai-settings/**
             - id: notification-websocket
               uri: lb:ws://NOTIFICATION-SERVICE
               predicates:
@@ -73,7 +73,7 @@ spring:
             - id: notification-service
               uri: lb://NOTIFICATION-SERVICE
               predicates:
-                - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**,/api/v1/public/contact,/api/v1/admin/contact/**,/api/v1/admin/email-settings/**
+                 - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**,/api/v1/public/contact,/api/v1/admin/contact/**,/api/v1/admin/email-settings/**,/api/v1/support/**,/api/v1/admin/support/**
               filters:
                 - name: RequestRateLimiter
                   args:

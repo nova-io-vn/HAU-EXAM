@@ -2,7 +2,7 @@ import { Client } from "@stomp/stompjs";
 import { authStore } from "../../stores/authStore";
 import { notificationDestination, websocketEndpoint } from "./config";
 
-export function connectNotificationSocket({ onMessage, onConnect, onStatus }) {
+export function connectNotificationSocket({ onMessage, onSupport, onConnect, onStatus }) {
   const client = new Client({
     brokerURL: websocketEndpoint,
     reconnectDelay: 5000,
@@ -24,6 +24,8 @@ export function connectNotificationSocket({ onMessage, onConnect, onStatus }) {
         onStatus("message-error");
       }
     });
+    const supportDestination = authStore.getSnapshot().role === "SYSTEM_ADMIN" ? "/topic/support/admin" : "/user/queue/support";
+    client.subscribe(supportDestination, (frame) => { try { onSupport?.(JSON.parse(frame.body)); } catch { onStatus("message-error"); } });
     onConnect();
   };
   client.onWebSocketClose = () => onStatus("disconnected");

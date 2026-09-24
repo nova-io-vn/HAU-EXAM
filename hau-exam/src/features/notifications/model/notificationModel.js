@@ -8,7 +8,9 @@ export function normalizeNotification(message) {
     content: source.content || source.message || "",
     referenceId: source.referenceId || null,
     referenceType: source.referenceType || null,
-    isRead: Boolean(source.isRead),
+    actionUrl: source.actionUrl || null,
+    actionLabel: source.actionLabel || null,
+    isRead: Boolean(source.read ?? source.isRead),
     createdAt:
       source.createdAt || message?.occurredAt || new Date().toISOString(),
   };
@@ -29,6 +31,7 @@ export function normalizeNotificationPage(result) {
   };
 }
 export function notificationTarget(notification) {
+  if (notification.actionUrl) return notification.actionUrl;
   if (!notification.referenceId) return null;
   const type = String(notification.referenceType || "").toUpperCase();
   if (type === "QUESTION") return `/questions/${notification.referenceId}`;
@@ -37,6 +40,7 @@ export function notificationTarget(notification) {
   if (type === "EXAM") return `/exams?examId=${notification.referenceId}`;
   if (type === "USER" || type === "USER_PROFILE")
     return `/admin/users/${notification.referenceId}`;
+  if (type === "CONTACT_REQUEST") return `/admin/contact?contactId=${notification.referenceId}`;
   return null;
 }
 export function formatNotificationTime(value) {

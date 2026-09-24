@@ -1,0 +1,128 @@
+/* Responsive foundation: shared rules for the authenticated workspace. */
+html,body,#root{max-width:100%;overflow-x:clip}
+body{min-width:320px}
+*,*::before,*::after{min-width:0}
+img,svg,video,canvas{max-width:100%}
+button,input,select,textarea{max-width:100%}
+input,select,textarea{font-size:16px}
+p,h1,h2,h3,h4,h5,h6,td,th,span,strong,b,a{overflow-wrap:anywhere}
+.app-shell,.app-frame,.app-content,.surface,.card,.editor-section,.admin-panel,.settings-card,.question-editor,.ai-stack,.chat-layout{min-width:0}
+.app-content{width:100%;max-width:1600px}
+.table-wrap{max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.table-wrap table{min-width:640px}
+.table-wrap th,.table-wrap td{white-space:normal;overflow-wrap:anywhere}
+.page-actions,.editor-actions,.matrix-toolbar,.version-tabs,.form-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.page-actions .button,.editor-actions .button{max-width:100%}
+.field,.field input,.field select,.field textarea,.settings-form,.form-grid,.editor-grid{min-width:0;max-width:100%}
+.field input,.field select,.field textarea,.question-editor textarea,.rich-editor,.rich-content{width:100%}
+.dialog{width:min(800px,calc(100vw - 32px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}
+.dialog-body{min-width:0;overflow:auto;overscroll-behavior:contain}
+.dialog-head,.dialog-footer{flex-wrap:wrap}
+.dialog-footer .button{min-width:96px}
+.sidebar{overscroll-behavior:contain}
+.notification-popover{max-width:calc(100vw - 24px);max-height:calc(100dvh - 88px);overflow:auto}
+.notification-copy,.notification-meta{min-width:0}
+.notification-copy>b,.notification-copy>span{overflow-wrap:anywhere}
+.chat-layout,.chat-main,.chat-sidebar{min-width:0}
+.chat-message{overflow-wrap:anywhere;word-break:break-word}
+.chat-message p,.ai-output pre,.ai-message,.system-help-message p{overflow-wrap:anywhere;word-break:break-word}
+.chat-composer>div{min-width:0}
+.chat-composer textarea{min-width:0;max-width:100%}
+.matrix-table{max-width:100%;overflow-x:auto}
+.matrix-table table{min-width:760px}
+.matrix-table input{max-width:90px}
+.profile-summary,.faculty-detail-head,.detail-card>header{min-width:0}
+.profile-summary>div,.detail-card>header>div:nth-child(2){min-width:0}
+.profile-summary strong,.detail-card h2{overflow-wrap:anywhere}
+
+@media (min-width:1200px){
+  .app-content{padding:32px}
+  .admin-kpi-grid,.subject-kpi-grid,.faculty-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+@media (min-width:768px) and (max-width:1199px){
+  .app-content{padding:24px}
+  .sidebar{transform:translateX(-100%);width:min(300px,82vw);box-shadow:12px 0 36px rgba(20,12,14,.16)}
+  .sidebar.is-open{transform:none}
+  .app-frame,.is-collapsed .app-frame{padding-left:0}
+  .desktop-toggle{display:none}
+  .mobile-toggle{display:inline-flex}
+  .sidebar-backdrop.is-open{display:block;position:fixed;inset:0;border:0;background:rgba(0,0,0,.28);z-index:19}
+  .topbar{padding-inline:20px}
+  .breadcrumb-context{min-width:0;flex:1}
+  .global-search-wrap{width:min(320px,32vw)}
+  .admin-kpi-grid,.subject-kpi-grid,.faculty-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-dashboard-grid,.subject-dashboard-grid,.detail-grid,.settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .knowledge-layout{grid-template-columns:280px minmax(0,1fr)}
+  .settings-form{grid-template-columns:minmax(0,2fr) minmax(120px,1fr)}
+}
+
+@media (max-width:767px){
+  .app-content{padding:16px}
+  .topbar{position:sticky;min-height:56px;height:auto;padding:8px 12px;gap:6px;flex-wrap:nowrap}
+  .mobile-toggle{display:inline-flex;flex:none;width:40px;height:40px;padding:0}
+  .breadcrumb-context{display:none}
+  .topbar .global-search-wrap{order:0;width:40px;flex:none;margin-left:auto}
+  .global-search-panel{position:relative}
+  .global-search-wrap .global-search{width:40px;height:40px;margin:0;padding:0;justify-content:center;border-radius:8px;background:transparent}
+  .global-search-wrap .global-search input{position:absolute;inset:0;width:1px;height:1px;opacity:0;cursor:pointer}
+  .global-search-wrap .global-search:focus-within{position:fixed;top:8px;right:12px;left:56px;z-index:100;width:auto;padding:0 12px;justify-content:flex-start;background:var(--surface);box-shadow:0 8px 28px rgba(20,12,14,.18)}
+  .global-search-wrap .global-search:focus-within input{position:static;width:100%;height:auto;opacity:1;cursor:text}
+  .global-search-popover{position:fixed;top:56px;right:12px;left:12px;max-height:calc(100dvh - 72px);z-index:100}
+  .user-menu summary{min-height:40px;padding:4px}
+  .user-menu summary>.icon{display:none}
+  .notification-bell>button{width:40px;height:40px}
+  .user-menu-popover{right:0;max-width:calc(100vw - 24px)}
+  .page-header{align-items:stretch;gap:12px;margin-bottom:18px}
+  .page-header h1{font-size:clamp(24px,7vw,30px);overflow-wrap:anywhere}
+  .page-actions{width:100%}
+  .page-actions .button{flex:1 1 auto;width:100%}
+  .admin-kpi-grid,.subject-kpi-grid,.faculty-kpis,.user-kpi-grid{grid-template-columns:1fr}
+  .admin-dashboard-grid,.subject-dashboard-grid,.user-dashboard-grid,.detail-grid,.settings-grid,.knowledge-layout,.contact-toolbar{grid-template-columns:1fr}
+  .filter-bar,.form-grid,.settings-form,.exam-metadata{grid-template-columns:1fr}
+  .filter-bar>.button,.contact-toolbar .button{width:100%}
+  .subject-toolbar{display:grid;grid-template-columns:1fr;align-items:stretch}
+  .subject-toolbar .field{min-width:0}
+  .settings-card,.editor-section,.admin-panel{padding:16px}
+  .editor-grid,.question-editor .editor-grid{grid-template-columns:1fr}
+  .option-card,.option-editor article{grid-template-columns:1fr;display:grid;padding:14px}
+  .option-card .field{width:100%}
+  .editor-actions{position:static;flex-direction:column;align-items:stretch}
+  .editor-actions .button,.settings-actions .button{width:100%}
+  .image-picker.has-image{grid-template-columns:1fr}
+  .image-picker>img{width:76px;height:76px}
+  .settings-form .field,.settings-form .settings-actions{grid-column:auto}
+  .settings-actions{justify-content:stretch}
+  .dialog{width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:16px}
+  .dialog-head,.dialog-body,.dialog-footer{padding-inline:16px}
+  .dialog-footer{align-items:stretch}
+  .dialog-footer .button{flex:1 1 100%;width:100%}
+  .notification-popover{position:fixed;top:64px;right:12px;left:12px;width:auto;max-width:none}
+  .notification-popover-list{max-height:calc(100dvh - 170px);overflow:auto}
+  .chat-layout{grid-template-columns:1fr}
+  .chat-sidebar{max-height:none;overflow:visible;border-right:0;border-bottom:1px solid var(--border)}
+  .chat-main{min-height:calc(100dvh - 110px)}
+  .chat-message{max-width:90%}
+  .chat-composer>div{display:grid;grid-template-columns:1fr;align-items:stretch}
+  .chat-composer .button{width:100%}
+  .matrix-toolbar{align-items:stretch;flex-direction:column}
+  .matrix-toolbar .button{width:100%}
+  .version-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .version-tabs .button{flex:none}
+  .profile-summary,.faculty-detail-head,.detail-card>header{align-items:flex-start;flex-wrap:wrap}
+  .profile-avatar{flex:none}
+  .public-info-card,.contact-form{padding:20px 16px}
+  .auth-page{min-height:100dvh}
+  .auth-card{width:100%;padding:24px 20px}
+  .auth-options{align-items:flex-start;flex-direction:column}
+}
+
+@media (max-width:374px){
+  .app-content{padding-inline:12px}
+  .editor-section,.settings-card,.admin-panel{padding:14px}
+  .dialog{width:calc(100vw - 16px);max-width:calc(100vw - 16px)}
+  .topbar{padding-inline:8px}
+  .global-search-wrap .global-search:focus-within{right:8px;left:48px}
+}
+
+@media (prefers-reduced-motion:reduce){.sidebar,.drawer,.global-search-popover{transition:none}}

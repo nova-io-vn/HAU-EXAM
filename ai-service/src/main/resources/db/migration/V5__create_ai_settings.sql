@@ -1,0 +1,1 @@
+CREATE TABLE ai_settings (id UUID PRIMARY KEY, provider VARCHAR(20) NOT NULL, model VARCHAR(160) NOT NULL, api_key_encrypted TEXT, updated_at TIMESTAMP WITH TIME ZONE NOT NULL, updated_by UUID NOT NULL, CONSTRAINT uq_ai_settings_singleton UNIQUE (id));

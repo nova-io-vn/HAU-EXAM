@@ -35,4 +35,5 @@ export const routes = {
   contactAdmin: "/admin/contact",
   terms: "/terms",
   privacy: "/privacy",
+  download: "/download",
 };

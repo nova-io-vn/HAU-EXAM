@@ -9,7 +9,7 @@ export const usersApi={
   getMe:()=>api.get(`${USERS_PATH}/me`),
   updateMe:profile=>api.put(`${USERS_PATH}/me`,profile),
   uploadAvatar:file=>{const body=new FormData();body.append('file',file);return api.put(`${USERS_PATH}/me/avatar`,body)},
-  approve:id=>api.post(`${USERS_PATH}/${id}/approve`),
+  approve:(id,approval)=>api.post(`${USERS_PATH}/${id}/approve`,approval),
   reject:id=>api.post(`${USERS_PATH}/${id}/reject`),
   assignRole:(id,role)=>api.put(`${USERS_PATH}/${id}/role`,{role}),
   assignFaculty:(id,facultyId)=>api.put(`${USERS_PATH}/${id}/faculty`,{facultyId}),
