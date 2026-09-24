@@ -16,10 +16,7 @@ COPY question-service/src question-service/src
 RUN mvn -B -pl question-service -am package -DskipTests
 
 FROM eclipse-temurin:21-jre-jammy
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && groupadd --system app \
+RUN groupadd --system app \
     && useradd --system --gid app app
 WORKDIR /app
 COPY --from=build --chown=app:app /workspace/question-service/target/question-service-*.jar app.jar
