@@ -22,21 +22,108 @@ permissions:
   packages: write
 
 jobs:
+  detect-changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+
+    outputs:
+      services: ${{ steps.changes.outputs.services }}
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed services
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ALL_SERVICES=(
+            gateway
+            auth-service
+            user-service
+            question-service
+            exam-service
+            ai-service
+            notification-service
+          )
+
+          # Manual run: deploy all services.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SERVICES_JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -sc .)
+
+            echo "services=$SERVICES_JSON" >> "$GITHUB_OUTPUT"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+            echo "Manual run - all services selected:"
+            printf '%s\n' "${ALL_SERVICES[@]}"
+            exit 0
+          fi
+
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          # New branch / unavailable previous SHA fallback.
+          if [ -z "$BEFORE" ] || \
+             [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="${AFTER}^"
+          fi
+
+          git diff --name-only "$BEFORE" "$AFTER" > /tmp/changed-files.txt
+
+          echo "Changed files:"
+          cat /tmp/changed-files.txt
+
+          # Root pom.xml can affect every Maven service.
+          if grep -qx "pom.xml" /tmp/changed-files.txt; then
+            SERVICES_JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -sc .)
+
+            echo "services=$SERVICES_JSON" >> "$GITHUB_OUTPUT"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+            echo "Root pom.xml changed - all services selected."
+            exit 0
+          fi
+
+          CHANGED_SERVICES=()
+
+          for SERVICE in "${ALL_SERVICES[@]}"; do
+            if grep -q "^${SERVICE}/" /tmp/changed-files.txt; then
+              CHANGED_SERVICES+=("$SERVICE")
+            fi
+          done
+
+          if [ "${#CHANGED_SERVICES[@]}" -eq 0 ]; then
+            echo 'services=[]' >> "$GITHUB_OUTPUT"
+            echo 'has_changes=false' >> "$GITHUB_OUTPUT"
+            echo "No backend service changes detected."
+            exit 0
+          fi
+
+          SERVICES_JSON=$(printf '%s\n' "${CHANGED_SERVICES[@]}" | jq -R . | jq -sc .)
+
+          echo "services=$SERVICES_JSON" >> "$GITHUB_OUTPUT"
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+          echo "Selected services:"
+          printf '%s\n' "${CHANGED_SERVICES[@]}"
+
   build-images:
     name: Build ${{ matrix.service }}
+    needs: detect-changes
+
+    if: needs.detect-changes.outputs.has_changes == 'true'
+
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        service:
-          - gateway
-          - auth-service
-          - user-service
-          - question-service
-          - exam-service
-          - ai-service
-          - notification-service
+        service: ${{ fromJSON(needs.detect-changes.outputs.services) }}
 
     steps:
       - name: Checkout source
@@ -61,30 +148,35 @@ jobs:
 
   deploy-k3s:
     name: Deploy to K3s
-    needs: build-images
+    needs:
+      - detect-changes
+      - build-images
+
+    if: |
+      always() &&
+      needs.detect-changes.outputs.has_changes == 'true' &&
+      needs.build-images.result == 'success'
+
     runs-on: self-hosted
 
     steps:
-      - name: Show deployment version
+      - name: Show deployment information
         run: |
           echo "Commit: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
           echo "Runner: ${{ runner.name }}"
+          echo 'Services: ${{ needs.detect-changes.outputs.services }}'
 
-      - name: Deploy images to K3s
+      - name: Deploy changed services
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
           SHA="${{ github.sha }}"
 
-          for SERVICE in \
-            gateway \
-            auth-service \
-            user-service \
-            question-service \
-            exam-service \
-            ai-service \
-            notification-service
+          echo '${{ needs.detect-changes.outputs.services }}' |
+          jq -r '.[]' |
+          while read -r SERVICE
           do
             echo "=========================================="
             echo "Deploying $SERVICE"
@@ -96,32 +188,61 @@ jobs:
               -n hau-exam
           done
 
-      - name: Wait for rollouts
+      - name: Wait for changed service rollouts
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
-          for SERVICE in \
-            gateway \
-            auth-service \
-            user-service \
-            question-service \
-            exam-service \
-            ai-service \
-            notification-service
+          echo '${{ needs.detect-changes.outputs.services }}' |
+          jq -r '.[]' |
+          while read -r SERVICE
           do
-            echo "Waiting for $SERVICE..."
+            echo "=========================================="
+            echo "Waiting for $SERVICE"
+            echo "=========================================="
 
             kubectl rollout status \
               deployment/$SERVICE \
               -n hau-exam \
-              --timeout=300s
+              --timeout=900s
           done
 
       - name: Show production workloads
         if: always()
         run: |
+          echo "===== DEPLOYMENTS ====="
           kubectl get deployments -n hau-exam
+
+          echo
+          echo "===== PODS ====="
           kubectl get pods -n hau-exam -o wide
+
+      - name: Verify deployed images
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          EXPECTED_SHA="${{ github.sha }}"
+
+          echo '${{ needs.detect-changes.outputs.services }}' |
+          jq -r '.[]' |
+          while read -r SERVICE
+          do
+            IMAGE=$(kubectl get deployment "$SERVICE" \
+              -n hau-exam \
+              -o jsonpath='{.spec.template.spec.containers[0].image}')
+
+            echo "$SERVICE -> $IMAGE"
+
+            case "$IMAGE" in
+              *":$EXPECTED_SHA")
+                ;;
+              *)
+                echo "ERROR: $SERVICE is not running expected SHA."
+                exit 1
+                ;;
+            esac
+          done
 
       - name: Internal gateway health check
         run: |
