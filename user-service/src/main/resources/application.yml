@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: user-service
+  servlet:
+    multipart:
+      max-file-size: ${CLOUDINARY_IMAGE_MAX_SIZE_BYTES:5242880}
+      max-request-size: ${CLOUDINARY_IMAGE_MAX_SIZE_BYTES:5242880}
   jpa:
     open-in-view: false
     hibernate:

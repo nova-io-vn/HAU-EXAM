@@ -32,6 +32,7 @@ public class UserProfileController {
 
     @PutMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<UserProfileResponse> avatar(@AuthenticationPrincipal Jwt jwt, @RequestPart("file") MultipartFile file) throws java.io.IOException {
+        if (file == null || file.isEmpty()) throw new com.userservice.application.exception.ImageUploadException("Image file is empty");
         var command = new ImageUploadCommand(file.getBytes(), file.getOriginalFilename(), file.getContentType(), file.getSize());
         var image = imageStorage.upload(command, "hau-exam/avatars/" + userId(jwt));
         return ApiResponse.success(mapper.toResponse(useCase.updateOwnAvatar(userId(jwt), image)));

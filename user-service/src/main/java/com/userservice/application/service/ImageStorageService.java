@@ -11,7 +11,7 @@ import java.util.Set;
 
 @Service
 public class ImageStorageService {
-    private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+    private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
     private final ImageStoragePort storage;
     private final long maxSize;
 
