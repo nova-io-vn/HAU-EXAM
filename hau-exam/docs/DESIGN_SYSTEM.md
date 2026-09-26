@@ -1,23 +1,23 @@
 ---
 colors:
-  accent: "#0071E3"
-  accent-hover: "#0077ED"
-  accent-soft: "#EAF3FF"
+  accent: "#0033A0"
+  accent-hover: "#002878"
+  accent-soft: "#EDF2FC"
   border: rgba(0, 0, 0, 0.10)
   border-strong: rgba(0, 0, 0, 0.16)
   danger: "#D70015"
   danger-soft: "#FFF0F0"
   divider: rgba(60, 60, 67, 0.12)
-  info: "#0071E3"
-  info-soft: "#EAF3FF"
-  muted: "#F2F2F4"
+  info: "#0033A0"
+  info-soft: "#EDF2FC"
+  muted: "#F0F2F5"
   muted-hover: "#E8E8ED"
-  neutral-bg: "#F5F5F7"
-  neutral-fg: "#1D1D1F"
-  primary: "#111111"
+  neutral-bg: "#F5F6F8"
+  neutral-fg: "#000000"
+  primary: "#0033A0"
   primary-foreground: "#FFFFFF"
-  primary-hover: "#2C2C2E"
-  secondary-fg: "#6E6E73"
+  primary-hover: "#002878"
+  secondary-fg: "#34383F"
   success: "#248A3D"
   success-soft: "#EAF7ED"
   surface: "#FFFFFF"
@@ -101,12 +101,12 @@ motion:
   slow: 260ms
 name: HAU Exam Bank Design System
 rounded:
-  lg: 16px
-  md: 12px
+  lg: 14px
+  md: 10px
   pill: 999px
-  sm: 8px
-  xl: 20px
-  xs: 6px
+  sm: 6px
+  xl: 14px
+  xs: 4px
 spacing:
   lg: 24px
   md: 16px
@@ -262,7 +262,7 @@ blue accent.
 
 ### 3.1. Primary
 
-**Near Black --- `#111111`**
+**HAU Blue --- `#0033A0`**
 
 Used for:
 
@@ -273,11 +273,11 @@ Used for:
 
 Hover:
 
-`#2C2C2E`
+`#002878`
 
 ### 3.2. Accent
 
-**System Blue --- `#0071E3`**
+**HAU Blue --- `#0033A0`**
 
 Used for:
 
@@ -294,7 +294,7 @@ Accent must not dominate the page.
 
 Main application background:
 
-`#F5F5F7`
+`#F5F6F8`
 
 Primary content surface:
 
@@ -302,15 +302,15 @@ Primary content surface:
 
 Muted surface:
 
-`#F2F2F4`
+`#F0F2F5`
 
 Main text:
 
-`#1D1D1F`
+`#000000`
 
 Secondary text:
 
-`#6E6E73`
+`#34383F`
 
 ### 3.4. Semantic Colors
 
@@ -328,7 +328,7 @@ Danger:
 
 Info:
 
-`#0071E3`
+`#0033A0`
 
 Semantic colors should primarily appear in:
 
@@ -550,7 +550,7 @@ Default:
 ``` text
 background: white
 border: 1px solid rgba(0, 0, 0, 0.10)
-border-radius: 16px
+border-radius: 10px
 shadow: none
 ```
 
@@ -591,9 +591,9 @@ Examples:
 Style:
 
 ``` text
-Background: #111111
+Background: #0033A0
 Text: white
-Radius: 8px
+Radius: 6px
 Height: 40px+
 ```
 
@@ -602,7 +602,7 @@ Height: 40px+
 Blue buttons may be used for AI-oriented or clearly interactive actions
 where appropriate.
 
-Do not mix black and blue primary actions randomly.
+Use HAU blue consistently for primary actions. Main content text is black.
 
 ### Secondary Button
 
@@ -1039,9 +1039,9 @@ Apple-inspired does not mean making everything extremely rounded.
 Recommended:
 
 ``` text
-Input/Button: 8px
-Table/Card: 12-16px
-Modal: 20px
+Input/Button: 6px
+Table/Card: 10px
+Modal: 14px
 Badge: pill
 ```
 
@@ -1193,6 +1193,11 @@ Avoid oversized icons in professional data screens.
 
 ## 30. Charts
 
+Question distributions include all six workflow states, including REJECTED
+and ARCHIVED. The donut total and legend use the same counts. Keep one
+visible legend with counts and percentages; center the total inside the ring.
+Do not fabricate distributions when no data is available.
+
 Charts should be minimal and information-first.
 
 Rules:
@@ -1213,9 +1218,9 @@ Light mode is the primary visual mode.
 Base:
 
 ``` text
-App Background: #F5F5F7
+App Background: #F5F6F8
 Surface: #FFFFFF
-Text: #1D1D1F
+Text: #000000
 ```
 
 ------------------------------------------------------------------------
@@ -1231,11 +1236,11 @@ Use semantic tokens.
 Suggested foundation:
 
 ``` text
-Background: #000000
-Surface: #1C1C1E
-Secondary Surface: #2C2C2E
-Main Text: #F5F5F7
-Secondary Text: #A1A1A6
+Background: #12161E
+Surface: #1B2230
+Secondary Surface: #252F40
+Main Text: #F5F7FB
+Secondary Text: #C4CCDA
 ```
 
 ------------------------------------------------------------------------

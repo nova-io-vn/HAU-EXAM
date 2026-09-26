@@ -64,6 +64,7 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path==='/api/v1/admin/ai-settings'&&method==='GET')return respond(ok({provider:'GEMINI',model:'gemini-2.5-flash',apiKeyConfigured:true}))
     if(path==='/api/v1/admin/analytics/traffic'&&method==='GET')return respond(ok({configured:true,today:{visitors:14,pageviews:29},lastSevenDays:{visitors:82,pageviews:173},monthToDate:{visitors:241,pageviews:519},daily:[],generatedAt:'2026-09-26T00:00:00Z'}))
     if(path==='/api/v1/admin/platform/cloudinary'&&method==='GET')return respond(ok({configured:true,cloudName:'e2e-cloud',apiKeyConfigured:true,apiSecretConfigured:true}))
+    if(path==='/api/v1/admin/platform/vercel-analytics'&&method==='GET')return respond(ok({projectId:'e2e-project',teamId:'e2e-team',tokenConfigured:true}))
     if(path==='/api/v1/admin/ai-policy/documents'&&method==='GET')return respond(ok([]))
     if(path==='/api/v1/admin/ai-policy/documents'&&method==='POST')return respond(ok({id:'knowledge-1',title:'Quy chế đào tạo',originalFileName:'quy-che.txt',contentType:'text/plain',fileSize:19,status:'READY',enabled:true,chunkCount:3,createdAt:'2026-09-26T00:00:00Z',updatedAt:'2026-09-26T00:00:00Z'}))
     if(path==='/api/v1/admin/email-settings'&&method==='GET')return respond(ok({smtpHost:'smtp.gmail.com',smtpPort:587,smtpUsername:'smtp-user@example.test',passwordConfigured:true,fromEmail:'smtp-user@example.test',fromName:'HAU QM',security:'STARTTLS',enabled:true}))

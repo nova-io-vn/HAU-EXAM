@@ -19,6 +19,7 @@ const statusLabels = {
   NEED_REVISION: "Cần chỉnh sửa",
   DRAFT: "Bản nháp",
   REJECTED: "Từ chối",
+  ARCHIVED: "Đã lưu trữ",
 };
 const sourceLabels = {
   AI: "AI hỗ trợ",
@@ -31,32 +32,24 @@ export function UserDashboardPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const load = useCallback(async () => {
+    setError(null);
     try {
       const [
         all,
-        approved,
-        pending,
-        revision,
-        draft,
+        counts,
         documents,
         notifications,
         jobs,
       ] = await Promise.all([
         questionsApi.list({ page: 0, size: 5 }),
-        questionsApi.list({ status: "APPROVED", page: 0, size: 1 }),
-        questionsApi.list({ status: "PENDING_REVIEW", page: 0, size: 1 }),
-        questionsApi.list({ status: "NEED_REVISION", page: 0, size: 1 }),
-        questionsApi.list({ status: "DRAFT", page: 0, size: 1 }),
+        questionsApi.statusCounts(),
         aiApi.documents(0),
         notificationsApi.list({ page: 0, size: 5 }),
         aiApi.jobs(0),
       ]);
       setData({
         all: normalizePage(all),
-        approved: normalizePage(approved),
-        pending: normalizePage(pending),
-        revision: normalizePage(revision),
-        draft: normalizePage(draft),
+        counts,
         documents: normalizePage(documents),
         notifications: normalizePage(notifications),
         jobs: normalizePage(jobs),
@@ -94,12 +87,12 @@ export function UserDashboardPage() {
   if (!data) return <section className="user-dashboard">{header}<DashboardMetricSkeleton count={5}/><div className="user-dashboard-grid"><section className="surface admin-panel"><ChartSkeleton/></section><section className="surface admin-panel"><NotificationSkeleton count={4}/></section></div><section className="surface admin-panel"><TableSkeleton rows={6} columns={7}/></section></section>;
   const stats = [
     ["Tổng câu hỏi", data.all.totalElements, routes.myQuestions],
-    ["Đã phê duyệt", data.approved.totalElements, routes.myQuestions],
-    ["Đang chờ duyệt", data.pending.totalElements, routes.myQuestions],
-    ["Cần chỉnh sửa", data.revision.totalElements, routes.myQuestions],
+    ["Đã phê duyệt", data.counts.APPROVED, routes.myQuestions],
+    ["Đang chờ duyệt", data.counts.PENDING_REVIEW, routes.myQuestions],
+    ["Cần chỉnh sửa", data.counts.NEED_REVISION, routes.myQuestions],
     ["Tài liệu học thuật", data.documents.totalElements, routes.documents],
   ];
-  const chartCounts = { APPROVED: data.approved.totalElements, PENDING_REVIEW: data.pending.totalElements, NEED_REVISION: data.revision.totalElements, DRAFT: data.draft.totalElements };
+  const chartCounts = data.counts;
   return (
     <section className="user-dashboard">
       <PageHeader
@@ -148,18 +141,14 @@ export function UserDashboardPage() {
             </div>
             <Link to={routes.notifications}>Xem tất cả →</Link>
           </header>
-          <DataTable
-            rows={data.notifications.items}
-            emptyTitle="Chưa có thông báo mới."
-            columns={[
-              { key: "title", header: "Thông báo" },
-              {
-                key: "createdAt",
-                header: "Thời gian",
-                render: (n) => formatDateTime(n.createdAt),
-              },
-            ]}
-          />
+          {data.notifications.items.length ? <ul className="dashboard-notifications">
+            {data.notifications.items.map(notification => <li key={notification.id}>
+              <Link to={routes.notifications}>
+                <strong>{notification.title}</strong>
+                <time dateTime={notification.createdAt}>{formatDateTime(notification.createdAt)}</time>
+              </Link>
+            </li>)}
+          </ul> : <div className="empty-state"><p>Chưa có thông báo mới.</p></div>}
         </section>
       </div>
       <section className="surface admin-panel">

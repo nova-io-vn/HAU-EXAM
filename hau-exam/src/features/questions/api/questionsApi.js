@@ -9,6 +9,13 @@ function queryString(params) {
   return query.size ? `?${query}` : "";
 }
 export const questionsApi = {
+  // Use existing list filters so counts retain the server's user/faculty scope.
+  statusCounts: async () => Object.fromEntries(await Promise.all(
+    ["APPROVED", "PENDING_REVIEW", "NEED_REVISION", "DRAFT", "REJECTED", "ARCHIVED"].map(async (status) => {
+      const result = await api.get(`/api/v1/questions${queryString({ status, page: 0, size: 1 })}`);
+      return [status, result.totalElements ?? 0];
+    }),
+  )),
   uploadImage: (file, kind = "question") => {
     const body = new FormData();
     body.append("file", file);

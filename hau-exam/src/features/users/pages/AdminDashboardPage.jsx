@@ -128,7 +128,7 @@ export function AdminDashboardPage() {
         </header>
         {trafficError && <div className="traffic-message"><strong>Không thể tải Web Analytics</strong><span>{trafficError}</span><Button variant="secondary" onClick={load}>Thử lại</Button></div>}
         {!trafficError && !traffic && <div className="traffic-card-grid" aria-label="Đang tải số liệu truy cập">{Array.from({ length: 3 }, (_, index) => <div className="traffic-card is-loading" key={index}><span /><strong /><small /></div>)}</div>}
-        {!trafficError && traffic && !traffic.configured && <div className="traffic-message"><strong>Chưa kết nối Vercel Analytics API</strong><span>Thêm VERCEL_ANALYTICS_TOKEN và VERCEL_ANALYTICS_PROJECT_ID vào User Service để hiển thị dữ liệu đã bật trên Vercel.</span><Link className="button button-secondary" to={routes.settings}>Mở cài đặt hệ thống</Link></div>}
+        {!trafficError && traffic && !traffic.configured && <div className="traffic-message"><strong>Chưa có số liệu truy cập</strong><span>Kết nối nguồn thống kê trong cài đặt hệ thống để theo dõi lượt truy cập website.</span><Link className="button button-secondary" to={routes.settings}>Mở cài đặt hệ thống</Link></div>}
         {!trafficError && traffic?.configured && (
           <div className="traffic-card-grid">
             {[
@@ -145,32 +145,6 @@ export function AdminDashboardPage() {
           </div>
         )}
       </section>
-      <div className="admin-dashboard-grid">
-        <section className="surface admin-panel">
-          <header>
-            <div>
-              <span className="eyebrow">PHẠM VI HỆ THỐNG</span>
-              <h2>Phân bố giảng viên theo Khoa</h2>
-            </div>
-            <Link to={routes.faculties}>Quản lý Khoa →</Link>
-          </header>
-          <DataTable rows={[]} emptyTitle="Chưa có dữ liệu phân bố Khoa." />
-        </section>
-        <section className="surface admin-panel">
-          <header>
-            <div>
-              <span className="eyebrow">ACTIVITY</span>
-              <h2>Hoạt động gần đây</h2>
-            </div>
-          </header>
-          <div className="admin-unavailable">
-            <strong>Chưa có Activity API</strong>
-            <p>
-              Hoạt động sẽ hiển thị khi backend cung cấp audit/activity feed.
-            </p>
-          </div>
-        </section>
-      </div>
       <section className="surface admin-panel">
         <header>
           <div>

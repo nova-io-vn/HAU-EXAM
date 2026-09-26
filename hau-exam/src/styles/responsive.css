@@ -42,7 +42,7 @@ p,h1,h2,h3,h4,h5,h6,td,th,span,strong,b,a{overflow-wrap:anywhere}
 
 @media (min-width:768px) and (max-width:1199px){
   .app-content{padding:24px}
-  .sidebar{transform:translateX(-100%);width:min(300px,82vw);box-shadow:12px 0 36px rgba(20,12,14,.16)}
+  .sidebar{transform:translateX(-100%);width:min(300px,82vw);box-shadow:12px 0 36px rgba(16,24,40,.16)}
   .sidebar.is-open{transform:none}
   .app-frame,.is-collapsed .app-frame{padding-left:0}
   .desktop-toggle{display:none}
@@ -66,7 +66,7 @@ p,h1,h2,h3,h4,h5,h6,td,th,span,strong,b,a{overflow-wrap:anywhere}
   .global-search-panel{position:relative}
   .global-search-wrap .global-search{width:40px;height:40px;margin:0;padding:0;justify-content:center;border-radius:8px;background:transparent}
   .global-search-wrap .global-search input{position:absolute;inset:0;width:1px;height:1px;opacity:0;cursor:pointer}
-  .global-search-wrap .global-search:focus-within{position:fixed;top:8px;right:12px;left:56px;z-index:100;width:auto;padding:0 12px;justify-content:flex-start;background:var(--surface);box-shadow:0 8px 28px rgba(20,12,14,.18)}
+  .global-search-wrap .global-search:focus-within{position:fixed;top:8px;right:12px;left:56px;z-index:100;width:auto;padding:0 12px;justify-content:flex-start;background:var(--surface);box-shadow:0 8px 28px rgba(16,24,40,.18)}
   .global-search-wrap .global-search:focus-within input{position:static;width:100%;height:auto;opacity:1;cursor:text}
   .global-search-popover{position:fixed;top:56px;right:12px;left:12px;max-height:calc(100dvh - 72px);z-index:100}
   .user-menu summary{min-height:40px;padding:4px}

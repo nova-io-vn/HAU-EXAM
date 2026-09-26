@@ -81,21 +81,16 @@ test('download page follows the existing dark theme preference', async ({ page }
   expect(colors.card).not.toBe('rgb(255, 255, 255)')
 })
 
-test('theme preference is controlled from account settings and persists after refresh', async ({ page, gateway }) => {
+test('theme preference is controlled from the account menu and persists after refresh', async ({ page, gateway }) => {
   await gateway.login('USER')
   await page.getByLabel('Mở menu tài khoản').click()
-  await page.getByRole('link', { name: 'Hồ sơ cá nhân' }).click()
-  await expect(page).toHaveURL(/\/profile$/)
-  await expect(page.locator('.account-appearance')).toHaveCount(1)
-
-  const themeSelect = page.getByLabel('Giao diện')
-  await expect(themeSelect).toBeVisible()
-  await themeSelect.selectOption('dark')
+  await page.getByRole('button', { name: 'Chuyển sang giao diện tối' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
 
   await page.reload()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await expect(page.getByLabel('Giao diện')).toHaveValue('dark')
+  await page.getByLabel('Mở menu tài khoản').click()
+  await expect(page.getByRole('button', { name: 'Chuyển sang giao diện sáng' })).toBeVisible()
 })
 
 for (const width of [375, 768, 1440]) {

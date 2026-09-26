@@ -24,6 +24,7 @@ import './styles/public-experience.css'
 import './styles/download.css'
 import './styles/ux-pass.css'
 import './styles/responsive.css'
+import './styles/workspace.css'
 import 'intro.js/introjs.css'
 import App from './App.jsx'
 

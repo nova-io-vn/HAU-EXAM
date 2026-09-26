@@ -32,7 +32,7 @@
 .profile-summary{display:flex;align-items:center;gap:14px;padding-bottom:20px;border-bottom:1px solid var(--border)}
 .profile-avatar-action{margin-left:auto;white-space:nowrap}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.inline-error{margin:0 0 16px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--hau-danger,#a53d4d) 28%,var(--border));border-radius:6px;background:color-mix(in srgb,var(--hau-danger,#a53d4d) 8%,#fff);color:var(--hau-danger,#a53d4d);font-size:13px}
+.inline-error{margin:0 0 16px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--hau-danger,var(--hau-primary-hover)) 28%,var(--border));border-radius:6px;background:color-mix(in srgb,var(--hau-danger,var(--hau-primary-hover)) 8%,#fff);color:var(--hau-danger,var(--hau-primary-hover));font-size:13px}
 .profile-summary>div:last-child{display:grid;gap:4px}
 .profile-summary span{color:var(--text-muted);font-size:12px}
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
