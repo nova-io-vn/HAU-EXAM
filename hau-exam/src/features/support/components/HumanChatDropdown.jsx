@@ -4,6 +4,7 @@ import {api} from '../../../services/api/client'
 import {supportChatApi} from '../api/supportChatApi'
 import {connectNotificationSocket} from '../../../services/websocket/notificationSocket'
 import {Icon} from '../../../components/ui'
+import {notificationStore} from '../../notifications/store/notificationStore'
 import '../support-chat.css'
 
 const statusLabels={OPEN:'Đang mở',IN_PROGRESS:'Đang xử lý',RESOLVED:'Đã giải quyết',CLOSED:'Đã đóng'}
@@ -21,11 +22,11 @@ export function HumanChatDropdown(){
  const {role,currentUser}=authStore.getSnapshot()
  const root=useRef(null),picker=useRef(null),messagesEnd=useRef(null),currentRef=useRef(null),openRef=useRef(false)
  const[open,setOpen]=useState(false),[contacts,setContacts]=useState([]),[list,setList]=useState([]),[current,setCurrent]=useState(null),[messages,setMessages]=useState([]),[text,setText]=useState(''),[file,setFile]=useState(null),[unread,setUnread]=useState(0),[error,setError]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true)
- const isAdmin=role==='SYSTEM_ADMIN'
+ const isAdmin=role==='SYSTEM_ADMIN',isSubjectAdmin=role==='SUBJECT_ADMIN'
  const contactsById=useMemo(()=>new Map(contacts.map(contact=>[contact.userId,contact])),[contacts])
 
  const participant=useCallback(conversation=>{
-  if(!isAdmin)return {displayName:'Quản trị viên HAU QM',avatarUrl:null,role:'SYSTEM_ADMIN'}
+  if(!isAdmin){const contact=contactsById.get(isSubjectAdmin?conversation?.createdByUserId:conversation?.assignedAdminId);return contact||{displayName:isSubjectAdmin?'Giảng viên':'Quản trị viên chuyên môn',avatarUrl:null,role:isSubjectAdmin?'USER':'SUBJECT_ADMIN',facultyId:conversation?.facultyId||currentUser?.facultyId}}
   return contactsById.get(conversation?.createdByUserId)||{displayName:`Người dùng ${String(conversation?.createdByUserId||'').slice(0,8)}`,avatarUrl:null,role:conversation?.createdByRole}
  },[contactsById,isAdmin])
 
@@ -34,7 +35,7 @@ export function HumanChatDropdown(){
   try{
    const [people,conversations,count]=await Promise.all([
     isAdmin?api.get('/api/v1/users/me/chat-contacts'):Promise.resolve([]),
-    isAdmin?supportChatApi.adminList({size:30}):supportChatApi.mine({size:20}),
+    isAdmin?supportChatApi.adminList({size:30}):isSubjectAdmin?supportChatApi.assigned({size:20}):supportChatApi.mine({size:2}),
     supportChatApi.unread(),
    ])
    setContacts(people||[])
@@ -79,7 +80,9 @@ export function HumanChatDropdown(){
   if(available){await openConversation(available);return}
   setBusy(true);setError('')
   try{
-   const conversation=await supportChatApi.create('Trao đổi với quản trị viên','')
+   const contact=contacts[0]
+   if(!contact){setError('Chưa có quản trị viên chuyên môn cùng khoa để chat.');return}
+   const conversation=await supportChatApi.create(`Trao đổi với ${contact.displayName}`,'',contact.userId)
    setList(items=>[conversation,...items])
    await openConversation(conversation)
   }catch(reason){setError(reason.message||'Không thể bắt đầu cuộc trò chuyện.')}
@@ -95,6 +98,7 @@ export function HumanChatDropdown(){
    const message=await supportChatApi.send(current.id,body,file)
    setMessages(items=>items.some(item=>item.id===message.id)?items:[...items,message])
    setFile(null)
+   notificationStore.pushToast({title:'Đã gửi tin nhắn',content:'Tin nhắn đã được gửi thành công.'})
   }catch(reason){setError(reason.message||'Không thể gửi tin nhắn.');setText(body)}
   finally{setBusy(false)}
  }
@@ -113,11 +117,12 @@ export function HumanChatDropdown(){
   {open&&<section className="human-chat-panel" aria-label="Tin nhắn hỗ trợ">
    {!current?<>
     <header className="human-chat-title"><div><strong>{isAdmin?'Tin nhắn người dùng':'Hỗ trợ trực tuyến'}</strong><small>{isAdmin?'Trao đổi trực tiếp với người dùng':'Trao đổi trực tiếp với quản trị viên'}</small></div><button type="button" onClick={()=>setOpen(false)} aria-label="Đóng">×</button></header>
-    {!isAdmin&&<div className="human-chat-intro"><span className="human-avatar human-avatar-large"><Icon name="support" size={22}/></span><div><strong>Quản trị viên HAU QM</strong><p>Hãy nhập nội dung cần trao đổi. Không cần chọn loại liên hệ hoặc báo cáo.</p></div><button type="button" className="human-chat-primary" disabled={busy} onClick={()=>void startConversation()}>{list.length?'Tiếp tục trò chuyện':'Bắt đầu trò chuyện'}</button></div>}
+    {!isAdmin&&!isSubjectAdmin&&<div className="human-chat-intro"><span className="human-avatar human-avatar-large">{contacts[0]?.avatarUrl?<img src={contacts[0].avatarUrl} alt=""/>:initials(contacts[0]?.displayName)}</span><div><strong>{contacts[0]?.displayName||'Quản trị viên chuyên môn'}</strong><p>{contacts[0]?.facultyId?`Khoa ${contacts[0].facultyId}`:'Quản trị viên cùng khoa'}</p></div><button type="button" className="human-chat-primary" disabled={busy||!contacts.length} onClick={()=>void startConversation()}>{list.length?'Tiếp tục trò chuyện':'Bắt đầu trò chuyện'}</button></div>}
     <div className="human-chat-list">
      {loading&&<p className="human-chat-state">Đang tải cuộc trò chuyện…</p>}
      {!loading&&list.map(conversation=>{const person=participant(conversation);return <button type="button" key={conversation.id} onClick={()=>void openConversation(conversation)}><span className="human-avatar">{person.avatarUrl?<img src={person.avatarUrl} alt=""/>:initials(person.displayName)}</span><span className="human-chat-list-copy"><strong>{person.displayName}</strong><small>{statusLabels[conversation.status]||conversation.status}<time>{timeLabel(conversation.lastMessageAt)}</time></small></span><Icon name="chevron" size={15} className="human-chat-chevron"/></button>})}
      {!loading&&isAdmin&&!list.length&&<p className="human-chat-state">Chưa có người dùng nhắn đến.</p>}
+     {!loading&&isSubjectAdmin&&!list.length&&<p className="human-chat-state">Chưa có giảng viên cùng khoa nhắn đến.</p>}
     </div>
    </>:<>
     <header className="human-chat-conversation-head"><button type="button" onClick={()=>setCurrent(null)} aria-label="Quay lại">‹</button><span className="human-avatar">{activeParticipant.avatarUrl?<img src={activeParticipant.avatarUrl} alt=""/>:initials(activeParticipant.displayName)}</span><div><strong>{activeParticipant.displayName}</strong><small>{statusLabels[current.status]||current.status}</small></div><button type="button" onClick={()=>setOpen(false)} aria-label="Đóng">×</button></header>

@@ -17,6 +17,7 @@ export const routes = {
   documents: "/ai/documents",
   generate: "/ai/generate",
   aiJobs: "/ai/jobs",
+  adminAiJobs: "/admin/ai-jobs",
   chat: "/chat",
   notifications: "/notifications",
   users: "/admin/users",

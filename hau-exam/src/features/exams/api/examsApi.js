@@ -8,4 +8,5 @@ export const examsApi={
   exams:()=>api.get('/api/v1/exams'),
   exam:id=>api.get(`/api/v1/exams/${id}`),
   version:id=>api.post(`/api/v1/exams/${id}/versions`),
+  downloadPdf:(id,version)=>api.get(`/api/v1/exams/${id}/pdf?version=${version}`,{responseType:'blob'}),
 }

@@ -36,7 +36,7 @@ export function notificationTarget(notification) {
   const type = String(notification.referenceType || "").toUpperCase();
   if (type === "QUESTION") return `/questions/${notification.referenceId}`;
   if (type === "AI_JOB" || type === "AIJOB")
-    return `/ai/jobs?jobId=${notification.referenceId}`;
+    return `/ai/jobs/${notification.referenceId}`;
   if (type === "EXAM") return `/exams?examId=${notification.referenceId}`;
   if (type === "USER" || type === "USER_PROFILE")
     return `/admin/users/${notification.referenceId}`;

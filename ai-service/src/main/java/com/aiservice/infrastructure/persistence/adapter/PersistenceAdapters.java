@@ -54,6 +54,11 @@ public final class PersistenceAdapters {
             return new com.aiservice.application.model.WorkspacePage<>(p.getContent().stream().map(m::toDomain).toList(), page, size, p.getTotalElements(), p.getTotalPages());
         }
 
+        public com.aiservice.application.model.WorkspacePage<AiJob> findAll(int page, int size) {
+            var p = r.findAll(org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending().and(org.springframework.data.domain.Sort.by("id"))));
+            return new com.aiservice.application.model.WorkspacePage<>(p.getContent().stream().map(m::toDomain).toList(), page, size, p.getTotalElements(), p.getTotalPages());
+        }
+
         public AiJob save(AiJob j) {
             var e = m.toEntity(j);
             r.findById(j.id()).ifPresent(old -> e.version = old.version);

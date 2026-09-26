@@ -6,6 +6,7 @@ import {AiError,AiJobPanel} from '../components/AiShared'
 import {aiApi} from '../api/aiApi'
 import {generationPayload} from '../model/aiModel'
 import {useQuestionCatalogs} from '../../questions/hooks/useQuestionCatalogs'
+import {notificationStore} from '../../notifications/store/notificationStore'
 
 export function GeneratePage({analysis=false}){
  const [form,setForm]=useState({documentId:'',count:10,difficulty:'',topicId:'',subjectId:'',chapterId:'',analysisType:'',language:localStorage.getItem('hau-ai-language')||'VI',includeImages:false})
@@ -21,7 +22,7 @@ export function GeneratePage({analysis=false}){
   lock.current=true;setBusy(true);setError(null)
   try{
    const body=analysis?{documentId:form.documentId,analysisType:form.analysisType.trim()}:generationPayload(form)
-   setJob(await(analysis?aiApi.analyze(body):aiApi.generate(body)))
+   const accepted=await(analysis?aiApi.analyze(body):aiApi.generate(body));setJob(accepted);notificationStore.pushToast({title:'Đã tiếp nhận AI job',content:'Bạn có thể theo dõi tiến trình xử lý.',actionUrl:`/ai/jobs/${accepted.jobId}`,actionLabel:'Theo dõi AI job →'})
   }catch(reason){setError(reason)}
   finally{lock.current=false;setBusy(false)}
  }

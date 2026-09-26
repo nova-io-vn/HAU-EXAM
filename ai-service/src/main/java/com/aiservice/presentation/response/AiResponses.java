@@ -16,10 +16,10 @@ public final class AiResponses {
         }
     }
 
-    public record JobView(UUID jobId, JobType type, JobStatus status, String resultReference, String errorCode,
+    public record JobView(UUID jobId, JobType type, JobStatus status, UUID requestedBy, String facultyId, String resultReference, String errorCode,
                           String errorMessage, Instant createdAt, Instant startedAt, Instant completedAt) {
         public static JobView from(AiJob j) {
-            return new JobView(j.id(), j.type(), j.status(), j.resultReference(), j.errorCode(), j.errorMessage(), j.createdAt(), j.startedAt(), j.completedAt());
+            return new JobView(j.id(), j.type(), j.status(), j.requestedBy(), j.facultyId(), j.resultReference(), j.errorCode(), j.errorMessage(), j.createdAt(), j.startedAt(), j.completedAt());
         }
     }
 }

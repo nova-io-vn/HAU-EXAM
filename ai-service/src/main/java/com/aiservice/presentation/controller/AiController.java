@@ -1,6 +1,7 @@
 package com.aiservice.presentation.controller;
 
 import com.aiservice.application.service.AiJobService;
+import com.aiservice.application.service.AiWorkspaceService;
 import com.aiservice.domain.model.JobType;
 import com.aiservice.presentation.request.AiRequests.*;
 import com.aiservice.presentation.response.*;
@@ -20,10 +21,10 @@ import tools.jackson.databind.ObjectMapper;
 public class AiController {
     private final AiJobService jobs;
     private final ObjectMapper mapper;
+    private final AiWorkspaceService workspace;
 
-    public AiController(AiJobService j, ObjectMapper m) {
-        jobs = j;
-        mapper = m;
+    public AiController(AiJobService j, ObjectMapper m, AiWorkspaceService workspace) {
+        jobs = j; mapper = m; this.workspace = workspace;
     }
 
     @PostMapping("/ai/generate/questions")
@@ -44,6 +45,12 @@ public class AiController {
     @GetMapping("/ai/jobs/{id}")
     public ApiResponse<JobView> get(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.ok(JobView.from(jobs.get(id, UUID.fromString(jwt.getSubject()))));
+    }
+
+    @GetMapping("/admin/ai/jobs")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    public ApiResponse<?> adminJobs(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
+        return ApiResponse.ok(workspace.allJobs(page,size));
     }
 
     private JobView create(Jwt jwt, UUID doc, JobType type, Object body, UUID c) {

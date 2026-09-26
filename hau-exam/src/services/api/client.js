@@ -33,7 +33,7 @@ async function refreshSession(){
   return refreshPromise
 }
 
-export async function apiRequest(path,{body,headers={},skipRefresh=false,...options}={}){
+export async function apiRequest(path,{body,headers={},skipRefresh=false,responseType,...options}={}){
   const token=authStore.getAccessToken()
   let response
   try{
@@ -41,14 +41,14 @@ export async function apiRequest(path,{body,headers={},skipRefresh=false,...opti
   }catch(error){if(error instanceof ApiError)throw error;throw new ApiError({message:'Không thể kết nối đến máy chủ'})}
 
   if(response.status===401&&!skipRefresh&&authStore.getRefreshToken()){
-    try{await refreshSession();return apiRequest(path,{body,headers,skipRefresh:true,...options})}catch{
+    try{await refreshSession();return apiRequest(path,{body,headers,skipRefresh:true,responseType,...options})}catch{
       authStore.clear()
       notify('hau:unauthorized',{reason:'SESSION_EXPIRED'})
       throw new ApiError({status:401,code:'SESSION_EXPIRED',message:'Phiên đăng nhập đã hết hạn'})
     }
   }
 
-  const payload=await parseJson(response)
+  const payload=responseType==='blob'?await response.blob():await parseJson(response)
   const correlationId=response.headers.get('X-Correlation-Id')||payload?.correlationId
   if(response.status===401){authStore.clear();notify('hau:unauthorized',{correlationId,reason:'SESSION_EXPIRED'})}
   if(response.status===403)notify('hau:forbidden',{correlationId})

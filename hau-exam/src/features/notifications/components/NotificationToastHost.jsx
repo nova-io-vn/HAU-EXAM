@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import { useNotifications } from "../hooks/useNotifications";
 import { notificationStore } from "../store/notificationStore";
+import { notificationTarget } from "../model/notificationModel";
+import { useNavigate } from "react-router-dom";
 
 export function NotificationToastHost() {
   const { toasts } = useNotifications();
+  const navigate = useNavigate();
   useEffect(() => {
     const timers = toasts.map((item) =>
       setTimeout(
@@ -24,6 +27,7 @@ export function NotificationToastHost() {
           <div>
             <strong>{item.title}</strong>
             <span>{item.content}</span>
+            {notificationTarget(item) && <button type="button" className="notification-toast-link" onClick={() => { notificationStore.dismissToast(item.id || item.eventId); navigate(notificationTarget(item)); }}>{item.actionLabel || "Mở nội dung liên quan →"}</button>}
           </div>
           <button
             type="button"

@@ -17,6 +17,7 @@ export const navigationByRole = {
     {
       section: "QUẢN TRỊ",
       items: [
+        item("Theo dõi AI jobs", routes.adminAiJobs, "chart"),
         item("Quản lý Khoa", routes.faculties, "building", {
           tour: "faculty-menu",
         }),

@@ -35,6 +35,11 @@ public class AiWorkspaceService {
         return jobs.findByOwner(owner, page, size);
     }
 
+    public WorkspacePage<AiJob> allJobs(int page, int size) {
+        validatePage(page, size);
+        return jobs.findAll(page, size);
+    }
+
     public String result(UUID jobId, UUID owner) {
         var job = jobService.get(jobId, owner);
         if (job.status() != JobStatus.COMPLETED) {

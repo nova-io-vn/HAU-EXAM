@@ -68,6 +68,10 @@ export const notificationStore = {
       toasts: [...state.toasts, item].slice(-3),
     });
   },
+  pushToast({ title = "Đã hoàn tất", content = "Thao tác đã được thực hiện.", actionUrl = null, actionLabel = null } = {}) {
+    const item = { id: `toast-${Date.now()}-${Math.random()}`, type: "SUCCESS", title, content, actionUrl, actionLabel, isRead: true, createdAt: new Date().toISOString() };
+    publish({ toasts: [...state.toasts, item].slice(-3) });
+  },
   async markRead(id) {
     const item = state.notifications.find(
       (notification) => notification.id === id,

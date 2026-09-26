@@ -32,8 +32,10 @@ public class UserContactQueryService implements UserContactQueryUseCase {
         if (current == Role.SYSTEM_ADMIN) {
             result.addAll(users.findActiveAudience(Role.USER, null));
             result.addAll(users.findActiveAudience(Role.SUBJECT_ADMIN, null));
+        } else if (current == Role.SUBJECT_ADMIN) {
+            result.addAll(users.findActiveAudience(Role.USER, facultyId));
         } else {
-            result.addAll(users.findActiveAudience(Role.SYSTEM_ADMIN, null));
+            result.addAll(users.findActiveAudience(Role.SUBJECT_ADMIN, facultyId));
         }
         return result.stream()
                 .filter(user -> !user.getId().equals(currentUserId))

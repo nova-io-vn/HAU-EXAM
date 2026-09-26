@@ -46,3 +46,4 @@
 .notification-toast>button{border:0;background:transparent;color:var(--text-muted);cursor:pointer;font-size:18px}
 @keyframes toast-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(max-width:600px){.notification-popover{position:fixed;top:var(--header);right:8px;left:8px;width:auto}.notification-status{align-items:flex-start;flex-direction:column}.toast-region{right:16px;bottom:16px}}
+.notification-toast-link{display:block;margin-top:6px;padding:0;border:0;background:transparent;color:var(--accent);font:inherit;font-size:12px;font-weight:700;cursor:pointer;text-align:left}.notification-toast-link:hover{text-decoration:underline}
