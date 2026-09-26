@@ -124,7 +124,7 @@ export function AdminDashboardPage() {
             <span className="eyebrow">VERCEL WEB ANALYTICS</span>
             <h2>Người truy cập website</h2>
           </div>
-          <span className="traffic-source">Dữ liệu production</span>
+          <a className="traffic-source" href="https://vercel.com/levanro-nova-io/hau-exam-web/analytics" target="_blank" rel="noreferrer">Mở Vercel Analytics ↗</a>
         </header>
         {trafficError && <div className="traffic-message"><strong>Không thể tải Web Analytics</strong><span>{trafficError}</span><Button variant="secondary" onClick={load}>Thử lại</Button></div>}
         {!trafficError && !traffic && <div className="traffic-card-grid" aria-label="Đang tải số liệu truy cập">{Array.from({ length: 3 }, (_, index) => <div className="traffic-card is-loading" key={index}><span /><strong /><small /></div>)}</div>}

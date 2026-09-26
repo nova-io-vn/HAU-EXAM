@@ -1,12 +1,11 @@
 package com.userservice.infrastructure.external;
 
-import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.userservice.application.exception.ImageUploadException;
 import com.userservice.application.model.ImageUploadCommand;
 import com.userservice.application.model.StoredImage;
 import com.userservice.application.port.out.ImageStoragePort;
-import com.userservice.infrastructure.config.CloudinaryProperties;
+import com.userservice.infrastructure.service.CloudinarySettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -16,14 +15,13 @@ import java.util.Map;
 @Component
 public class CloudinaryImageStorageAdapter implements ImageStoragePort {
     private static final Logger log = LoggerFactory.getLogger(CloudinaryImageStorageAdapter.class);
-    private final Cloudinary cloudinary;
-    private final CloudinaryProperties properties;
+    private final CloudinarySettingsService settings;
 
-    public CloudinaryImageStorageAdapter(Cloudinary cloudinary, CloudinaryProperties properties) { this.cloudinary = cloudinary; this.properties = properties; }
+    public CloudinaryImageStorageAdapter(CloudinarySettingsService settings) { this.settings = settings; }
 
     @Override
     public StoredImage upload(ImageUploadCommand command, String folder) {
-        if (!properties.configured()) throw new ImageUploadException("Image storage is not configured");
+        var cloudinary = settings.client();
         try {
             Map<?, ?> result = cloudinary.uploader().upload(command.bytes(), ObjectUtils.asMap("folder", folder, "resource_type", "image", "use_filename", false, "unique_filename", true));
             return new StoredImage(value(result, "url"), value(result, "secure_url"), value(result, "public_id"), value(result, "format"), number(result, "width"), number(result, "height"), numberLong(result, "bytes"));
@@ -35,8 +33,8 @@ public class CloudinaryImageStorageAdapter implements ImageStoragePort {
 
     @Override
     public void delete(String publicId) {
-        if (publicId == null || publicId.isBlank() || !properties.configured()) return;
-        try { cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", "image")); }
+        if (publicId == null || publicId.isBlank()) return;
+        try { settings.client().uploader().destroy(publicId, ObjectUtils.asMap("resource_type", "image")); }
         catch (Exception ex) { log.warn("Cloudinary image cleanup failed for publicId={} type={}", publicId, ex.getClass().getSimpleName()); }
     }
 

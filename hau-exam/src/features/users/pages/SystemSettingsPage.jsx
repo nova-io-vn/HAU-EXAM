@@ -7,6 +7,7 @@ import { emailSecurityLabels, roleLabels } from "../../../utils/enumLabels";
 import { adminSupportApi } from "../../support/api/adminSupportApi";
 import { AiKnowledgeSettingsCard } from "../../ai/components/AiKnowledgeSettingsCard";
 import { CloudinarySettingsCard } from "../components/CloudinarySettingsCard";
+import { VercelAnalyticsSettingsCard } from "../components/VercelAnalyticsSettingsCard";
 import { api } from "../../../services/api/client";
 import {
   comparableEmailSettings,
@@ -129,6 +130,7 @@ export function SystemSettingsPage() {
       <div className="settings-grid">
         <AiSettingsCard />
         <CloudinarySettingsCard />
+        <VercelAnalyticsSettingsCard />
         <AiKnowledgeSettingsCard />
         <article className="surface settings-card">
           <span className="eyebrow">THÔNG TIN CHUNG</span>
