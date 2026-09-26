@@ -10,7 +10,7 @@ Package `com.notificationservice`; database `notification_db`; migrations tạo 
 
 ## 3. API chính
 
-`GET /api/v1/notifications`, `/unread-count`, `POST /api/v1/notifications/{id}/read`, `POST /api/v1/notifications/read-all`; `POST/DELETE /api/v1/notifications/devices` cho device token; scheduled notification controller. WebSocket endpoint `/ws`, user destination `/user/queue/notifications`.
+`GET /api/v1/notifications`, `/unread-count`, `POST /api/v1/notifications/{id}/read`, `POST /api/v1/notifications/read-all`; `POST/DELETE /api/v1/notifications/devices` cho device token; scheduled notification controller. Support chat dùng `/api/v1/support/conversations/**`, danh sách admin dùng `/api/v1/admin/support/conversations`; tên/avatar người tham gia được frontend lấy qua projection của User Service, không truy cập chéo DB. WebSocket endpoint `/ws`, user destination `/user/queue/notifications`.
 
 ## 4. Event/recipient semantics
 

@@ -62,9 +62,30 @@ public class SystemHelpService {
             });
             log.info("System help answer completed; role={} actionCount={} messageLength={}", role, actions.size(), message.length());
             return new Result(answer, List.copyOf(actions), sources);
-        } catch (com.aiservice.domain.exception.ProviderException exception) { throw exception; }
-        catch (InvalidAiOutputException exception) { throw exception; }
-        catch (Exception exception) { throw new InvalidAiOutputException("System help response is malformed"); }
+        } catch (com.aiservice.domain.exception.ProviderException | InvalidAiOutputException exception) {
+            log.warn("System help provider unavailable; using local role guide; role={} errorType={}", role, exception.getClass().getSimpleName());
+            return localAnswer(message, articles);
+        } catch (Exception exception) {
+            log.warn("System help response malformed; using local role guide; role={} errorType={}", role, exception.getClass().getSimpleName());
+            return localAnswer(message, articles);
+        }
+    }
+
+    private Result localAnswer(String message, List<Article> articles) {
+        String normalized = message.toLowerCase(java.util.Locale.ROOT);
+        Article match = articles.stream().max(java.util.Comparator.comparingInt(article -> score(normalized, article))).orElse(articles.getFirst());
+        if (score(normalized, match) == 0) {
+            String available = articles.stream().map(Article::title).collect(java.util.stream.Collectors.joining(", "));
+            return new Result("Tôi chưa xác định được chức năng bạn cần. Bạn có thể hỏi về: " + available + ".", List.of(), List.of());
+        }
+        return new Result(match.title() + ":\n" + match.workflow(), List.of(new Action("NAVIGATE", "Mở " + match.title(), match.routeKey())), List.of());
+    }
+
+    private int score(String message, Article article) {
+        return java.util.stream.Stream.concat(java.util.stream.Stream.of(article.title()), java.util.Arrays.stream(article.title().split("\\s+")))
+                .map(value -> value.toLowerCase(java.util.Locale.ROOT))
+                .mapToInt(value -> value.length() > 2 && message.contains(value) ? 1 : 0)
+                .sum();
     }
 
     public record Article(String routeKey, String title, String workflow) {}

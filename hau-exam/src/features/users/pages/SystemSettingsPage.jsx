@@ -5,6 +5,8 @@ import { PasswordInput } from "../../auth/components/PasswordInput";
 import { getErrorMessage } from "../../../services/api/errorMessages";
 import { emailSecurityLabels, roleLabels } from "../../../utils/enumLabels";
 import { adminSupportApi } from "../../support/api/adminSupportApi";
+import { AiKnowledgeSettingsCard } from "../../ai/components/AiKnowledgeSettingsCard";
+import { CloudinarySettingsCard } from "../components/CloudinarySettingsCard";
 import { api } from "../../../services/api/client";
 import {
   comparableEmailSettings,
@@ -17,7 +19,7 @@ import {
 
 function AiSettingsCard() {
   const [form,setForm]=useState({provider:"GEMINI",model:"gemini-2.5-flash",apiKey:""}),[configured,setConfigured]=useState(false),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
-  useEffect(()=>{api.get("/api/v1/admin/ai-settings").then(v=>{setForm(x=>({...x,provider:v.provider||x.provider,model:v.model||x.model}));setConfigured(Boolean(v.apiKeyConfigured))}).catch(e=>setMessage(e.message))},[]);
+  useEffect(()=>{api.get("/api/v1/admin/ai-settings").then(v=>{if(!v)throw new Error("Không nhận được cấu hình AI.");setForm(x=>({...x,provider:v.provider||x.provider,model:v.model||x.model}));setConfigured(Boolean(v.apiKeyConfigured))}).catch(e=>setMessage(e.message))},[]);
   async function save(){setBusy(true);setMessage("");try{const v=await api.put("/api/v1/admin/ai-settings",{provider:form.provider,model:form.model,apiKey:form.apiKey||undefined});setConfigured(Boolean(v.apiKeyConfigured));setForm(x=>({...x,apiKey:""}));setMessage("Đã lưu cấu hình AI.")}catch(e){setMessage(e.message)}finally{setBusy(false)}}
   async function test(){setBusy(true);try{const v=await api.post("/api/v1/admin/ai-settings/test",{});setMessage(v.status==="CONFIGURATION_VALID"?"Cấu hình hợp lệ.":"Kiểm tra thất bại.")}catch(e){setMessage(e.message)}finally{setBusy(false)}}
   return <article className="surface settings-card"><span className="eyebrow">CẤU HÌNH AI</span><h2>Nhà cung cấp và model</h2><div className="settings-form"><Select label="Nhà cung cấp" value={form.provider} options={[{value:"GEMINI",label:"Google Gemini"},{value:"OPENAI",label:"OpenAI"},{value:"MISTRAL",label:"Mistral"}]} onChange={e=>setForm({...form,provider:e.target.value})}/><Input label="Model" value={form.model} onChange={e=>setForm({...form,model:e.target.value})} placeholder="gemini-2.5-flash"/><PasswordInput label="API Key" value={form.apiKey} onChange={e=>setForm({...form,apiKey:e.target.value})} placeholder={configured?"Đã cấu hình · nhập mới để thay đổi":"Nhập API key"}/><small className="settings-note">API key không được trả về giao diện; để trống sẽ giữ key hiện tại.</small><div className="settings-actions"><Button variant="secondary" onClick={test} loading={busy}>Kiểm tra kết nối</Button><Button onClick={save} loading={busy}>Lưu cấu hình</Button></div>{message&&<p className="settings-note" role="status">{message}</p>}</div></article>;
@@ -119,13 +121,15 @@ export function SystemSettingsPage() {
     <section className="admin-settings">
       <PageHeader
         title="Cài đặt hệ thống"
-        description="Theo dõi cấu hình nền tảng và quản lý kênh email."
+        description="Quản lý AI, kho tri thức, lưu trữ ảnh và các kênh tích hợp của hệ thống."
       />
       {state.loadError && <p className="editor-error" role="alert">{state.loadError}{state.loadCorrelationId && <small> Mã đối chiếu: {state.loadCorrelationId}</small>}</p>}
       {state.saveError && <p className="editor-error" role="alert">{state.saveError}{state.saveCorrelationId && <small> Mã đối chiếu: {state.saveCorrelationId}</small>}</p>}
       {state.saveSuccess && <p className="settings-success" role="status">{state.saveSuccess}</p>}
       <div className="settings-grid">
         <AiSettingsCard />
+        <CloudinarySettingsCard />
+        <AiKnowledgeSettingsCard />
         <article className="surface settings-card">
           <span className="eyebrow">THÔNG TIN CHUNG</span>
           <h2>HAU QM</h2>

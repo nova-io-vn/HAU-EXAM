@@ -13,27 +13,42 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import { facultiesApi } from "../api/facultiesApi";
 import { usersApi } from "../api/usersApi";
 import { questionsApi } from "../../questions/api/questionsApi";
+import { platformSettingsApi } from "../api/platformSettingsApi";
 import { normalizePage, formatDateTime } from "../model/userModel";
 export function AdminDashboardPage() {
   const { role } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [traffic, setTraffic] = useState(null);
+  const [trafficError, setTrafficError] = useState("");
   const load = useCallback(async () => {
-    try {
-      const [faculties, users, pending, questions] = await Promise.all([
+    setError(null);
+    setTrafficError("");
+    const [coreResult, trafficResult] = await Promise.allSettled([
+      Promise.all([
         facultiesApi.list({ page: 0, size: 1 }),
         usersApi.list({ page: 0, size: 1 }),
         usersApi.list({ status: "PENDING_APPROVAL", page: 0, size: 5 }),
         questionsApi.list({ page: 0, size: 1 }),
-      ]);
+      ]),
+      platformSettingsApi.webTraffic(),
+    ]);
+    if (coreResult.status === "fulfilled") {
+      const [faculties, users, pending, questions] = coreResult.value;
       setData({
         faculties: normalizePage(faculties),
         users: normalizePage(users),
         pending: normalizePage(pending),
         questions: normalizePage(questions),
       });
-    } catch (e) {
-      setError(e);
+    } else {
+      setError(coreResult.reason);
+    }
+    if (trafficResult.status === "fulfilled") {
+      setTraffic(trafficResult.value);
+    } else {
+      setTraffic(null);
+      setTrafficError(trafficResult.reason?.message || "Không thể tải số liệu truy cập từ Vercel.");
     }
   }, []);
   useEffect(() => {
@@ -103,6 +118,33 @@ export function AdminDashboardPage() {
           </Link>
         ))}
       </div>
+      <section className="surface admin-panel traffic-overview">
+        <header>
+          <div>
+            <span className="eyebrow">VERCEL WEB ANALYTICS</span>
+            <h2>Người truy cập website</h2>
+          </div>
+          <span className="traffic-source">Dữ liệu production</span>
+        </header>
+        {trafficError && <div className="traffic-message"><strong>Không thể tải Web Analytics</strong><span>{trafficError}</span><Button variant="secondary" onClick={load}>Thử lại</Button></div>}
+        {!trafficError && !traffic && <div className="traffic-card-grid" aria-label="Đang tải số liệu truy cập">{Array.from({ length: 3 }, (_, index) => <div className="traffic-card is-loading" key={index}><span /><strong /><small /></div>)}</div>}
+        {!trafficError && traffic && !traffic.configured && <div className="traffic-message"><strong>Chưa kết nối Vercel Analytics API</strong><span>Thêm VERCEL_ANALYTICS_TOKEN và VERCEL_ANALYTICS_PROJECT_ID vào User Service để hiển thị dữ liệu đã bật trên Vercel.</span><Link className="button button-secondary" to={routes.settings}>Mở cài đặt hệ thống</Link></div>}
+        {!trafficError && traffic?.configured && (
+          <div className="traffic-card-grid">
+            {[
+              ["Hôm nay", traffic.today],
+              ["7 ngày gần nhất", traffic.lastSevenDays],
+              ["Tháng này", traffic.monthToDate],
+            ].map(([label, value]) => (
+              <article className="traffic-card" key={label}>
+                <span>{label}</span>
+                <strong>{(value?.visitors || 0).toLocaleString("vi-VN")}</strong>
+                <small>{(value?.pageviews || 0).toLocaleString("vi-VN")} lượt xem trang</small>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
       <div className="admin-dashboard-grid">
         <section className="surface admin-panel">
           <header>

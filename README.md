@@ -19,6 +19,12 @@ Thứ tự Agent nên đọc:
 
 Không tự ý thay đổi kiến trúc 8 service đã khóa.
 
+## Biến môi trường tích hợp
+
+- Cloudinary dùng ba biến backend `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`. Docker Compose chuyển cùng cấu hình này cho User, Question và Notification Service; không đặt secret trong biến `VITE_*`.
+- Dashboard quản trị đọc số người truy cập thật từ Vercel Web Analytics API qua `VERCEL_ANALYTICS_TOKEN`, `VERCEL_ANALYTICS_PROJECT_ID` và, nếu project thuộc team, `VERCEL_ANALYTICS_TEAM_ID`. Việc bật Analytics trên Vercel vẫn cần access token để backend đọc số liệu.
+- Sau khi đổi secret/cấu hình triển khai, khởi động lại service liên quan. Trang Cài đặt hệ thống chỉ hiển thị trạng thái đã cấu hình, không trả khóa bí mật về trình duyệt.
+
 ## Chạy Backend bằng Docker Compose
 
 Compose dựng PostgreSQL, Redis, RabbitMQ, Eureka, API Gateway và sáu business service. Web và Mobile phải gọi Backend qua API Gateway tại `http://localhost:8080`; các cổng service nội bộ không được dùng làm endpoint client.

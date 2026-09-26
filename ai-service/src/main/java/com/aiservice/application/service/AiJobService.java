@@ -31,6 +31,9 @@ public class AiJobService {
 
     @Transactional
     public AiJob create(UUID user, UUID document, JobType type, String request, UUID correlation, String faculty, UUID subject, UUID chapter, UUID topic) {
+        if (type == JobType.QUESTION_GENERATION && (faculty == null || faculty.isBlank() || subject == null || chapter == null)) {
+            throw new IllegalArgumentException("Question generation requires faculty, subject and chapter context");
+        }
         if (document != null) {
             var d = docs.findById(document).orElseThrow(() -> new NotFoundException("Document not found"));
             if (!d.ownerId().equals(user)) throw new NotFoundException("Document not found");

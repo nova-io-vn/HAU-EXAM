@@ -1,0 +1,230 @@
+.knowledge-settings-card {
+  grid-column: 1 / -1;
+}
+
+.knowledge-upload-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-muted);
+}
+
+.knowledge-file-field,
+.knowledge-upload-form .settings-actions {
+  grid-column: 1 / -1;
+}
+
+.knowledge-file-field input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+}
+
+.knowledge-file-field input::file-selector-button {
+  margin-right: 10px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--hau-primary-soft);
+  color: var(--hau-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.knowledge-document-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.knowledge-document {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.knowledge-document-main,
+.knowledge-document-meta,
+.knowledge-document-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.knowledge-document-main {
+  justify-content: space-between;
+}
+
+.knowledge-document-main > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.knowledge-document-main strong,
+.knowledge-document-main span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.knowledge-document-main > div > span,
+.knowledge-document-meta {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.knowledge-document-meta span + span::before {
+  content: "·";
+  margin-right: 10px;
+}
+
+.knowledge-document-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.knowledge-state {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.knowledge-state.is-enabled {
+  background: var(--hau-success-soft);
+  color: var(--hau-success);
+}
+
+.knowledge-empty {
+  display: grid;
+  gap: 5px;
+  padding: 24px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.cloudinary-env-list {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0;
+}
+
+.cloudinary-env-list code {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface-muted);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.settings-note-warning {
+  background: var(--warning-soft, #fff5d6);
+  color: var(--warning, #8a5b00);
+}
+
+.traffic-overview {
+  margin-bottom: 18px;
+}
+
+.traffic-source {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.traffic-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px 20px 20px;
+}
+
+.traffic-card {
+  display: grid;
+  gap: 7px;
+  min-height: 112px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-muted);
+}
+
+.traffic-card > span,
+.traffic-card small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.traffic-card strong {
+  color: var(--text);
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.traffic-card.is-loading span,
+.traffic-card.is-loading strong,
+.traffic-card.is-loading small {
+  width: 55%;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--border);
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.traffic-card.is-loading strong {
+  width: 38%;
+  height: 30px;
+}
+
+.traffic-message {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 20px;
+}
+
+.traffic-message span {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 800px) {
+  .knowledge-upload-form,
+  .traffic-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .knowledge-upload-form .field,
+  .knowledge-upload-form .settings-actions {
+    grid-column: auto;
+  }
+
+  .knowledge-document-main,
+  .knowledge-document-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .knowledge-document-meta span + span::before {
+    content: none;
+  }
+}

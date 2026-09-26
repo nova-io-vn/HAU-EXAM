@@ -9,10 +9,13 @@ test('upload accepts only nonempty text/plain within configured size',()=>{
   assert.ok(validateDocument({type:'text/plain',size:DEFAULT_MAX_DOCUMENT_BYTES+1}))
   assert.ok(validateDocument({type:'text/plain',size:101},100))
 })
-test('generation enforces backend count and maps only contract fields',()=>{
-  assert.deepEqual(generationPayload({documentId:'doc',count:'10',difficulty:'',topicId:''}),{documentId:'doc',count:10,difficulty:null,topicId:null,subjectId:null,chapterId:null,language:'VI',includeImages:false})
-  for(const count of [0,101,1.5,'invalid'])assert.throws(()=>generationPayload({documentId:'doc',count}))
-  assert.throws(()=>generationPayload({documentId:'doc',count:1,topicId:'bad'}))
+test('generation requires taxonomy, enforces count and maps only contract fields',()=>{
+  const subjectId='11111111-1111-4111-8111-111111111111',chapterId='22222222-2222-4222-8222-222222222222'
+  assert.deepEqual(generationPayload({documentId:'doc',subjectId,chapterId,count:'10',difficulty:'',topicId:''}),{documentId:'doc',count:10,difficulty:null,topicId:null,subjectId,chapterId,language:'VI',includeImages:false})
+  assert.throws(()=>generationPayload({documentId:'doc',chapterId,count:1}))
+  assert.throws(()=>generationPayload({documentId:'doc',subjectId,count:1}))
+  for(const count of [0,101,1.5,'invalid'])assert.throws(()=>generationPayload({documentId:'doc',subjectId,chapterId,count}))
+  assert.throws(()=>generationPayload({documentId:'doc',subjectId,chapterId,count:1,topicId:'bad'}))
 })
 test('polling is required only for pending and processing jobs',()=>{
   for(const status of ['PENDING','PROCESSING'])assert.equal(isActiveJob({status}),true)

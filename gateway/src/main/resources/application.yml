@@ -49,7 +49,7 @@ spring:
             - id: user-service
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/api/v1/users/**,/api/v1/faculties/**
+                - Path=/api/v1/users/**,/api/v1/faculties/**,/api/v1/admin/analytics/**,/api/v1/admin/platform/**
             - id: user-public-service
               uri: lb://USER-SERVICE
               predicates:

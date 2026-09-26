@@ -14,6 +14,8 @@ docker compose down
 
 `.env` không commit; chỉ commit `.env.example`. Volume PostgreSQL/RabbitMQ giữ dữ liệu phát triển. Xóa volume để reset là thao tác mất dữ liệu và chỉ dùng sau khi xác nhận.
 
+Cloudinary dùng chung `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` cho User, Question và Notification Service. Dashboard traffic dùng Vercel Web Analytics API qua `VERCEL_ANALYTICS_TOKEN`, `VERCEL_ANALYTICS_PROJECT_ID` và tùy chọn `VERCEL_ANALYTICS_TEAM_ID`; đây đều là biến backend, không đặt dưới tiền tố `VITE_`.
+
 Compose config đã được xác minh trong môi trường phát triển; runtime phụ thuộc Docker daemon.
 # Bootstrap SYSTEM_ADMIN trong Docker
 

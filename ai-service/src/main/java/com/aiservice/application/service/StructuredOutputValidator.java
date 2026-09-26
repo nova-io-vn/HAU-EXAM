@@ -18,7 +18,7 @@ public class StructuredOutputValidator {
 
     public String validateQuestions(String json) {
         try {
-            JsonNode root = mapper.readTree(json);
+            JsonNode root = mapper.readTree(stripFence(json));
             JsonNode items = root.isArray() ? root : root.get("questions");
             if (items == null || !items.isArray() || items.isEmpty())
                 throw new InvalidAiOutputException("questions array is required");
@@ -48,6 +48,16 @@ public class StructuredOutputValidator {
         } catch (Exception e) {
             throw new InvalidAiOutputException("Malformed AI JSON", e);
         }
+    }
+
+    private String stripFence(String value) {
+        String text = value == null ? "" : value.trim();
+        if (text.startsWith("```")) {
+            int firstLine = text.indexOf('\n');
+            int closingFence = text.lastIndexOf("```");
+            if (firstLine >= 0 && closingFence > firstLine) return text.substring(firstLine + 1, closingFence).trim();
+        }
+        return text;
     }
 
     private String required(JsonNode n, String f) {

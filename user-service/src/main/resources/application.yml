@@ -30,6 +30,13 @@ cloudinary:
   api-secret: ${CLOUDINARY_API_SECRET:}
   image-max-size-bytes: ${CLOUDINARY_IMAGE_MAX_SIZE_BYTES:5242880}
 
+vercel:
+  analytics:
+    api-url: ${VERCEL_ANALYTICS_API_URL:https://api.vercel.com}
+    token: ${VERCEL_ANALYTICS_TOKEN:}
+    project-id: ${VERCEL_ANALYTICS_PROJECT_ID:}
+    team-id: ${VERCEL_ANALYTICS_TEAM_ID:}
+
 management:
   endpoints:
     web:
