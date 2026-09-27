@@ -84,13 +84,15 @@ test('download page follows the existing dark theme preference', async ({ page }
 test('theme preference is controlled from the account menu and persists after refresh', async ({ page, gateway }) => {
   await gateway.login('USER')
   await page.getByLabel('Mở menu tài khoản').click()
-  await page.getByRole('button', { name: 'Chuyển sang giao diện tối' }).click()
+  await page.getByRole('button', { name: 'Cài đặt giao diện' }).click()
+  await page.getByRole('radio', { name: 'Tối' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
 
   await page.reload()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   await page.getByLabel('Mở menu tài khoản').click()
-  await expect(page.getByRole('button', { name: 'Chuyển sang giao diện sáng' })).toBeVisible()
+  await page.getByRole('button', { name: 'Cài đặt giao diện' }).click()
+  await expect(page.getByRole('radio', { name: 'Tối' })).toHaveAttribute('aria-checked', 'true')
 })
 
 for (const width of [375, 768, 1440]) {

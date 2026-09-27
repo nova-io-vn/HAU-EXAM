@@ -1,7 +1,7 @@
 import {test as base,expect} from '@playwright/test'
 
 export const ids={user:'00000000-0000-0000-0000-000000000001',admin:'00000000-0000-0000-0000-000000000002',systemAdmin:'00000000-0000-0000-0000-000000000003',question:'00000000-0000-0000-0000-000000000010',subject:'00000000-0000-0000-0000-000000000020',chapter:'00000000-0000-0000-0000-000000000030',topic:'00000000-0000-0000-0000-000000000040',matrix:'00000000-0000-0000-0000-000000000050',exam:'00000000-0000-0000-0000-000000000060',job:'00000000-0000-0000-0000-000000000070',document:'00000000-0000-0000-0000-000000000080',conversation:'00000000-0000-0000-0000-000000000090'}
-const initialState={questionStatus:'DRAFT',notificationRead:false,approved:false,jobStatus:'PROCESSING',jobReads:0,currentRole:'USER',profileUnauthorizedOnce:false,refreshCalls:0,examGenerated:false,branding:{systemName:'HAU QM',shortName:'HAU QM',logoUrl:null,faviconUrl:null}}
+const initialState={questionStatus:'DRAFT',notificationRead:false,approved:false,jobStatus:'PROCESSING',jobReads:0,currentRole:'USER',profileUnauthorizedOnce:false,refreshCalls:0,examGenerated:false,conversationCreates:0,directConversation:null,supportMessages:[],branding:{systemName:'HAU QM',shortName:'HAU QM',logoUrl:null,faviconUrl:null}}
 const state={...initialState}
 
 function token(role){const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url');return `${encode({alg:'none',typ:'JWT'})}.${encode({sub:role==='USER'?ids.user:ids.admin,lecturerCode:role==='USER'?'E2E_USER':'E2E_ADMIN',role,facultyId:'CNTT'})}.signature`}
@@ -12,6 +12,7 @@ function page(data){return ok({items:data,page:0,totalPages:1,totalElements:data
 
 export const test=base.extend({gateway:async({context},use)=>{
   Object.assign(state,initialState)
+  state.supportMessages=[]
   await context.addInitScript(()=>{window.__HAU_DISABLE_ONBOARDING__=true})
   await context.route('**/api/v1/**',async route=>{
     const request=route.request(),url=new URL(request.url()),path=url.pathname,method=request.method()
@@ -59,11 +60,11 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path.endsWith('/read-all')&&method==='POST'){state.notificationRead=true;return respond(ok(null,'NOTIFICATIONS_READ'))}
     if(path==='/api/v1/support/unread-count'&&method==='GET')return respond(ok(0))
     if((path==='/api/v1/support/conversations/my'||path==='/api/v1/admin/support/conversations')&&method==='GET')return respond(ok({content:[{id:ids.conversation,createdByUserId:ids.user,createdByRole:'USER',assignedAdminId:ids.admin,facultyId:'CNTT',subject:'Trao đổi với quản trị viên',status:'OPEN',lastMessage:'Tôi cần hỗ trợ tạo câu hỏi.',lastMessageAt:'2026-01-01T08:30:00Z',unreadCount:1}],number:0,size:20,totalElements:1,totalPages:1}))
-    if(path==='/api/v1/support/conversations/assigned'&&method==='GET')return respond(ok({content:[],number:0,size:20,totalElements:0,totalPages:0}))
-    if(path==='/api/v1/support/conversations'&&method==='POST')return respond(ok({id:ids.conversation,createdByUserId:ids.admin,createdByRole:'SUBJECT_ADMIN',assignedAdminId:body?.recipientUserId,facultyId:'CNTT',subject:body?.subject,status:'OPEN',lastMessageAt:'2026-01-01T08:30:00Z',unreadCount:0}))
-    if(path===`/api/v1/support/conversations/${ids.conversation}/messages`&&method==='GET')return respond(ok({content:[{id:'support-message-1',conversationId:ids.conversation,senderId:ids.user,senderRole:'USER',content:'Tôi cần hỗ trợ tạo câu hỏi.',createdAt:'2026-01-01T08:30:00Z',attachments:[]}],number:0,size:50,totalElements:1,totalPages:1}))
+    if(path==='/api/v1/support/conversations/assigned'&&method==='GET'){const content=state.directConversation?[state.directConversation]:[];return respond(ok({content,number:0,size:20,totalElements:content.length,totalPages:1}))}
+    if(path==='/api/v1/support/conversations'&&method==='POST'){state.conversationCreates+=1;if(!state.directConversation)state.directConversation={id:ids.conversation,createdByUserId:ids.admin,createdByRole:'SUBJECT_ADMIN',assignedAdminId:body?.recipientUserId,facultyId:'CNTT',subject:body?.subject,status:'OPEN',lastMessageAt:'2026-01-01T08:30:00Z',unreadCount:0};return respond(ok(state.directConversation),201)}
+    if(path===`/api/v1/support/conversations/${ids.conversation}/messages`&&method==='GET'){const baseline=state.directConversation?[]:[{id:'support-message-1',conversationId:ids.conversation,senderId:ids.user,senderRole:'USER',content:'Tôi cần hỗ trợ tạo câu hỏi.',createdAt:'2026-01-01T08:30:00Z',attachments:[]}];const content=[...baseline,...state.supportMessages].reverse();return respond(ok({content,number:0,size:50,totalElements:content.length,totalPages:1}))}
     if(path===`/api/v1/support/conversations/${ids.conversation}/read`&&method==='PATCH')return respond(ok(1))
-    if(path===`/api/v1/support/conversations/${ids.conversation}/messages`&&method==='POST')return respond(ok({id:'support-message-new',conversationId:ids.conversation,senderId:ids.admin,senderRole:'SUBJECT_ADMIN',content:'Xin chào quản trị viên',createdAt:'2026-01-01T09:00:00Z',attachments:[]}))
+    if(path===`/api/v1/support/conversations/${ids.conversation}/messages`&&method==='POST'){const message={id:`support-message-${state.supportMessages.length+1}`,conversationId:ids.conversation,senderId:state.currentRole==='USER'?ids.user:ids.admin,senderRole:state.currentRole,content:'Tin nhắn kiểm thử',createdAt:'2026-01-01T09:00:00Z',attachments:[]};state.supportMessages.push(message);return respond(ok(message),201)}
     if(path==='/api/v1/ai/system-help'&&method==='POST'){const prompt=String(body?.message||'').toLowerCase();const answer=prompt.includes('api key')?'Tôi không thể cung cấp API key, bí mật hoặc thông tin xác thực hệ thống.':prompt.includes('1 + 1')?'1 + 1 = 2.':prompt.includes('xin chào')?'Xin chào! Tôi là HAU QM Assistant.': 'Mở Tạo câu hỏi bằng AI, chọn tài liệu, môn học và chương.';return respond(ok({answer,actions:prompt.includes('tạo câu hỏi')?[{type:'NAVIGATE',label:'Mở tạo câu hỏi AI',routeKey:'AI_GENERATE'}]:[],sources:[]}))}
     if(path==='/api/v1/documents'&&method==='GET')return respond(page([{id:ids.document,originalName:'giao-trinh-kien-truc.txt',size:2048,createdAt:'2026-01-01T00:00:00Z'}]))
     if(path==='/api/v1/ai/generate/questions'&&method==='POST')return respond(ok({jobId:ids.job,type:'QUESTION_GENERATION',status:'PROCESSING'},'AI_JOB_ACCEPTED'),202)
@@ -90,9 +91,10 @@ export const test=base.extend({gateway:async({context},use)=>{
     return respond(ok(null))
   })
   await use({
-    login:async(role='USER',targetPage)=>{const activePage=targetPage||context.pages()[0];await activePage.goto('/');await activePage.evaluate(()=>{localStorage.clear();sessionStorage.clear()});await activePage.goto('/login');await activePage.getByLabel('Mã giảng viên').fill(role==='USER'?'E2E_USER':role==='SUBJECT_ADMIN'?'E2E_SUBJECT_ADMIN':'E2E_ADMIN');await activePage.locator('input[name="password"]').fill('test-password');await activePage.getByRole('button',{name:'Đăng nhập'}).click();await expect(activePage).toHaveURL(/dashboard/)},
+    login:async(role='USER',targetPage,options={})=>{const activePage=targetPage||context.pages()[0];await activePage.goto('/');await activePage.evaluate(()=>{localStorage.clear();sessionStorage.clear()});await activePage.goto('/login');await activePage.getByLabel('Mã giảng viên').fill(role==='USER'?'E2E_USER':role==='SUBJECT_ADMIN'?'E2E_SUBJECT_ADMIN':'E2E_ADMIN');await activePage.locator('input[name="password"]').fill('test-password');await activePage.getByRole('button',{name:'Đăng nhập'}).click();await expect(activePage).toHaveURL(/dashboard/);if(!options.keepWhatsNew){const dialog=activePage.getByRole('dialog',{name:/MỚI TRÊN HAU EXAM/i});try{await dialog.waitFor({state:'visible',timeout:5000});await dialog.getByRole('button',{name:'Bỏ qua'}).click()}catch{/* The announcement was already dismissed for this account. */}}},
     expireNextProfile:()=>{state.profileUnauthorizedOnce=true},
     refreshCalls:()=>state.refreshCalls,
+    conversationCreates:()=>state.conversationCreates,
   })
 }})
 export {expect}

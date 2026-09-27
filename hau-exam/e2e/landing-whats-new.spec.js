@@ -37,7 +37,7 @@ for (const viewport of landingViewports) {
 
 test('what is new is versioned and starts the real role-aware tour', async ({ page, gateway }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await gateway.login('USER')
+  await gateway.login('USER', undefined, { keepWhatsNew: true })
   const dialog = page.getByRole('dialog', { name: /MỚI TRÊN HAU EXAM/i })
   await expect(dialog).toBeVisible()
   await dialog.getByRole('button', { name: 'Bỏ qua' }).click()
