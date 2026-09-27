@@ -11,6 +11,7 @@ import { VercelAnalyticsSettingsCard } from "../components/VercelAnalyticsSettin
 import { BrandingSettingsCard } from "../components/BrandingSettingsCard";
 import { toast } from "../../notifications/store/notificationStore";
 import { api } from "../../../services/api/client";
+import { TelegramBotSettingsCard } from "../../notifications/components/TelegramBotSettingsCard";
 import {
   comparableEmailSettings,
   emailSettingsPayload,
@@ -135,6 +136,7 @@ export function SystemSettingsPage() {
       {state.saveSuccess && <p className="settings-success" role="status">{state.saveSuccess}</p>}
       <div className="settings-grid">
         <BrandingSettingsCard />
+        <TelegramBotSettingsCard />
         <AiSettingsCard />
         <CloudinarySettingsCard />
         <VercelAnalyticsSettingsCard />

@@ -29,7 +29,9 @@ SYSTEM_ADMIN can receive new-user, actionable, system and optional login events.
 
 ## Webhook
 
-Expose the existing gateway route `/api/v1/public/telegram/webhook` over HTTPS. Telegram must send the configured webhook secret header. The endpoint accepts only Telegram update data, validates the one-time `/start` token, and does not require a normal HAU JWT.
+Expose the gateway route `/api/v1/integrations/telegram/webhook` over HTTPS. Telegram must send the configured webhook secret header. The endpoint accepts only Telegram update data, validates the one-time `/start` token, and does not require a normal HAU JWT.
+
+Successful login is intentionally audit-only and does not fan out to SYSTEM_ADMIN. Security-relevant login alerts should be introduced only when a reliable failed-login/lockout event contract is available. The optional `loginEvents` preference remains disabled by default.
 
 Telegram delivery failures are isolated from the business operation. RabbitMQ redelivery is protected by the existing processed-event/idempotency handling, and delivery can be retried without creating a second business notification.
 
