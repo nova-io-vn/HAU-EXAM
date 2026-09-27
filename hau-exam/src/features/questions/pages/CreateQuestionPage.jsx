@@ -10,6 +10,7 @@ import {
 } from "../model/questionModel";
 
 import { useAuth } from "../../auth/hooks/useAuth";
+import { toast } from "../../notifications/store/notificationStore";
 
 export function CreateQuestionPage() {
   const auth = useAuth();
@@ -32,9 +33,11 @@ export function CreateQuestionPage() {
     setError(null);
     try {
       const created = await questionsApi.create(editorPayload(form));
+      toast.success("Đã tạo câu hỏi thành công.");
       navigate(`/questions/${created.id}`);
     } catch (reason) {
       setError(reason);
+      toast.error(reason.message || "Vui lòng kiểm tra dữ liệu và thử lại.", { title: "Không thể tạo câu hỏi" });
     } finally {
       setSaving(false);
     }

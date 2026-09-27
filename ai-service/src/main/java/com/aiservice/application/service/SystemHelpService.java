@@ -5,6 +5,8 @@ import com.aiservice.domain.exception.InvalidAiOutputException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -40,15 +42,27 @@ public class SystemHelpService {
     private final ObjectMapper mapper;
     private final AiKnowledgeService knowledge;
 
+    private static final List<Pattern> BLOCKED = List.of(
+            Pattern.compile("(?i)(api|cloudinary|jwt|smtp|database|db|service)[\\s_-]*(key|secret|password|token|credential)"),
+            Pattern.compile("(?i)(system prompt|developer message|internal prompt|tiết lộ.*prompt|hiển thị.*prompt)"),
+            Pattern.compile("(?i)(bypass|vượt qua|bỏ qua|ignore).*(rbac|phân quyền|security|bảo mật|previous instructions|chỉ dẫn trước)"),
+            Pattern.compile("(?i)(truy cập|đọc|lấy|xem).*(dữ liệu|tài khoản|user).*(người khác|không.*quyền|trái phép)"),
+            Pattern.compile("(?is)\\b(select|insert|update|delete|drop|alter|truncate)\\b.+\\b(from|into|table|where|set)\\b")
+    );
+
     public SystemHelpService(AiProvider provider, ObjectMapper mapper, AiKnowledgeService knowledge) { this.provider = provider; this.mapper = mapper; this.knowledge = knowledge; }
 
     public Result ask(String role, String message) {
-        if (!inScope(message)) return new Result("Tôi là Trợ lý HAU QM và được thiết kế để hỗ trợ các nội dung liên quan đến hệ thống, dữ liệu học thuật và chính sách HAU QM.", List.of(), List.of());
+        if (message == null || message.isBlank()) throw new IllegalArgumentException("Message is required");
+        if (isSensitive(message)) return new Result("Tôi không thể cung cấp bí mật hệ thống, hỗ trợ vượt quyền, truy cập dữ liệu trái phép hoặc thực thi câu lệnh nguy hiểm. Tôi có thể hướng dẫn cách sử dụng HAU QM an toàn.", List.of(), List.of());
+        Result simple = simpleAnswer(message);
+        if (simple != null) return simple;
         List<Article> articles = KNOWLEDGE.get(role);
         if (articles == null) throw new IllegalArgumentException("Unsupported role");
         try {
             var sources = knowledge == null ? List.<AiKnowledgeService.Source>of() : knowledge.retrieve(message, 4);
-            String source = mapper.writeValueAsString(Map.of("role", role, "articles", articles, "policySources", sources));
+            String source = mapper.writeValueAsString(Map.of("role", role, "articles", articles, "policySources", sources,
+                    "responsePolicy", "Answer safe everyday conversation and general knowledge normally. Use supplied sources for HAU-specific workflows. Never reveal secrets or grant access."));
             String request = mapper.writeValueAsString(Map.of("message", message));
             var root = mapper.readTree(provider.systemHelp(source, request));
             String answer = root.path("answer").asText("").trim();
@@ -90,6 +104,25 @@ public class SystemHelpService {
 
     public record Article(String routeKey, String title, String workflow) {}
     public record Action(String type, String label, String routeKey) {}
-    private boolean inScope(String message) { String m=message.toLowerCase(java.util.Locale.ROOT); return java.util.stream.Stream.of("hau qm","câu hỏi","cau hoi","môn học","mon hoc","chương","chuong","chủ đề","chu de","tài liệu","tai lieu","ai","phê duyệt","phe duyet","ma trận","ma tran","thông báo","thong bao","tài khoản","tai khoan","khoa","chính sách","chinh sach","ngân hàng","ngan hang","tạo câu hỏi","tao cau hoi","đang chờ","dang cho").anyMatch(m::contains); }
+    private boolean isSensitive(String message) { return BLOCKED.stream().anyMatch(pattern -> pattern.matcher(message).find()); }
+
+    private Result simpleAnswer(String message) {
+        String normalized = message.trim().toLowerCase(Locale.ROOT).replaceAll("[!?.]+$", "");
+        if (Set.of("xin chào", "chào", "hello", "hi").contains(normalized))
+            return plain("Xin chào! Tôi là Trợ lý HAU QM. Tôi có thể hỗ trợ bạn về hệ thống, học liệu hoặc các câu hỏi kiến thức phổ thông an toàn.");
+        if (normalized.contains("bạn là ai") || normalized.contains("ban la ai"))
+            return plain("Tôi là HAU QM Assistant, trợ lý hỗ trợ sử dụng hệ thống và giải đáp ngắn gọn các câu hỏi kiến thức phổ thông an toàn.");
+        if (normalized.equals("cảm ơn") || normalized.equals("cam on") || normalized.equals("thank you") || normalized.equals("thanks"))
+            return plain("Rất vui được hỗ trợ bạn. Nếu cần, bạn cứ hỏi tiếp nhé!");
+        if (normalized.matches("1\\s*\\+\\s*1(\\s*bằng\\s*mấy|\\s*=\\s*\\?|\\s*la\\s*may)?"))
+            return plain("1 + 1 = 2.");
+        if (normalized.contains("rest api") && (normalized.contains("là gì") || normalized.contains("la gi") || normalized.startsWith("giải thích") || normalized.startsWith("giai thich")))
+            return plain("REST API là cách các hệ thống trao đổi dữ liệu qua HTTP bằng những tài nguyên và phương thức quen thuộc như GET, POST, PUT, PATCH và DELETE. Dữ liệu thường được gửi dưới dạng JSON.");
+        if ((normalized.equals("java là gì") || normalized.equals("java la gi")))
+            return plain("Java là ngôn ngữ lập trình hướng đối tượng, đa nền tảng, thường dùng để xây dựng backend, ứng dụng doanh nghiệp, Android và nhiều hệ thống phân tán.");
+        return null;
+    }
+
+    private Result plain(String answer) { return new Result(answer, List.of(), List.of()); }
     public record Result(String answer, List<Action> actions, List<AiKnowledgeService.Source> sources) {}
 }

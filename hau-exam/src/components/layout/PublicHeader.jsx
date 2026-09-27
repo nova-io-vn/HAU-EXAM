@@ -4,7 +4,8 @@ import { routes } from '../../constants/routes'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { Icon } from '../ui'
 import { UserMenu } from './UserMenu'
-import logo from '../../assets/logo.jpg';
+import { BrandLogo } from '../../features/branding/BrandLogo'
+import { useBranding } from '../../features/branding/brandingContext'
 const publicNavigation = [
   { label: 'Trang chủ', to: '/', end: true },
   { label: 'Trung tâm hỗ trợ', to: routes.support },
@@ -15,14 +16,15 @@ const publicNavigation = [
 export function PublicHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
   const auth = useAuth()
+  const branding = useBranding()
   const closeMenu = () => setMenuOpen(false)
 
   return (
     <header className="public-header">
       <div className="public-container public-header-inner">
-        <Link className="public-logo" to="/" aria-label="HAU-EXAM - Trang chủ" onClick={closeMenu}>
-          <span aria-hidden="true"><img src={logo} alt="Hauexam" /></span>
-          <strong>HAU-EXAM</strong>
+        <Link className="public-logo" to="/" aria-label={`${branding.shortName} - Trang chủ`} onClick={closeMenu}>
+          <span aria-hidden="true"><BrandLogo /></span>
+          <strong>{branding.shortName}</strong>
         </Link>
         <div className={`public-navigation-panel ${menuOpen ? 'is-open' : ''}`} id="public-navigation">
           <nav className="public-navigation" aria-label="Điều hướng công khai">

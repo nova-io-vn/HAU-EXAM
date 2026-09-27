@@ -13,6 +13,7 @@ import {
 } from "../model/questionModel";
 
 import { useAuth } from "../../auth/hooks/useAuth";
+import { toast } from "../../notifications/store/notificationStore";
 
 export function EditQuestionPage() {
   const auth = useAuth();
@@ -50,11 +51,14 @@ export function EditQuestionPage() {
     setError(null);
     try {
       await questionsApi.update(id, editorPayload(form));
-      if (event.nativeEvent.submitter?.value === "resubmit")
+      if (event.nativeEvent.submitter?.value === "resubmit") {
         await questionsApi.submit(id);
+        toast.success("Đã gửi câu hỏi để phê duyệt.");
+      } else toast.success("Đã lưu thay đổi.");
       navigate(`/questions/${id}`);
     } catch (reason) {
       setError(reason);
+      toast.error(reason.message || "Vui lòng thử lại.", { title: "Không thể cập nhật câu hỏi" });
     } finally {
       setSaving(false);
     }

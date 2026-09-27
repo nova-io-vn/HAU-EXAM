@@ -21,6 +21,10 @@ notification:
   scheduler-delay-ms: ${NOTIFICATION_SCHEDULER_DELAY_MS:5000}
   mail-enabled: ${SMTP_ENABLED:true}
   mail-from-name: ${SMTP_FROM_NAME:HAU QM}
+  system-name: ${HAU_QM_SYSTEM_NAME:HAU QM}
+  short-name: ${HAU_QM_SHORT_NAME:HAU QM}
+  website-url: ${HAU_QM_WEBSITE_URL:https://exam.nova.io.vn/}
+  logo-url: ${HAU_QM_LOGO_URL:}
 
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:}

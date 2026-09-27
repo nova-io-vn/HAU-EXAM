@@ -24,4 +24,6 @@ public final class AuthRequests {
     public record ForgotPassword(@NotBlank @Size(max = 50) String lecturerCode) { }
     public record VerifyOtp(@NotBlank @Size(max = 50) String lecturerCode, @NotBlank @Size(min = 6, max = 6) String otp) { }
     public record ResetPassword(@NotBlank @Size(max = 50) String lecturerCode, @NotBlank @Size(min = 6, max = 6) String otp, @NotBlank @Size(min = 8, max = 100) String newPassword) { }
+    public record ChangePassword(@NotBlank String currentPassword,
+                                 @NotBlank @Size(min = 8, max = 100) String newPassword) { }
 }

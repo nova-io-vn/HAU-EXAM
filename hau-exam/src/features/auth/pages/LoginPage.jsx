@@ -24,7 +24,7 @@ export function LoginPage() {
         lecturerCode: form.lecturerCode.trim(),
         password: form.password,
       });
-      authStore.setSession(session);
+      authStore.setSession(session, { remember });
       navigate(location.state?.from || routes.dashboard, { replace: true });
     } catch (reason) {
       setError(getAuthErrorMessage(reason, "Không thể đăng nhập."));
@@ -50,6 +50,7 @@ export function LoginPage() {
           autoComplete="username"
           required
           value={form.lecturerCode}
+          placeholder="VD: A130124"
           onChange={(event) =>
             setForm({ ...form, lecturerCode: event.target.value })
           }
@@ -60,6 +61,7 @@ export function LoginPage() {
           autoComplete="current-password"
           required
           value={form.password}
+          placeholder="Nhập mật khẩu"
           onChange={(event) =>
             setForm({ ...form, password: event.target.value })
           }

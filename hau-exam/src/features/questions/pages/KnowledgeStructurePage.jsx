@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Dialog, Input, Loading } from "../../../components/ui";
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { catalogApi } from "../api/catalogApi";
+import { toast } from "../../notifications/store/notificationStore";
 
 export function KnowledgeStructurePage() {
   const [subjects, setSubjects] = useState([]);
@@ -89,9 +90,11 @@ export function KnowledgeStructurePage() {
         else await catalogApi.createTopic(body);
         setTopics(await catalogApi.topics(chapter.id));
       }
+      toast.success(dialog.item ? "Đã lưu thay đổi." : dialog.type === "chapter" ? "Đã tạo chương thành công." : "Đã tạo chủ đề thành công.");
       setDialog(null);
     } catch (reason) {
       setError(reason);
+      toast.error(reason.message || "Vui lòng thử lại.", { title: "Không thể lưu cấu trúc kiến thức" });
     }
   }
   if (loading)

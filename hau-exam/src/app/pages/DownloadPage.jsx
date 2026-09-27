@@ -4,7 +4,7 @@ import { Icon } from '../../components/ui/Icon'
 import { DOWNLOAD_CONFIG } from '../../config/download'
 import { LANDING_MEDIA } from '../../config/landingMedia'
 import { MediaImage } from '../../components/shared/MediaImage'
-
+import qr from '../../assets/qr.png'
 const features = [
   { icon: 'clock', title: 'Truy cập mọi lúc', description: 'Truy cập hệ thống ngay trên điện thoại.' },
   { icon: 'check', title: 'Quản lý thuận tiện', description: 'Theo dõi câu hỏi và bài thi thuận tiện hơn.' },
@@ -106,7 +106,7 @@ function DownloadDetails({ platform, onPlatformChange }) {
       <div className="download-detail-panel" id={`download-detail-panel-${platform}`} role="tabpanel" aria-labelledby={`download-detail-tab-${platform}`} key={platform}>
         <div className="download-detail-heading"><div><p className="download-card-platform">HAU-EXAM</p><h3>{isAndroid ? 'Android' : 'iOS'}</h3><span className={`download-status ${config.enabled ? 'download-status-ready' : ''}`}>{config.releaseStatus}</span></div><PlatformAction platform={platform} className="download-detail-action" /></div>
         <dl className="download-metadata">{details.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-        {isAndroid ? <div className="download-whats-new"><h4>What's New</h4><ul>{config.whatsNew.map((item) => <li key={item}>{item}</li>)}</ul></div> : <div className="download-ios-expo"><div className="download-qr-shell"><img className="download-qr" src={config.qrImage} alt="Mã QR để mở HAU-EXAM bằng Expo Go" width="280" height="280" /></div><p className="download-qr-caption">Quét mã bằng Expo Go để trải nghiệm HAU-EXAM</p><div className="download-ios-actions"><a className="button button-primary" href={config.expoGoStoreUrl} target="_blank" rel="noreferrer">Cài Expo Go</a></div><p className="download-ios-warning">Phiên bản iOS hiện được cung cấp cho mục đích trải nghiệm thông qua Expo Go. QR yêu cầu phiên Expo/Metro tương ứng đang hoạt động.</p></div>}
+        {isAndroid ? <div className="download-whats-new"><h4>What's New</h4><ul>{config.whatsNew.map((item) => <li key={item}>{item}</li>)}</ul></div> : <div className="download-ios-expo"><div className="download-qr-shell"><img className="download-qr" src={qr} alt="Mã QR để mở HAU-EXAM bằng Expo Go" width="280" height="280" /></div><p className="download-qr-caption">Quét mã bằng Expo Go để trải nghiệm HAU-EXAM</p><div className="download-ios-actions"><a className="button button-primary" href={config.expoGoStoreUrl} target="_blank" rel="noreferrer">Cài Expo Go</a></div><p className="download-ios-warning">Phiên bản iOS hiện được cung cấp cho mục đích trải nghiệm thông qua Expo Go. QR yêu cầu phiên Expo/Metro tương ứng đang hoạt động.</p></div>}
       </div>
     </div>
   </section>

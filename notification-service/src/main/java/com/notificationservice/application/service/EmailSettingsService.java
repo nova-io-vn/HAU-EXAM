@@ -122,8 +122,8 @@ public class EmailSettingsService {
         JavaMailSenderImpl sender = createSender(config);
         try {
             var message = sender.createMimeMessage();
-            var helper = new org.springframework.mail.javamail.MimeMessageHelper(message, false, "UTF-8");
-            helper.setFrom(new InternetAddress(effectiveFrom(config), config.fromName(), "UTF-8")); helper.setTo(recipient); helper.setSubject(subject); helper.setText(content, false);
+            var helper = new org.springframework.mail.javamail.MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(new InternetAddress(effectiveFrom(config), config.fromName(), "UTF-8")); helper.setTo(recipient); helper.setSubject(subject); boolean html=content!=null&&content.trim().startsWith("<!doctype html>"); helper.setText(html?content.replaceAll("<[^>]+>"," ").replaceAll("\\s+"," ").trim():content, html?content:null);
             sender.send(message);
             log.info("SMTP delivery completed; operation={} result=SMTP_ACCEPTED recipientDomain={} smtpHost={} smtpPort={} security={} correlationId={}",
                     operation, emailDomain(recipient), config.host(), config.port(), config.security(), correlationId());

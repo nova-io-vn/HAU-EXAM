@@ -156,3 +156,16 @@
 @media(max-width:800px){.public-header-inner{display:grid;grid-template-columns:1fr auto auto;gap:12px}.public-navigation-panel{position:absolute;top:calc(100% + 8px);right:16px;left:16px;display:grid;gap:12px;margin:0;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:0 16px 44px rgba(16,24,40,.16);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity 220ms ease,transform 220ms ease,visibility 220ms}.public-navigation-panel.is-open{opacity:1;visibility:visible;transform:none}.public-menu-toggle{display:block;order:3}.public-header-actions{order:2}.public-navigation{display:grid}.public-hero-enhanced{padding-block:64px 76px}.public-hero-visual{min-height:360px}.public-product-preview{left:0;right:42px}.public-journey-grid{grid-template-columns:1fr}.public-cta{align-items:flex-start;flex-direction:column;margin-inline:16px;padding:38px 28px}}
 @media(max-width:560px){.public-hero-visual{min-height:300px}.public-hero-photo{height:250px}.public-product-preview{top:28px;right:18px;min-height:260px}.public-mobile-card{width:122px}.public-mobile-card img{height:100px}.public-media-intro-image img{height:260px}.public-cta{margin-bottom:48px}.public-section-muted{padding-inline:16px}}
 @media(prefers-reduced-motion:reduce){.public-login-button,.public-hero-primary,.public-media-intro-image img,.public-journey-card,.public-journey-card img{transition:none}.public-journey-card:hover,.public-hero-primary:hover,.public-login-button:hover{transform:none}}
+
+/* Responsive campus authentication experience */
+.auth-page{display:grid;grid-template-columns:minmax(0,55fr) minmax(430px,45fr);min-height:100vh;padding:0;background:var(--surface)}
+.auth-brand-panel{position:relative;display:grid;align-content:end;min-height:100vh;overflow:hidden;padding:clamp(44px,6vw,92px);background-image:linear-gradient(180deg,rgba(5,31,61,.16),rgba(6,29,58,.8)),var(--auth-campus);background-position:center 45%;background-size:cover;color:#fff}
+.auth-brand-panel::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,38,77,.22),transparent 72%);pointer-events:none}
+.auth-brand-content{position:relative;z-index:1;max-width:650px;text-shadow:0 2px 22px rgba(0,0,0,.25)}
+.auth-brand-mark{display:grid;place-items:center;width:52px;height:52px;margin-bottom:26px;overflow:hidden;border:1px solid rgba(255,255,255,.65);border-radius:12px;background:rgba(255,255,255,.93)}
+.auth-brand-mark img,.auth-brand img,.brand-mark img,.public-logo img{width:100%;height:100%;object-fit:contain}
+.auth-brand-panel h1{font-size:clamp(34px,4vw,58px)}
+.auth-brand-panel p{max-width:600px;color:rgba(255,255,255,.9);font-size:clamp(14px,1.2vw,17px)}
+.auth-card{background:var(--surface)}
+@media(max-width:900px){.auth-page{display:block}.auth-brand-panel{display:grid;align-content:end;min-height:clamp(190px,32vh,250px);padding:24px;background-position:center 43%}.auth-brand-mark,.auth-brand-panel p{display:none}.auth-brand-panel h1{margin:7px 0 0;font-size:clamp(25px,7vw,34px)}.auth-card{padding:34px 28px}}
+@media(max-width:620px){.auth-card{padding:28px 20px}.auth-brand-panel{min-height:210px}.auth-brand{margin-bottom:22px}}

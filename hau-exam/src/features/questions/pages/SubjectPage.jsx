@@ -9,6 +9,7 @@ import {
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { catalogApi } from "../api/catalogApi";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { toast } from "../../notifications/store/notificationStore";
 
 export function SubjectPage() {
   const { facultyId, currentUser } = useAuth();
@@ -60,10 +61,12 @@ export function SubjectPage() {
           code: values.code,
           name: values.name,
         });
+      toast.success(editing.id ? "Đã lưu thay đổi môn học." : "Đã tạo môn học thành công.");
       setEditing(null);
       await load();
     } catch (reason) {
       setError(reason);
+      toast.error(reason.message || "Vui lòng thử lại.", { title: "Không thể lưu môn học" });
     }
   }
   return (

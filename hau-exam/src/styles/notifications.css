@@ -1,4 +1,4 @@
-.notification-bell{position:relative;margin-left:auto}
+.notification-bell{position:relative;margin-left:0}
 .notification-bell>button{position:relative;display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:8px;background:transparent;cursor:pointer;font-size:16px}
 .notification-bell>button:hover,.notification-bell>button[aria-expanded=true]{background:var(--surface-muted)}
 .unread-badge{position:absolute;top:2px;right:0;min-width:17px;height:17px;padding:0 4px;border:2px solid var(--surface);border-radius:999px;background:var(--danger);color:var(--surface);font-size:9px;font-weight:800;line-height:13px}
@@ -39,11 +39,13 @@
 .notification-error{min-height:340px;display:grid;place-content:center;justify-items:center;gap:8px;padding:24px;text-align:center}
 .notification-error span,.notification-error small{color:var(--text-muted)}
 .notification-error .button{margin-top:8px}
-.toast-region{position:fixed;right:20px;bottom:20px;display:grid;width:min(360px,calc(100vw - 32px));gap:8px;z-index:60;pointer-events:none}
-.notification-toast{display:flex;align-items:flex-start;gap:12px;padding:14px 15px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 8px 30px rgba(0,0,0,.1);pointer-events:auto;animation:toast-in .18s ease-out}
+.toast-region{position:fixed;top:calc(var(--header) + 14px);right:20px;display:grid;width:min(380px,calc(100vw - 32px));gap:8px;z-index:100;pointer-events:none}
+.notification-toast{display:flex;align-items:flex-start;gap:11px;padding:14px 15px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--info);border-radius:var(--radius-md);box-shadow:0 12px 34px rgba(0,0,0,.14);pointer-events:auto;animation:toast-in .18s ease-out}
+.notification-toast.toast-success{border-left-color:var(--success)}.notification-toast.toast-error{border-left-color:var(--danger)}.notification-toast.toast-warning{border-left-color:var(--warning)}
+.notification-toast-icon{display:grid;place-items:center;width:22px;height:22px;flex:0 0 22px;border-radius:50%;background:var(--accent-soft);color:var(--info);font-size:13px;font-weight:800}.toast-success .notification-toast-icon{background:var(--success-soft);color:var(--success)}.toast-error .notification-toast-icon{background:var(--danger-soft);color:var(--danger)}.toast-warning .notification-toast-icon{background:color-mix(in srgb,var(--warning) 14%,transparent);color:var(--warning)}
 .notification-toast>div{display:grid;gap:4px;min-width:0;flex:1}
 .notification-toast strong{font-size:13px}.notification-toast span{display:-webkit-box;overflow:hidden;color:var(--text-muted);font-size:12px;line-height:1.4;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .notification-toast>button{border:0;background:transparent;color:var(--text-muted);cursor:pointer;font-size:18px}
-@keyframes toast-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media(max-width:600px){.notification-popover{position:fixed;top:var(--header);right:8px;left:8px;width:auto}.notification-status{align-items:flex-start;flex-direction:column}.toast-region{right:16px;bottom:16px}}
+@keyframes toast-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.notification-popover{position:fixed;top:var(--header);right:8px;left:8px;width:auto}.notification-status{align-items:flex-start;flex-direction:column}.toast-region{top:12px;right:12px;left:12px;width:auto}}
 .notification-toast-link{display:block;margin-top:6px;padding:0;border:0;background:transparent;color:var(--accent);font:inherit;font-size:12px;font-weight:700;cursor:pointer;text-align:left}.notification-toast-link:hover{text-decoration:underline}

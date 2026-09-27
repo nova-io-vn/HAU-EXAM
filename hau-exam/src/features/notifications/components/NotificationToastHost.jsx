@@ -23,7 +23,8 @@ export function NotificationToastHost() {
       aria-label="Thông báo realtime"
     >
       {toasts.map((item) => (
-        <div className="notification-toast" key={item.id || item.eventId}>
+        <div className={`notification-toast toast-${String(item.tone || item.type || "info").toLowerCase()}`} key={item.id || item.eventId} role={item.tone === "ERROR" ? "alert" : "status"}>
+          <span className="notification-toast-icon" aria-hidden="true">{{SUCCESS:"✓",ERROR:"×",WARNING:"!",INFO:"i"}[item.tone || item.type] || "i"}</span>
           <div>
             <strong>{item.title}</strong>
             <span>{item.content}</span>

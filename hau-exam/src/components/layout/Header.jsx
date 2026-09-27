@@ -6,7 +6,9 @@ import { GlobalSearch } from "./GlobalSearch";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { getRouteMeta } from "../../app/router/routeConfig";
 import { HumanChatDropdown } from "../../features/support/components/HumanChatDropdown";
+import { useBranding } from "../../features/branding/brandingContext";
 export function Header({ collapsed, onToggle, onMobileMenu }) {
+  const branding = useBranding();
   const { pathname } = useLocation();
   const { role, currentUser, facultyId } = useAuth();
   const page = getRouteMeta(pathname);
@@ -40,7 +42,7 @@ export function Header({ collapsed, onToggle, onMobileMenu }) {
         <Icon name="dashboard" size={17} />
       </Button>
       <div className="breadcrumb-context">
-        <span>HAU QM / {breadcrumb}</span>
+        <span>{branding.shortName} / {breadcrumb}</span>
         <strong>{page?.title || "Tổng quan"}</strong>
       </div>
       <GlobalSearch role={role} />

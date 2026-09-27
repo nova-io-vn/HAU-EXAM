@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { routes } from "../../../constants/routes";
-import logo from '../../../assets/logo.jpg';
+import campus from '../../../assets/toam.jpg';
+import { BrandLogo } from '../../branding/BrandLogo';
+import { useBranding } from '../../branding/brandingContext';
 
 export function AuthLayout({
   title,
@@ -9,30 +11,28 @@ export function AuthLayout({
   footer,
   activeTab = "login",
 }) {
+  const branding = useBranding();
   return (
     <main className="auth-page">
-      <section className="auth-brand-panel">
-        <div className="auth-brand-mark"><img src={logo} alt="Hauexam" /></div>
-        <span className="auth-overline">HAU QM SYSTEM</span>
+      <section className="auth-brand-panel" style={{ '--auth-campus': `url(${campus})` }}>
+        <div className="auth-brand-content">
+        <div className="auth-brand-mark"><BrandLogo /></div>
+        <span className="auth-overline">{branding.shortName} SYSTEM</span>
         <h1>
           Không gian khảo thí
           <br />
-          cho giảng viên HAU.
+          dành cho giảng viên HAU.
         </h1>
         <p>
           Quản lý học liệu, xây dựng ngân hàng câu hỏi và phối hợp phê duyệt
           trong một không gian thống nhất.
         </p>
-        <div className="auth-line-art" aria-hidden="true">
-          <i />
-          <i />
-          <i />
         </div>
       </section>
       <section className="auth-card" aria-labelledby="auth-title">
         <Link className="auth-brand" to="/">
-          <span><img src={logo} alt="Hauexam" /></span>
-          <strong>HAU QM</strong>
+          <span><BrandLogo /></span>
+          <strong>{branding.shortName}</strong>
         </Link>
         <div className="auth-tabs">
           <Link

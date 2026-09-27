@@ -20,6 +20,7 @@ export const routes = {
   adminAiJobs: "/admin/ai-jobs",
   chat: "/chat",
   notifications: "/notifications",
+  telegram: "/telegram",
   users: "/admin/users",
   userDetail: "/admin/users/:id",
   registrations: "/admin/registrations",

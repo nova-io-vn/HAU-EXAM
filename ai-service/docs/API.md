@@ -54,3 +54,12 @@ explanation,difficulty,topicId?}`. Analysis/chat: JSON object; chat provider ask
 for an `answer` field. References are optional provider output. `resultReference`
 is an internal reference, not a public download URL. AI results are not APPROVED
 questions and must follow the Question Service review workflow.
+
+## Assistant scope and security routing
+
+Safe conversation and general knowledge are allowed, including greetings,
+identity, arithmetic, REST API, and Java questions. HAU-specific questions use
+the existing knowledge articles/provider context. A security guard refuses
+credential and secret disclosure, system-prompt disclosure, RBAC bypass,
+unauthorized user data, prompt-injection requests that disable security, and
+arbitrary SQL. The assistant never grants permissions or changes backend RBAC.

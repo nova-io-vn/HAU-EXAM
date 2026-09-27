@@ -161,6 +161,31 @@ class AuthApplicationServiceTest {
         verify(otpStore).invalidate("GV001");
     }
 
+    @Test void changePasswordVerifiesCurrentPasswordAndRevokesSessions() {
+        AuthAccount account = account(AccountStatus.ACTIVE);
+        when(accounts.findById(account.getId())).thenReturn(Optional.of(account));
+        when(hasher.matches("current-password", "hash")).thenReturn(true);
+        when(hasher.matches("new-password", "hash")).thenReturn(false);
+        when(hasher.hash("new-password")).thenReturn("new-hash");
+        when(accounts.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.changePassword(account.getId(), "current-password", "new-password");
+
+        verify(accounts).save(argThat(saved -> "new-hash".equals(saved.getPasswordHash())));
+        verify(refreshTokens).revokeAllForAccount(eq(account.getId()), any());
+    }
+
+    @Test void changePasswordRejectsWrongCurrentPassword() {
+        AuthAccount account = account(AccountStatus.ACTIVE);
+        when(accounts.findById(account.getId())).thenReturn(Optional.of(account));
+        when(hasher.matches("wrong-password", "hash")).thenReturn(false);
+
+        assertThatThrownBy(() -> service.changePassword(account.getId(), "wrong-password", "new-password"))
+                .hasFieldOrPropertyWithValue("code", "INVALID_CURRENT_PASSWORD");
+        verify(accounts, never()).save(any());
+        verifyNoInteractions(refreshTokens);
+    }
+
     private AuthAccount account(AccountStatus status) {
         return new AuthAccount(UUID.randomUUID(), "GV001", "hash", status, "USER", "CNTT",
                 "gv001@hau.edu.vn", Instant.now(), Instant.now(), 0);

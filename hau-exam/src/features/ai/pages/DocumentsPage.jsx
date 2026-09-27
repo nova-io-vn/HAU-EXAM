@@ -6,6 +6,7 @@ import {DEFAULT_MAX_DOCUMENT_BYTES,validateDocument,SUPPORTED_DOCUMENT_ACCEPT} f
 import {formatDateTime} from '../../questions/model/questionModel'
 import {AI_DOCUMENT_MAX_SIZE_BYTES} from '../../../config/env'
 import {AsyncProgressCard} from '../../../components/shared/AsyncProgressCard'
+import {toast} from '../../notifications/store/notificationStore'
 
 const maxBytes=AI_DOCUMENT_MAX_SIZE_BYTES||DEFAULT_MAX_DOCUMENT_BYTES
 export function DocumentsPage() {
@@ -30,8 +31,9 @@ export function DocumentsPage() {
     try {
       const document=await aiApi.upload(file)
       setSuccess(`Đã lưu tài liệu ${document.originalName}.`);setFile(null);if(input.current)input.current.value=''
+      toast.success('Tải tài liệu lên thành công.')
       setState({loading:true});setPage(0);setVersion(v=>v+1)
-    } catch(reason){setError(reason)}finally{lock.current=false;setBusy(false);setUploadStartedAt(null)}
+    } catch(reason){setError(reason);toast.error(reason.message||'Vui lòng thử lại.',{title:'Không thể tải tài liệu'})}finally{lock.current=false;setBusy(false);setUploadStartedAt(null)}
   }
   return <div className="ai-stack"><form className="editor-section" onSubmit={upload}><h2>Upload tài liệu</h2>
     <div className="ai-dropzone" onDragOver={event=>event.preventDefault()} onDrop={event=>{event.preventDefault();if(event.dataTransfer.files.length!==1){setError(new Error('Chọn một tài liệu mỗi lần.'));return}choose(event.dataTransfer.files[0])}}>

@@ -23,7 +23,7 @@ test('download page is public and exposes the configured platform states', async
   await expect(page.getByText('Tải ứng dụng trực tiếp')).toBeVisible()
   await expect(page.locator('a[href="' + ANDROID_APK_URL + '"]').first()).toBeVisible()
   await expect(page.locator('.public-page-transition')).toBeVisible()
-  expect(apiRequests).toEqual([])
+  expect(apiRequests.every(url => new URL(url).pathname === '/api/v1/public/system-branding')).toBe(true)
 })
 
 test('shared public header navigates between landing and download with active state', async ({ page }) => {
@@ -56,7 +56,7 @@ test('installation guide switches between Android and iOS content', async ({ pag
   await expect(page.locator('#download-detail-panel-android')).toBeVisible()
   await page.locator('.download-card-ios').click()
   await expect(page.locator('#download-detail-panel-ios')).toBeVisible()
-  await expect(page.locator('img[src="/assets/qr.png"]')).toBeVisible()
+  await expect(page.getByAltText('Mã QR để mở HAU-EXAM bằng Expo Go')).toBeVisible()
   await expect(page.getByText('Quét mã bằng Expo Go để trải nghiệm HAU-EXAM')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Cài Expo Go' }).last()).toHaveAttribute('href', 'https://apps.apple.com/us/app/expo-go/id982107779')
   await iosTab.click()

@@ -28,7 +28,7 @@ export function NotificationBell() {
         aria-label={`Thông báo, ${unreadCount} chưa đọc`}
         aria-expanded={open}
       >
-        <Icon name="bell" size={17} />
+        <Icon name="bell" size={23} />
         {unreadCount > 0 && (
           <span className="unread-badge">
             {unreadCount > 99 ? "99+" : unreadCount}

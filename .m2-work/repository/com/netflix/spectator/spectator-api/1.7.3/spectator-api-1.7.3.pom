@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.netflix.spectator</groupId>
+  <artifactId>spectator-api</artifactId>
+  <version>1.7.3</version>
+  <name>spectator-api</name>
+  <description>spectator-api</description>
+  <url>https://github.com/Netflix/spectator</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>netflixgithub</id>
+      <name>Netflix Open Source Development</name>
+      <email>netflixoss@netflix.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <url>https://github.com/Netflix/spectator</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.36</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+  <properties>
+    <nebula_Manifest_Version>1.0</nebula_Manifest_Version>
+    <nebula_Implementation_Title>com.netflix.spectator#spectator-api;1.7.3</nebula_Implementation_Title>
+    <nebula_Implementation_Version>1.7.3</nebula_Implementation_Version>
+    <nebula_Built_Status>release</nebula_Built_Status>
+    <nebula_Built_By>runner</nebula_Built_By>
+    <nebula_Built_OS>Linux</nebula_Built_OS>
+    <nebula_Build_Timezone>Etc/UTC</nebula_Build_Timezone>
+    <nebula_Build_Date_UTC>2023-11-18T17:00:14.236Z</nebula_Build_Date_UTC>
+    <nebula_Build_Date>2023-11-18_17:00:14</nebula_Build_Date>
+    <nebula_Gradle_Version>8.4</nebula_Gradle_Version>
+    <nebula_Module_Source>/spectator-api</nebula_Module_Source>
+    <nebula_Module_Origin>https://github.com/Netflix/spectator</nebula_Module_Origin>
+    <nebula_Change>8363bc9</nebula_Change>
+    <nebula_Full_Change>8363bc99d80d91c54e49f60b8473e8371ea1e9ca</nebula_Full_Change>
+    <nebula_Branch>HEAD</nebula_Branch>
+    <nebula_Build_Host>https://github.com</nebula_Build_Host>
+    <nebula_Build_Job>__run_5</nebula_Build_Job>
+    <nebula_Build_Number>73</nebula_Build_Number>
+    <nebula_Build_Id>6915178118</nebula_Build_Id>
+    <nebula_Build_Url>https://github.com/Netflix/spectator/actions/runs/6915178118</nebula_Build_Url>
+    <nebula_Created_By>1.8.0_392-b08 (Azul Systems, Inc.)</nebula_Created_By>
+    <nebula_Module_Owner>netflixoss@netflix.com</nebula_Module_Owner>
+    <nebula_Module_Email>netflixoss@netflix.com</nebula_Module_Email>
+    <nebula_X_Compile_Target_JDK>1.8</nebula_X_Compile_Target_JDK>
+    <nebula_X_Compile_Source_JDK>1.8</nebula_X_Compile_Source_JDK>
+    <nebula_Build_Java_Version>8</nebula_Build_Java_Version>
+  </properties>
+</project>

@@ -36,3 +36,12 @@ Các endpoint mục tiêu:
   --------------------------------------------------------------------------------
 
 Không khóa request schema chi tiết trước khi entity/use case được duyệt.
+
+## Change password policy
+
+`POST /api/v1/auth/change-password` requires an authenticated JWT and accepts
+`currentPassword` plus `newPassword`. Auth Service verifies the current BCrypt
+hash, validates the new password, stores a new BCrypt hash, and revokes every
+refresh token for that account. The web client therefore clears the current
+session and requires a new login after a successful change. Password values are
+never logged or returned.

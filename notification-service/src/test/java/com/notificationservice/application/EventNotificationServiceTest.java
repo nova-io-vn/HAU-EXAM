@@ -16,7 +16,7 @@ class EventNotificationServiceTest {
         var repository = mock(NotificationRepository.class); var tokens = mock(DeviceTokenRepository.class); var inbox = mock(ProcessedEventStore.class); var ws = mock(RealtimeNotifier.class); var push = mock(PushProvider.class); var mail = mock(EmailSender.class); var contacts = mock(UserContactResolver.class);
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0)); when(tokens.findActiveByUser(any())).thenReturn(List.of());
         UUID author = UUID.randomUUID(), eventId = UUID.randomUUID();
-        when(contacts.resolve(author)).thenReturn(new UserContact(author, "GV001", "Nguyen Van A", "a@hau.edu.vn", "CNTT"));
+        when(contacts.resolve(author)).thenReturn(new UserContact(author, "GV001", "Nguyen Van A", "a@hau.edu.vn", "CNTT", "USER", null));
         var service = new EventNotificationService(repository, tokens, inbox, ws, push, mail, Clock.systemUTC(), contacts);
         var payload = Map.<String,Object>of("authorUserId", author.toString(), "questionId", UUID.randomUUID().toString(), "reviewComment", "Đã đạt");
         assertThat(service.handle(new IncomingEvent(eventId, "QUESTION_APPROVED", UUID.randomUUID(), payload))).isTrue();
@@ -30,7 +30,7 @@ class EventNotificationServiceTest {
         var repository = mock(NotificationRepository.class); var tokens = mock(DeviceTokenRepository.class); var inbox = mock(ProcessedEventStore.class); var ws = mock(RealtimeNotifier.class); var push = mock(PushProvider.class); var mail = mock(EmailSender.class); var contacts = mock(UserContactResolver.class);
         UUID id = UUID.randomUUID(); var service = new EventNotificationService(repository, tokens, inbox, ws, push, mail, Clock.systemUTC(), contacts);
         var event = new IncomingEvent(id, "PASSWORD_RESET_OTP_REQUESTED", UUID.randomUUID(), Map.of("email", "u@hau.edu.vn", "otp", "123456"));
-        assertThat(service.handle(event)).isTrue(); verify(mail).send("u@hau.edu.vn", "Password reset OTP", "123456"); verifyNoInteractions(repository, tokens, ws, push);
+        assertThat(service.handle(event)).isTrue(); verify(mail).send(eq("u@hau.edu.vn"), startsWith("[HAU QM]"), contains("123456")); verifyNoInteractions(repository, tokens, ws, push);
         when(inbox.exists(id)).thenReturn(true); assertThat(service.handle(event)).isFalse(); verify(mail, times(1)).send(any(), any(), any());
     }
 

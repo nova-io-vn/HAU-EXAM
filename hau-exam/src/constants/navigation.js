@@ -75,6 +75,7 @@ export const navigationByRole = {
           tour: "coverage-menu",
         }),
         item("Ma trận đề", routes.matrices, "grid", { tour: "matrices-menu" }),
+        item("Đề thi", routes.exams, "file"),
       ],
     },
     {

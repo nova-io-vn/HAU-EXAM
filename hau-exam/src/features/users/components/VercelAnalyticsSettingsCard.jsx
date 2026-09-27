@@ -3,6 +3,7 @@ import { Button, Input } from "../../../components/ui";
 import { PasswordInput } from "../../auth/components/PasswordInput";
 import { getErrorMessage } from "../../../services/api/errorMessages";
 import { platformSettingsApi } from "../api/platformSettingsApi";
+import { toast } from "../../notifications/store/notificationStore";
 
 export function VercelAnalyticsSettingsCard() {
   const [status,setStatus]=useState(null);
@@ -10,7 +11,7 @@ export function VercelAnalyticsSettingsCard() {
   const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState("");
   async function load(){setLoading(true);try{const next=await platformSettingsApi.vercelAnalyticsStatus();setStatus(next);setForm(current=>({...current,projectId:next.projectId||"",teamId:next.teamId||""}));setError("")}catch(e){setError(getErrorMessage(e,"Không thể kiểm tra cấu hình Vercel Analytics."))}finally{setLoading(false)}}
   useEffect(()=>{const timer=setTimeout(load,0);return()=>clearTimeout(timer)},[]);
-  async function save(event){event.preventDefault();setSaving(true);setMessage("");setError("");try{const next=await platformSettingsApi.saveVercelAnalytics(form);setStatus(next);setForm(current=>({...current,token:""}));setMessage("Đã lưu cấu hình Vercel Analytics.")}catch(e){setError(getErrorMessage(e,"Không thể lưu cấu hình Vercel Analytics."))}finally{setSaving(false)}}
+  async function save(event){event.preventDefault();setSaving(true);setMessage("");setError("");try{const next=await platformSettingsApi.saveVercelAnalytics(form);setStatus(next);setForm(current=>({...current,token:""}));setMessage("Đã lưu cấu hình Vercel Analytics.");toast.success("Đã lưu cấu hình Vercel Analytics.")}catch(e){setError(getErrorMessage(e,"Không thể lưu cấu hình Vercel Analytics."));toast.error(getErrorMessage(e,"Vui lòng thử lại."),{title:"Không thể lưu Vercel Analytics"})}finally{setSaving(false)}}
   return <article className="surface settings-card">
     <span className="eyebrow">VERCEL WEB ANALYTICS</span><h2>Thống kê người truy cập</h2>
     <p>Nhập thông tin API để Dashboard quản trị đọc số liệu từ project Vercel. Token được mã hóa ở backend và không hiển thị lại.</p>

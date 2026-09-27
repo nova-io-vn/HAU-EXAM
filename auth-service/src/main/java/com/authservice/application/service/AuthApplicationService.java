@@ -68,7 +68,8 @@ public class AuthApplicationService {
         return new AuthDtos.Registration(account.getStatus());
     }
 
-    public AuthDtos.Session login(String lecturerCode, String password) {
+    public AuthDtos.Session login(String lecturerCode, String password) { return login(lecturerCode, password, null); }
+    public AuthDtos.Session login(String lecturerCode, String password, UUID correlationId) {
         AuthAccount account = accounts.findByLecturerCode(lecturerCode)
                 .orElseThrow(() -> new AuthException("INVALID_CREDENTIALS", "Invalid credentials"));
         if (account.getStatus() == AccountStatus.PENDING_APPROVAL)
@@ -79,6 +80,10 @@ public class AuthApplicationService {
             throw new AuthException("ACCOUNT_LOCKED", "Account is locked");
         if (!passwordHasher.matches(password, account.getPasswordHash()))
             throw new AuthException("INVALID_CREDENTIALS", "Invalid credentials");
+        Map<String,Object> payload = new HashMap<>();
+        payload.put("userId", account.getId()); payload.put("lecturerCode", account.getLecturerCode());
+        payload.put("occurredAt", Instant.now().toString());
+        events.publish("USER_LOGIN_SUCCESS", "user.login.success", correlationId, payload);
         return issueSession(account);
     }
 
@@ -135,6 +140,20 @@ public class AuthApplicationService {
         accounts.save(account.changePasswordHash(passwordHasher.hash(newPassword), Instant.now()));
         refreshTokens.revokeAllForAccount(account.getId(), Instant.now());
         otpStore.invalidate(identity);
+    }
+
+    public void changePassword(UUID accountId, String currentPassword, String newPassword) {
+        AuthAccount account = accounts.findById(accountId)
+                .orElseThrow(() -> new AuthAccountNotFoundException(accountId));
+        if (!passwordHasher.matches(currentPassword, account.getPasswordHash())) {
+            throw new AuthException("INVALID_CURRENT_PASSWORD", "Current password is incorrect");
+        }
+        if (passwordHasher.matches(newPassword, account.getPasswordHash())) {
+            throw new AuthException("PASSWORD_UNCHANGED", "New password must be different from the current password");
+        }
+        Instant changedAt = Instant.now();
+        accounts.save(account.changePasswordHash(passwordHasher.hash(newPassword), changedAt));
+        refreshTokens.revokeAllForAccount(account.getId(), changedAt);
     }
 
     private AuthDtos.Session issueSession(AuthAccount account) {

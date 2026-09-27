@@ -43,4 +43,6 @@ export const authApi = {
       body: { refreshToken },
       skipRefresh: true,
     }),
+  changePassword: body =>
+    apiRequest(`${AUTH_PATH}/change-password`, { method: "POST", body }),
 };

@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2021, 2024 Markus KARG. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Distribution License v. 1.0, which is available at
+    http://www.eclipse.org/org/documents/edl-v10.php.
+
+    SPDX-License-Identifier: BSD-3-Clause
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>jakarta.ws.rs</groupId>
+    <artifactId>all</artifactId>
+    <version>4.0.0</version>
+    <packaging>pom</packaging>
+    <name>Jakarta RESTful WS Project</name>
+
+    <parent>
+        <groupId>org.eclipse.ee4j</groupId>
+        <artifactId>project</artifactId>
+        <version>1.0.9</version>
+        <relativePath/>
+    </parent>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>repo.eclipse.org</id>
+            <name>JAX-RS API Repository - Snapshots</name>
+            <url>https://repo.eclipse.org/content/repositories/jax-rs-api-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement><url>https://github.com/jakartaee/rest</url>
+
+    <organization>
+        <name>Eclipse Foundation</name>
+        <url>https://www.eclipse.org/org/foundation/</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>developers</id>
+            <name>JAX-RS API Developers</name>
+            <email>jaxrs-dev@eclipse.org</email>
+            <url>https://github.com/jakartaee/rest/graphs/contributors</url>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/jakartaee/rest/issues</url>
+    </issueManagement>
+
+    <mailingLists>
+        <mailingList>
+            <name>JAX-RS Developer Discussions</name>
+            <archive>jaxrs-dev@eclipse.org</archive>
+        </mailingList>
+    </mailingLists>
+
+    <licenses>
+        <license>
+            <name>EPL-2.0</name>
+            <url>https://www.eclipse.org/legal/epl-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>GPL-2.0-with-classpath-exception</name>
+            <url>https://www.gnu.org/software/classpath/license.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://github.com/jakartaee/rest</connection>
+        <url>https://github.com/jakartaee/rest</url>
+        <tag>HEAD</tag>
+    </scm>
+    <properties>
+        <jdk.min.version>17</jdk.min.version>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <apidocs.title>Jakarta RESTful Web Services ${spec.version} API Specification ${spec.version.revision}</apidocs.title>
+        <legal.doc.folder>${project.basedir}</legal.doc.folder>
+
+        <build.helper.maven.plugin.version>3.5.0</build.helper.maven.plugin.version>
+        <buildernumber.maven.plugin.version>3.2.0</buildernumber.maven.plugin.version>
+        <glassfish.copyright.maven.plugin.version>2.4</glassfish.copyright.maven.plugin.version>
+        <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
+        <maven.checkstyle.plugin.version>3.3.1</maven.checkstyle.plugin.version>
+        <maven.compiler.plugin.version>3.12.1</maven.compiler.plugin.version>
+        <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
+        <maven.jxr.plugin.version>3.3.2</maven.jxr.plugin.version>
+        <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>
+        <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
+        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
+
+        <api.package>jakarta.ws.rs</api.package>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skip.release.tests>false</skip.release.tests>
+        <spec.version>4.0</spec.version>
+        <spec.version.revision /> <!-- e.g. (Rev a) -->
+
+        <annotation.api.version>3.0.0-M1</annotation.api.version>
+        <activation.api.version>2.1.3</activation.api.version>
+        <inject.api.version>2.0.0</inject.api.version>
+        <validation.api.version>3.0.0</validation.api.version>
+        <concurrent.api.version>2.0.0</concurrent.api.version>
+        <cdi.api.version>3.0.0</cdi.api.version>
+        <junit.version>5.10.2</junit.version>
+        <org.glassfish.jaxb.version>4.0.3</org.glassfish.jaxb.version>
+        <com.sun.istack.version>4.1.2</com.sun.istack.version>
+        <hamcrest.version>2.2</hamcrest.version>
+        <mockito.version>5.11.0</mockito.version>
+
+        <!-- Documentation versions -->
+        <asciidoctorj.maven.plugin.version>3.0.0</asciidoctorj.maven.plugin.version>
+        <asciidoctorj.version>2.5.11</asciidoctorj.version>
+        <asciidoctorj.pdf.version>2.3.13</asciidoctorj.pdf.version>
+    </properties>
+
+    <modules>
+        <module>jaxrs-api</module>
+        <module>examples</module>
+        <module>jaxrs-spec</module>
+        <module>jaxrs-tck</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Used only in the examples -->
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${annotation.api.version}</version>
+            </dependency>
+            <!-- Required for the TCK -->
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>${activation.api.version}</version>
+            </dependency>
+            <!-- Used onlu in the examples -->
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${inject.api.version}</version>
+            </dependency>
+            <!-- Used only in the examples -->
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${cdi.api.version}</version>
+            </dependency>
+            <!-- Used only in the examples -->
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${validation.api.version}</version>
+            </dependency>
+            <!-- Used only in the examples -->
+            <dependency>
+                <groupId>jakarta.enterprise.concurrent</groupId>
+                <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+                <version>${concurrent.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>${hamcrest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven.jar.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>buildnumber-maven-plugin</artifactId>
+                    <version>${buildernumber.maven.plugin.version}</version>
+                    <configuration>
+                        <format>{0,date,MM/dd/yyyy hh:mm aa}</format>
+                        <items>
+                            <item>timestamp</item>
+                        </items>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>create</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>${maven.bundle.plugin.version}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <instructions>
+                            <_failok>true</_failok>
+                            <Build-Id>${buildNumber}</Build-Id>
+                            <Bundle-Description>Jakarta RESTful Web Services API (JAX-RS)</Bundle-Description>
+                            <Bundle-Version>${project.version}</Bundle-Version>
+                            <Bundle-SymbolicName>jakarta.ws.rs-api</Bundle-SymbolicName>
+                            <DynamicImport-Package>*</DynamicImport-Package>
+                            <Extension-Name>${api.package}</Extension-Name>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Specification-Version>${spec.version}</Specification-Version>
+                            <Specification-Vendor>Eclipse Foundation</Specification-Vendor>
+                            <specversion>${spec.version}</specversion>
+                            <_versionpolicy>[$(version;==;$(@)),$(version;+;$(@)))</_versionpolicy>
+                            <_nodefaultversion>false</_nodefaultversion>
+                            <Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.8))"</Require-Capability>
+                        </instructions>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>osgi-bundle</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>bundle</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven.javadoc.plugin.version}</version>
+                    <configuration>
+                        <doctitle>${apidocs.title}</doctitle>
+                        <docfilessubdirs>true</docfilessubdirs>
+                        <bottom>
+                            <![CDATA[<p align="left">Copyright &#169; 2018, 2024 Eclipse Foundation.<br>Use is subject to <a href="{@docRoot}/resources/EFSL.html" target="_top">license terms</a>.]]>
+                        </bottom>
+                        <docfilessubdirs>true</docfilessubdirs>
+                        <sourceFileExcludes>
+                            <fileExclude>module-info.java</fileExclude>
+                        </sourceFileExcludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven.source.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${build.helper.maven.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>add-legal-resource</id>
+                            <phase>generate-resources</phase>
+                            <goals>
+                                <goal>add-resource</goal>
+                            </goals>
+                            <configuration>
+                                <resources>
+                                    <resource>
+                                        <directory>${legal.doc.folder}</directory>
+                                        <includes>
+                                            <include>NOTICE.md</include>
+                                            <include>LICENSE.md</include>
+                                        </includes>
+                                        <targetPath>META-INF</targetPath>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jxr-plugin</artifactId>
+                    <version>${maven.jxr.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>jxr</goal>
+                            </goals>
+                            <phase>validate</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven.checkstyle.plugin.version}</version>
+                    <configuration>
+                        <outputDirectory>${project.build.directory}/checkstyle</outputDirectory>
+                        <outputFile>${project.build.directory}/checkstyle/checkstyle-result.xml</outputFile>
+                        <configLocation>${basedir}/../etc/config/checkstyle.xml</configLocation>
+                        <excludes>**/module-info.java</excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>checkstyle</goal>
+                            </goals>
+                            <phase>validate</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.glassfish.copyright</groupId>
+                    <artifactId>glassfish-copyright-maven-plugin</artifactId>
+                    <version>${glassfish.copyright.maven.plugin.version}</version>
+                    <configuration>
+                        <excludeFile>${basedir}/../etc/config/copyright-exclude</excludeFile>
+                        <!--svn|mercurial|git - defaults to svn-->
+                        <scm>git</scm>
+                        <!-- turn on/off debugging -->
+                        <debug>false</debug>
+                        <!-- skip files not under SCM-->
+                        <scmOnly>true</scmOnly>
+                        <!-- turn off warnings -->
+                        <warn>true</warn>
+                        <!-- for use with repair -->
+                        <update>false</update>
+                        <!-- check that year is correct -->
+                        <ignoreYear>false</ignoreYear>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-java-version</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <message>To build this project JDK ${jdk.min.version} (or greater) is required.</message>
+                                    <version>${jdk.min.version}</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release-eclipse</id>
+            <distributionManagement>
+                <repository>
+                    <id>repo.eclipse.org</id>
+                    <name>JAX-RS API Repository - Releases</name>
+                    <url>https://repo.eclipse.org/content/repositories/jax-rs-api-releases/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+        <profile>
+            <id>dependentSpecification</id>
+            <activation>
+                <property>
+                    <name>jaxrs.all.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>jaxrs-spec</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>jersey-tck</id>
+            <activation>
+                <property>
+                    <name>jaxrs.jerseytck.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>jersey-tck</module>
+            </modules>
+        </profile>
+    </profiles>
+</project>

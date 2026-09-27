@@ -22,7 +22,8 @@ public class UserContactQueryService implements UserContactQueryUseCase {
     @Transactional(readOnly = true)
     public UserContact find(UUID userId) {
         var user = users.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return new UserContact(user.getId(), user.getLecturerCode(), user.getFullName(), user.getEmail(), user.getFacultyId());
+        return new UserContact(user.getId(), user.getLecturerCode(), user.getFullName(), user.getEmail(), user.getFacultyId(),
+                user.getRole().name(), user.getAvatar());
     }
 
     @Transactional(readOnly = true)
@@ -34,14 +35,16 @@ public class UserContactQueryService implements UserContactQueryUseCase {
             result.addAll(users.findActiveAudience(Role.SUBJECT_ADMIN, null));
         } else if (current == Role.SUBJECT_ADMIN) {
             result.addAll(users.findActiveAudience(Role.USER, facultyId));
+            result.addAll(users.findActiveAudience(Role.SYSTEM_ADMIN, null));
         } else {
             result.addAll(users.findActiveAudience(Role.SUBJECT_ADMIN, facultyId));
+            result.addAll(users.findActiveAudience(Role.SYSTEM_ADMIN, null));
         }
         return result.stream()
                 .filter(user -> !user.getId().equals(currentUserId))
                 .distinct()
-                .map(user -> new ChatContact(user.getId(), user.getFullName(), user.getRole().name(), user.getFacultyId(), user.getAvatar()))
+                .map(user -> new ChatContact(user.getId(), user.getLecturerCode(), user.getFullName(), user.getRole().name(), user.getFacultyId(), user.getAvatar()))
                 .toList();
     }
-    public record ChatContact(UUID userId, String displayName, String role, String facultyId, String avatarUrl) {}
+    public record ChatContact(UUID userId, String lecturerCode, String displayName, String role, String facultyId, String avatarUrl) {}
 }

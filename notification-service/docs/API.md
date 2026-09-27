@@ -71,3 +71,12 @@ attempted. Delivery errors use `SMTP_CONNECTION_FAILED`,
 
 Contact replies use the same central `EmailSender` implementation as event email
 delivery and therefore use the persisted runtime SMTP settings.
+
+## Human chat API
+
+Conversation list responses include `lastMessage` and `unreadCount`. Message
+delivery and WebSocket destinations use authenticated conversation participants.
+The backend permits `USER` to contact a same-faculty `SUBJECT_ADMIN` or a
+`SYSTEM_ADMIN`, and permits `SUBJECT_ADMIN` to contact `SYSTEM_ADMIN` or receive
+same-faculty user conversations. The User Service directory supplies display
+identity; role labels are not used as names.

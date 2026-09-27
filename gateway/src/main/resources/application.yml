@@ -53,7 +53,7 @@ spring:
             - id: user-public-service
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/api/v1/public/faculties
+                - Path=/api/v1/public/faculties,/api/v1/public/system-branding
             - id: question-service
               uri: lb://QUESTION-SERVICE
               predicates:
@@ -73,7 +73,7 @@ spring:
             - id: notification-service
               uri: lb://NOTIFICATION-SERVICE
               predicates:
-                 - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**,/api/v1/public/contact,/api/v1/admin/contact/**,/api/v1/admin/email-settings/**,/api/v1/support/**,/api/v1/admin/support/**
+                 - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**,/api/v1/public/contact,/api/v1/public/telegram/webhook,/api/v1/admin/contact/**,/api/v1/admin/email-settings/**,/api/v1/support/**,/api/v1/admin/support/**,/api/v1/telegram/**,/api/v1/admin/telegram/**
               filters:
                 - name: RequestRateLimiter
                   args:

@@ -34,7 +34,7 @@ export function AiAssistantWidget(){
     {messages.map((message,index)=><article key={`${message.role}-${index}`} className={message.role.toLowerCase()}><small>{message.role==='USER'?'Bạn':'Trợ lý HAU QM'}</small><p>{message.content}</p>{message.actions?.map(action=>routesByKey[action.routeKey]&&<button type="button" className="ai-assistant-action" key={`${action.routeKey}-${action.label}`} onClick={()=>act(action)}>{action.label}</button>)}</article>)}
     {busy&&<p className="ai-assistant-typing">Trợ lý đang chuẩn bị câu trả lời…</p>}<span ref={endRef}/>
    </div>
-   <form onSubmit={event=>{event.preventDefault();void send()}}><textarea ref={inputRef} value={input} maxLength={1000} onChange={event=>setInput(event.target.value)} placeholder="Nhập câu hỏi về HAU QM…" aria-label="Câu hỏi cho trợ lý" rows="2" onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();void send()}}}/><button type="submit" disabled={busy||!input.trim()} aria-label="Gửi câu hỏi">➤</button></form>
+   <form onSubmit={event=>{event.preventDefault();void send()}}><textarea ref={inputRef} value={input} maxLength={1000} onChange={event=>setInput(event.target.value)} placeholder="Hỏi về HAU QM hoặc một kiến thức phổ thông…" aria-label="Câu hỏi cho trợ lý" rows="2" onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();void send()}}}/><button type="submit" disabled={busy||!input.trim()} aria-label="Gửi câu hỏi">➤</button></form>
    {error&&<p className="ai-assistant-error" role="alert">{error}</p>}
   </section>}
  </div>

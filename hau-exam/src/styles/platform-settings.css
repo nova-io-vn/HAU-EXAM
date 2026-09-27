@@ -228,3 +228,6 @@
     content: none;
   }
 }
+.branding-upload-row{display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-muted)}
+.branding-upload-row>img{width:72px;height:72px;object-fit:contain;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.branding-upload-row>div{display:grid;justify-items:start;gap:5px}.branding-upload-row span{color:var(--text-muted);font-size:11px}.branding-upload-row .button{display:inline-flex;align-items:center;min-height:34px;margin-top:4px;cursor:pointer}.branding-favicon>img{width:48px;height:48px}.branding-favicon{grid-template-columns:72px 1fr}

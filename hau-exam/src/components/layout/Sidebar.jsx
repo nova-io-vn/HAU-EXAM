@@ -6,7 +6,8 @@ import { authStore } from "../../stores/authStore";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { questionsApi } from "../../features/questions/api/questionsApi";
 import { Icon } from "../ui";
-import logo from '../../assets/logo.jpg';
+import { BrandLogo } from '../../features/branding/BrandLogo';
+import { useBranding } from '../../features/branding/brandingContext';
 
 const roleLabel = {
   SYSTEM_ADMIN: "Quản trị viên hệ thống",
@@ -15,6 +16,7 @@ const roleLabel = {
 };
 export function Sidebar({ collapsed, mobileOpen, onClose }) {
   const { role, facultyId, currentUser } = useAuth();
+  const branding = useBranding();
   const navigate = useNavigate();
   const [pending, setPending] = useState(null);
   useEffect(() => {
@@ -94,10 +96,10 @@ export function Sidebar({ collapsed, mobileOpen, onClose }) {
         aria-label="Điều hướng chính"
       >
         <div className="brand">
-          <span className="brand-mark"><img src={logo} alt="Hauexam" /></span>
+          <span className="brand-mark"><BrandLogo /></span>
           {!collapsed && (
             <span className="brand-copy">
-              <strong>HAU QM</strong>
+              <strong>{branding.shortName}</strong>
               <small>Hệ thống Quản lý Khảo thí</small>
             </span>
           )}

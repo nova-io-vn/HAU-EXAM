@@ -4,6 +4,7 @@ import { PublicLayout } from '../../components/layout/PublicLayout'
 import { MediaImage } from '../../components/shared/MediaImage'
 import { Icon } from '../../components/ui'
 import { LANDING_MEDIA } from '../../config/landingMedia'
+import { useBranding } from '../../features/branding/brandingContext'
 
 const features = [
   ['Ngân hàng câu hỏi', 'Soạn thảo, phân loại và theo dõi workflow trong phạm vi Khoa.'],
@@ -21,6 +22,7 @@ const journeys = [
 ]
 
 export function PublicLandingPage() {
+  const branding = useBranding()
   return <PublicLayout>
     <div className="public-landing">
       <section className="public-hero public-hero-enhanced">
@@ -34,10 +36,10 @@ export function PublicLandingPage() {
           </div>
           <div className="public-hero-note"><span aria-hidden="true">●</span> Một không gian làm việc thống nhất cho giáo dục hiện đại</div>
         </div>
-        <div className="public-hero-visual" aria-label="Xem trước giao diện HAU-EXAM">
+        <div className="public-hero-visual" aria-label={`Xem trước giao diện ${branding.systemName}`}>
           <MediaImage className="public-hero-photo" src={LANDING_MEDIA.hero} alt="Hình ảnh minh họa môi trường học thuật hiện đại" width={1200} height={800} loading="eager" />
           <div className="public-product-preview">
-            <div className="preview-top"><b>HAU-EXAM</b><span>Dashboard</span><i /></div>
+            <div className="preview-top"><b>{branding.shortName}</b><span>Dashboard</span><i /></div>
             <div className="preview-body"><aside><em /><em /><em /><em /></aside><div><div className="preview-title" /><div className="preview-kpis"><i /><i /><i /></div><div className="preview-table"><i /><i /><i /><i /></div></div></div>
             <div className="preview-badge"><Icon name="check" size={14} /> Workflow rõ ràng</div>
           </div>
@@ -47,7 +49,7 @@ export function PublicLandingPage() {
 
       <section className="public-section public-media-intro" aria-labelledby="teaching-title">
         <div className="public-media-intro-image"><MediaImage src={LANDING_MEDIA.teaching} alt="Hình ảnh minh họa lớp học đại học và công nghệ giáo dục" width={1200} height={800} /><span>Hình ảnh minh họa</span></div>
-        <div><span className="eyebrow">MÔI TRƯỜNG GIẢNG DẠY HIỆN ĐẠI</span><h2 id="teaching-title">Được xây dựng cho cách giảng dạy ngày hôm nay.</h2><p>HAU-EXAM kết nối học liệu, ngân hàng câu hỏi và quy trình chuyên môn trong một workspace gọn gàng, dễ theo dõi.</p><div className="public-check-list"><span>Ngân hàng câu hỏi có cấu trúc</span><span>AI hỗ trợ, con người kiểm duyệt</span><span>Ma trận và tạo đề theo phạm vi</span></div></div>
+        <div><span className="eyebrow">MÔI TRƯỜNG GIẢNG DẠY HIỆN ĐẠI</span><h2 id="teaching-title">Được xây dựng cho cách giảng dạy ngày hôm nay.</h2><p>{branding.systemName} kết nối học liệu, ngân hàng câu hỏi và quy trình chuyên môn trong một workspace gọn gàng, dễ theo dõi.</p><div className="public-check-list"><span>Ngân hàng câu hỏi có cấu trúc</span><span>AI hỗ trợ, con người kiểm duyệt</span><span>Ma trận và tạo đề theo phạm vi</span></div></div>
       </section>
 
       <section id="features" className="public-section public-section-muted"><span className="eyebrow">MỘT KHÔNG GIAN THỐNG NHẤT</span><h2>Tập trung vào nội dung chuyên môn.</h2><div className="public-feature-grid">{features.map(([title, text]) => <article key={title}><strong>{title}</strong><p>{text}</p></article>)}</div></section>
@@ -56,7 +58,7 @@ export function PublicLandingPage() {
 
       <section id="workflow" className="public-section public-workflow"><span className="eyebrow">QUY TRÌNH RÕ RÀNG</span><h2>Từ học liệu đến câu hỏi được phê duyệt.</h2><ol>{['Tải tài liệu và tạo câu hỏi thủ công hoặc bằng AI.', 'Chỉnh sửa, phân loại và gửi câu hỏi cho quản trị viên chuyên môn.', 'Review theo phạm vi Khoa, sau đó đưa câu hỏi đã duyệt vào ngân hàng.'].map((text, i) => <li key={text}><b>0{i + 1}</b><span>{text}</span></li>)}</ol></section>
 
-      <section id="contact" className="public-section public-cta" style={{ '--cta-image': `url(${LANDING_MEDIA.ctaBackground})` }}><div><span className="eyebrow">HAU-EXAM</span><h2>Sẵn sàng trải nghiệm HAU-EXAM?</h2><p>Bắt đầu từ một workspace rõ ràng hơn cho nội dung và quy trình khảo thí.</p></div><div className="public-actions"><Link className="button button-primary" to={routes.login}>Bắt đầu trải nghiệm <span aria-hidden="true">→</span></Link><Link className="button button-light" to={routes.download}>Tải ứng dụng</Link></div></section>
+      <section id="contact" className="public-section public-cta" style={{ '--cta-image': `url(${LANDING_MEDIA.ctaBackground})` }}><div><span className="eyebrow">{branding.shortName}</span><h2>Sẵn sàng trải nghiệm {branding.systemName}?</h2><p>Bắt đầu từ một workspace rõ ràng hơn cho nội dung và quy trình khảo thí.</p></div><div className="public-actions"><Link className="button button-primary" to={routes.login}>Bắt đầu trải nghiệm <span aria-hidden="true">→</span></Link><Link className="button button-light" to={routes.download}>Tải ứng dụng</Link></div></section>
     </div>
   </PublicLayout>
 }

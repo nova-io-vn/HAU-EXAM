@@ -1,14 +1,21 @@
-> **Vị trí đặt file:** `backend/exam-service/docs/API.md`
+# Exam Service API
 
-# Exam Service --- API
+Exam Service is the source of truth for matrices, templates, persisted exams,
+exam versions, and selected question references. All endpoints below require
+`SUBJECT_ADMIN`; the service enforces the faculty claim.
 
-Implemented synchronously under `/api/v1`: create/update/get/list/validate
-exam matrices; create/get templates; generate/list/get exams; and create a new
-exam version. All endpoints require `SUBJECT_ADMIN` and enforce the JWT faculty.
-Export is not implemented in this phase.
+- `GET/POST/PUT /api/v1/exam-matrices`: list, create, and update matrices.
+- `POST /api/v1/exam-matrices/{id}/validate`: validate approved-question coverage.
+- `GET/POST /api/v1/exam-templates`: list and create templates.
+- `POST /api/v1/exams/generate`: persist an exam and its first version. The request
+  includes `name`, `examCode`, `durationMinutes`, `matrixId`, and optional
+  `templateId`; the response contains the persisted exam `id`.
+- `GET /api/v1/exams`: list persisted exams for the authenticated faculty.
+- `GET /api/v1/exams/{id}`: return metadata, versions, and selected questions.
+- `POST /api/v1/exams/{id}/versions`: persist a regenerated version.
+- `GET /api/v1/exams/{id}/pdf?version=N`: export a persisted version
+  as PDF.
 
-Nhóm API: - `/api/v1/exam-matrices` - validate matrix -
-`/api/v1/exams/generate` - `/api/v1/exams/{id}` - versions - export
-
-Generate phải báo rõ lỗi khi ngân hàng câu hỏi APPROVED không đủ theo
-matrix.
+Generation fails explicitly when the approved question bank cannot satisfy the
+matrix. Exam Service stores logical question references only and never accesses
+the Question database directly.

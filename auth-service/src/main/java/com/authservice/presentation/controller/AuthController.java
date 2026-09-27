@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.UUID;
 
@@ -26,9 +28,13 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("REGISTERED", "Registration submitted", auth.register(input, correlationId)));
     }
 
-    @PostMapping("/login")
     public ApiResponse<AuthDtos.Session> login(@Valid @RequestBody AuthRequests.Login request) {
-        return ApiResponse.success("LOGIN_SUCCESS", "Login successful", auth.login(request.lecturerCode(), request.password()));
+        return login(request, null);
+    }
+
+    @PostMapping("/login")
+    public ApiResponse<AuthDtos.Session> login(@Valid @RequestBody AuthRequests.Login request, @RequestHeader(value = "X-Correlation-Id", required = false) UUID correlationId) {
+        return ApiResponse.success("LOGIN_SUCCESS", "Login successful", auth.login(request.lecturerCode(), request.password(), correlationId));
     }
 
     @PostMapping("/refresh")
@@ -56,5 +62,12 @@ public class AuthController {
     public ApiResponse<Void> reset(@Valid @RequestBody AuthRequests.ResetPassword request) {
         auth.resetPassword(request.lecturerCode(), request.otp(), request.newPassword());
         return ApiResponse.success("PASSWORD_RESET", "Password reset successfully", null);
+    }
+
+    @PostMapping("/change-password")
+    public ApiResponse<Void> changePassword(@AuthenticationPrincipal Jwt jwt,
+                                            @Valid @RequestBody AuthRequests.ChangePassword request) {
+        auth.changePassword(UUID.fromString(jwt.getSubject()), request.currentPassword(), request.newPassword());
+        return ApiResponse.success("PASSWORD_CHANGED", "Password changed successfully", null);
     }
 }

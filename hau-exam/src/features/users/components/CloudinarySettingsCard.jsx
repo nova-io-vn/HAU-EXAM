@@ -4,6 +4,7 @@ import { Input } from "../../../components/ui";
 import { PasswordInput } from "../../auth/components/PasswordInput";
 import { getErrorMessage } from "../../../services/api/errorMessages";
 import { platformSettingsApi } from "../api/platformSettingsApi";
+import { toast } from "../../notifications/store/notificationStore";
 
 export function CloudinarySettingsCard() {
   const [status, setStatus] = useState(null);
@@ -34,8 +35,10 @@ export function CloudinarySettingsCard() {
       const next = await platformSettingsApi.saveCloudinary(form);
       setStatus(next); setForm(current => ({ ...current, apiKey: "", apiSecret: "" }));
       setMessage("Đã lưu cấu hình Cloudinary. Có thể upload ảnh đại diện ngay.");
+      toast.success("Đã lưu cấu hình Cloudinary.");
     } catch (requestError) {
       setError(getErrorMessage(requestError, "Không thể lưu cấu hình Cloudinary."));
+      toast.error(getErrorMessage(requestError, "Vui lòng thử lại."), { title: "Không thể lưu Cloudinary" });
     } finally { setSaving(false); }
   }
 

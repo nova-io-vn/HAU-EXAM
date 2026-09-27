@@ -16,7 +16,7 @@ public class SecurityConfiguration {
                         "/actuator/health", "/.well-known/jwks.json",
                         "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh",
                         "/api/v1/auth/forgot-password", "/api/v1/auth/verify-otp", "/api/v1/auth/reset-password").permitAll()
-                        .requestMatchers("/api/v1/auth/logout").authenticated().anyRequest().authenticated())
+                        .requestMatchers("/api/v1/auth/logout", "/api/v1/auth/change-password").authenticated().anyRequest().authenticated())
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> { }));
         return http.build();
     }

@@ -16,6 +16,7 @@ import { normalizePage } from "../model/userModel";
 import { Pagination } from "../components/Pagination";
 import { SubjectAdminCombobox } from "../components/SubjectAdminCombobox";
 import { usersApi } from "../api/usersApi";
+import { toast } from "../../notifications/store/notificationStore";
 export function FacultyPage() {
   const [draft, setDraft] = useState({ keyword: "", active: "" });
   const [query, setQuery] = useState(draft);
@@ -68,10 +69,12 @@ export function FacultyPage() {
       if (editing?.id) await facultiesApi.update(editing.id, body);
       else await facultiesApi.create(body);
       if (editing?.id) await facultiesApi.assignSubjectAdmin(editing.id, values.subjectAdminId || null);
+      toast.success(editing?.id ? "Đã lưu thay đổi khoa." : "Đã tạo khoa thành công.");
       setEditing(null);
-      load();
+      await load();
     } catch (e) {
       setError(e);
+      toast.error(e.message || "Vui lòng thử lại.", { title: "Không thể lưu khoa" });
     }
   }
   const activeCount = data.items.filter((item) => item.active).length;

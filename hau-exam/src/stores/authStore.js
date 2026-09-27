@@ -7,6 +7,7 @@ const emptyState = {
   role: null,
   facultyId: null,
   bootstrapping: true,
+  remember: false,
 };
 let state = { ...emptyState };
 const listeners = new Set();
@@ -36,15 +37,20 @@ function publish(next) {
 }
 function readRefreshToken() {
   try {
-    return sessionStorage.getItem(STORAGE_KEY);
+    return localStorage.getItem(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY);
   } catch {
     return null;
   }
 }
-function writeRefreshToken(token) {
+function writeRefreshToken(token, remember = state.remember) {
   try {
-    if (token) sessionStorage.setItem(STORAGE_KEY, token);
-    else sessionStorage.removeItem(STORAGE_KEY);
+    if (token) {
+      (remember ? localStorage : sessionStorage).setItem(STORAGE_KEY, token);
+      (remember ? sessionStorage : localStorage).removeItem(STORAGE_KEY);
+    } else {
+      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+    }
     return true;
   } catch {
     return false;
@@ -63,7 +69,7 @@ export const authStore = {
     lecturerCode,
     role,
     facultyId,
-  }) {
+  }, options = {}) {
     const claims = accessToken ? decodeClaims(accessToken) : {};
     const user = currentUser || {
       id: userId || claims.sub || null,
@@ -71,7 +77,8 @@ export const authStore = {
     };
     const nextRefreshToken =
       refreshToken || state.refreshToken || readRefreshToken();
-    writeRefreshToken(nextRefreshToken);
+    const remember = options.remember ?? state.remember ?? Boolean(localStorage.getItem(STORAGE_KEY));
+    writeRefreshToken(nextRefreshToken, remember);
     publish({
       currentUser: user,
       accessToken: accessToken || null,
@@ -80,6 +87,7 @@ export const authStore = {
       role: role || user.role || claims.role || null,
       facultyId: facultyId || user.facultyId || claims.facultyId || null,
       bootstrapping: false,
+      remember,
     });
   },
   updateCurrentUser(profile) {
@@ -96,7 +104,7 @@ export const authStore = {
         return;
       }
       try {
-        this.setSession(await refresh(refreshToken));
+        this.setSession(await refresh(refreshToken), { remember: Boolean(localStorage.getItem(STORAGE_KEY)) });
       } catch {
         this.clear();
       } finally {

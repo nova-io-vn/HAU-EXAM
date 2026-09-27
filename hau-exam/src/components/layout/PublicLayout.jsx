@@ -1,9 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
 import { routes } from '../../constants/routes'
 import { PublicHeader } from './PublicHeader'
-import logo from '../../assets/logo.jpg';
+import { BrandLogo } from '../../features/branding/BrandLogo'
+import { useBranding } from '../../features/branding/brandingContext'
 export function PublicLayout({ children }) {
   const location = useLocation()
+  const branding = useBranding()
 
   return (
     <div className="public-layout">
@@ -16,8 +18,8 @@ export function PublicLayout({ children }) {
         <div className="public-container public-footer-grid">
           <div className="public-footer-brand">
             <Link className="public-logo" to="/">
-              <span aria-hidden="true"><img src={logo} alt="Hauexam" /></span>
-              <strong>HAU-EXAM</strong>
+              <span aria-hidden="true"><BrandLogo /></span>
+              <strong>{branding.shortName}</strong>
             </Link>
             <p>Nền tảng quản lý học liệu và ngân hàng câu hỏi theo phạm vi chuyên môn.</p>
           </div>
@@ -36,7 +38,7 @@ export function PublicLayout({ children }) {
             <Link to={routes.terms}>Điều khoản sử dụng</Link>
             <Link to={routes.privacy}>Chính sách bảo mật</Link>
           </div>
-          <small>© 2026 HAU-EXAM · Đại học Kiến trúc Hà Nội</small>
+          <small>© 2026 {branding.systemName} · Đại học Kiến trúc Hà Nội</small>
         </div>
       </footer>
     </div>
