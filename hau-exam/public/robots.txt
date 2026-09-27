@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /questions
+Disallow: /exams
+Disallow: /admin/
+Disallow: /chat
+Disallow: /notifications
+Disallow: /ai/
+Sitemap: https://exam.nova.io.vn/sitemap.xml

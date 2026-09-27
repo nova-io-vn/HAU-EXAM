@@ -38,4 +38,9 @@ export const routes = {
   terms: "/terms",
   privacy: "/privacy",
   download: "/download",
+  about: "/gioi-thieu",
+  features: "/tinh-nang",
+  questionBankPublic: "/ngan-hang-cau-hoi",
+  examManagementPublic: "/quan-ly-de-thi",
+  guide: "/huong-dan",
 };

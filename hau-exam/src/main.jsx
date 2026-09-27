@@ -29,6 +29,7 @@ import './styles/ux-pass.css'
 import './styles/telegram.css'
 import './styles/responsive.css'
 import './styles/workspace.css'
+import './styles/public-redesign.css'
 import 'intro.js/introjs.css'
 import App from './App.jsx'
 

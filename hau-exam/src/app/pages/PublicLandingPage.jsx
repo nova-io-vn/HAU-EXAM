@@ -3,62 +3,11 @@ import { routes } from '../../constants/routes'
 import { PublicLayout } from '../../components/layout/PublicLayout'
 import { MediaImage } from '../../components/shared/MediaImage'
 import { Icon } from '../../components/ui'
-import { LANDING_MEDIA } from '../../config/landingMedia'
 import { useBranding } from '../../features/branding/brandingContext'
+import banner from '../../assets/banner.jpg'
+import campus from '../../assets/toam.jpg'
+import trangchu from '../../assets/trangchu.png'
 
-const features = [
-  ['Ngân hàng câu hỏi', 'Soạn thảo, phân loại và theo dõi workflow trong phạm vi Khoa.'],
-  ['AI hỗ trợ tạo sinh', 'Đưa học liệu vào quy trình tạo câu hỏi có cấu trúc và kiểm duyệt.'],
-  ['Phê duyệt chuyên môn', 'Quản trị viên chuyên môn xem xét và đưa câu hỏi vào ngân hàng chính thức.'],
-  ['Độ bao phủ kiến thức', 'Theo dõi nội dung theo Môn học, Chương và Chủ đề.'],
-  ['Ma trận đề', 'Xây dựng phân bố câu hỏi và phiên bản đề từ ngân hàng đã duyệt.'],
-  ['Thông báo tập trung', 'Nhận cập nhật workflow qua in-app, realtime và email.'],
-]
-
-const journeys = [
-  ['questionBank', 'Soạn câu hỏi', 'Tổ chức nội dung theo môn học, chương và chủ đề.'],
-  ['review', 'Phê duyệt chuyên môn', 'Giữ quy trình review rõ ràng, đúng phạm vi quản trị.'],
-  ['exam', 'Tạo đề thi', 'Thiết kế ma trận và sinh bộ đề từ nội dung đã duyệt.'],
-]
-
-export function PublicLandingPage() {
-  const branding = useBranding()
-  return <PublicLayout>
-    <div className="public-landing">
-      <section className="public-hero public-hero-enhanced" style={{ '--landing-banner': `url(${LANDING_MEDIA.hero})` }}>
-        <div className="public-hero-copy">
-          <span className="eyebrow">HỆ THỐNG QUẢN LÝ KHẢO THÍ</span>
-          <h1>Xây dựng ngân hàng câu hỏi thông minh và có hệ thống.</h1>
-          <p>Nền tảng hỗ trợ giảng viên HAU quản lý học liệu, tạo câu hỏi, AI, phê duyệt và xây dựng ma trận theo phạm vi chuyên môn.</p>
-          <div className="public-actions">
-            <Link className="button button-primary public-hero-primary" to={routes.login}>Bắt đầu trải nghiệm <span aria-hidden="true">→</span></Link>
-            <a className="button button-secondary" href="#features">Khám phá hệ thống</a>
-          </div>
-          <div className="public-hero-note"><span aria-hidden="true">●</span> Một không gian làm việc thống nhất cho giáo dục hiện đại</div>
-        </div>
-        <div className="public-hero-visual" aria-label={`Xem trước giao diện ${branding.systemName}`}>
-          <MediaImage className="public-hero-photo" src={LANDING_MEDIA.hero} alt="Hình ảnh minh họa môi trường học thuật hiện đại" width={1200} height={800} loading="eager" />
-          <div className="public-product-preview">
-            <div className="preview-top"><b>{branding.shortName}</b><span>Dashboard</span><i /></div>
-            <div className="preview-body"><aside><em /><em /><em /><em /></aside><div><div className="preview-title" /><div className="preview-kpis"><i /><i /><i /></div><div className="preview-table"><i /><i /><i /><i /></div></div></div>
-            <div className="preview-badge"><Icon name="check" size={14} /> Workflow rõ ràng</div>
-          </div>
-          <div className="public-mobile-card"><span>Mobile workspace</span><strong>Luôn sẵn sàng</strong><MediaImage src={LANDING_MEDIA.mobile} alt="Hình ảnh minh họa giao diện trên thiết bị di động" width={700} height={900} /></div>
-        </div>
-      </section>
-
-      <section className="public-section public-media-intro" aria-labelledby="teaching-title">
-        <div className="public-media-intro-image"><MediaImage src={LANDING_MEDIA.teaching} alt="Hình ảnh minh họa lớp học đại học và công nghệ giáo dục" width={1200} height={800} /><span>Hình ảnh minh họa</span></div>
-        <div><span className="eyebrow">MÔI TRƯỜNG GIẢNG DẠY HIỆN ĐẠI</span><h2 id="teaching-title">Được xây dựng cho cách giảng dạy ngày hôm nay.</h2><p>{branding.systemName} kết nối học liệu, ngân hàng câu hỏi và quy trình chuyên môn trong một workspace gọn gàng, dễ theo dõi.</p><div className="public-check-list"><span>Ngân hàng câu hỏi có cấu trúc</span><span>AI hỗ trợ, con người kiểm duyệt</span><span>Ma trận và tạo đề theo phạm vi</span></div></div>
-      </section>
-
-      <section id="features" className="public-section public-section-muted"><span className="eyebrow">MỘT KHÔNG GIAN THỐNG NHẤT</span><h2>Tập trung vào nội dung chuyên môn.</h2><div className="public-feature-grid">{features.map(([title, text]) => <article key={title}><strong>{title}</strong><p>{text}</p></article>)}</div></section>
-
-      <section className="public-section public-journeys" aria-labelledby="journeys-title"><span className="eyebrow">TRẢI NGHIỆM DÀNH CHO GIẢNG VIÊN</span><h2 id="journeys-title">Mỗi bước làm việc đều rõ ràng hơn.</h2><div className="public-journey-grid">{journeys.map(([image, title, text]) => <article className="public-journey-card" key={title}><div className="public-journey-image"><MediaImage src={LANDING_MEDIA[image]} alt={`${title} - hình ảnh minh họa`} width={900} height={600} /><span>Hình ảnh minh họa</span></div><div><strong>{title}</strong><p>{text}</p></div></article>)}</div></section>
-
-      <section id="workflow" className="public-section public-workflow"><span className="eyebrow">QUY TRÌNH RÕ RÀNG</span><h2>Từ học liệu đến câu hỏi được phê duyệt.</h2><ol>{['Tải tài liệu và tạo câu hỏi thủ công hoặc bằng AI.', 'Chỉnh sửa, phân loại và gửi câu hỏi cho quản trị viên chuyên môn.', 'Review theo phạm vi Khoa, sau đó đưa câu hỏi đã duyệt vào ngân hàng.'].map((text, i) => <li key={text}><b>0{i + 1}</b><span>{text}</span></li>)}</ol></section>
-
-      <section id="contact" className="public-section public-cta" style={{ '--cta-image': `url(${LANDING_MEDIA.ctaBackground})` }}><div><span className="eyebrow">{branding.shortName}</span><h2>Sẵn sàng trải nghiệm {branding.systemName}?</h2><p>Bắt đầu từ một workspace rõ ràng hơn cho nội dung và quy trình khảo thí.</p></div><div className="public-actions"><Link className="button button-primary" to={routes.login}>Bắt đầu trải nghiệm <span aria-hidden="true">→</span></Link><Link className="button button-light" to={routes.download}>Tải ứng dụng</Link></div></section>
-    </div>
-  </PublicLayout>
-}
+const features=[['book','Ngân hàng câu hỏi','Tổ chức Subject, Chapter, Topic, mức độ và hình ảnh câu hỏi.'],['sparkles','AI hỗ trợ','Phân tích học liệu và tạo gợi ý có cấu trúc để người dùng kiểm tra.'],['check','Phê duyệt chuyên môn','Theo dõi workflow và phạm vi khoa rõ ràng.'],['grid','Ma trận đề','Phân bổ câu hỏi theo chương và độ khó.'],['file','Quản lý tài liệu','Tập trung học liệu cho quy trình tạo câu hỏi.'],['bell','Thông báo & trao đổi','Theo dõi cập nhật qua các kênh được cấu hình.']]
+const seo={title:'HAU Exam | Ngân hàng câu hỏi và đề thi trắc nghiệm HAU',description:'HAU Exam hỗ trợ tạo, quản lý và phê duyệt ngân hàng câu hỏi, đề thi trắc nghiệm tại Trường Đại học Kiến trúc Hà Nội, kết hợp AI và quy trình quản lý chuyên môn.',path:'/',image:banner,jsonLd:{'@context':'https://schema.org','@type':'WebSite',name:'HAU Exam',alternateName:'HAU QM',url:'https://exam.nova.io.vn/'}}
+export function PublicLandingPage(){const branding=useBranding();return <PublicLayout seo={seo}><div className="public-landing"><section className="public-hero public-hero-enhanced" style={{'--landing-banner':`url(${banner})`}}><div className="public-hero-copy"><span className="eyebrow">HAU EXAM · HỆ THỐNG HỖ TRỢ CHUYÊN MÔN</span><h1>HAU Exam – Hệ thống quản lý ngân hàng câu hỏi và đề thi trắc nghiệm</h1><p>Hỗ trợ xây dựng, quản lý, phê duyệt câu hỏi và tạo đề thi trong môi trường số dành cho hoạt động chuyên môn tại Trường Đại học Kiến trúc Hà Nội.</p><div className="public-actions"><Link className="button button-primary" to={routes.login}>Đăng nhập →</Link><a className="button button-secondary" href="#about">Tìm hiểu hệ thống</a><Link className="button button-ghost" to={routes.register}>Đăng ký tài khoản</Link></div></div><div className="public-hero-visual"><MediaImage className="public-hero-photo" src={banner} alt="Tòa nhà Trường Đại học Kiến trúc Hà Nội" width={904} height={339} loading="eager"/><div className="public-hero-visual-label"><strong>{branding.shortName||'HAU Exam'}</strong><span>Quản lý nội dung chuyên môn theo quy trình rõ ràng</span></div></div></section><section id="about" className="public-section public-intro"><div><span className="eyebrow">HAU EXAM TRONG THỰC TẾ</span><h2>Xây dựng ngân hàng câu hỏi trong một quy trình thống nhất.</h2><p>HAU Exam hỗ trợ từ xây dựng câu hỏi, phân loại học liệu và phê duyệt chuyên môn đến thiết kế ma trận, tạo bộ đề và quản lý phiên bản.</p><p>Đây là hệ thống hỗ trợ hoạt động chuyên môn, không phải nền tảng tổ chức thi trực tuyến.</p></div><figure className="public-trangchu-visual"><img src={trangchu} alt="Giao diện hệ thống HAU Exam quản lý ngân hàng câu hỏi và đề thi" width="800" height="533"/><figcaption>Không gian học tập và cộng tác trong bối cảnh HAU.</figcaption></figure></section><section id="features" className="public-section public-section-muted"><span className="eyebrow">NĂNG LỰC CỐT LÕI</span><h2>Công cụ rõ ràng cho từng bước làm việc.</h2><div className="public-feature-grid">{features.map(([icon,title,text])=><article key={title}><span className="public-feature-icon"><Icon name={icon} size={20}/></span><h3>{title}</h3><p>{text}</p></article>)}</div></section><section className="public-section public-workflow"><span className="eyebrow">QUY TRÌNH</span><h2>Từ câu hỏi đến bộ đề được quản lý có hệ thống.</h2><ol>{['Tạo câu hỏi thủ công hoặc với hỗ trợ AI.','Gửi phê duyệt để quản trị viên chuyên môn đánh giá.','Câu hỏi được phê duyệt trở thành nguồn cho ma trận.','Xây dựng ma trận, tạo đề và quản lý phiên bản.'].map((step,index)=><li key={step}><b>0{index+1}</b><span>{step}</span></li>)}</ol></section><section className="public-section public-roles"><span className="eyebrow">DÀNH CHO AI?</span><h2>Phân vai rõ ràng, dữ liệu đúng phạm vi.</h2><div className="public-role-grid"><article><h3>Giảng viên</h3><p>Tạo câu hỏi, upload học liệu và theo dõi nội dung của mình.</p></article><article><h3>Quản trị viên chuyên môn</h3><p>Review nội dung trong phạm vi khoa được phân công.</p></article><article><h3>Quản trị viên hệ thống</h3><p>Quản lý tài khoản, vai trò, khoa và thiết lập cấp hệ thống.</p></article></div></section><section className="public-section public-context"><div className="public-context-image"><img src={campus} alt="Tòa nhà Trường Đại học Kiến trúc Hà Nội" width="365" height="547"/></div><div><span className="eyebrow">VỀ TRƯỜNG ĐẠI HỌC KIẾN TRÚC HÀ NỘI</span><h2>Không gian chuyên môn trong bối cảnh một trường đại học kiến trúc.</h2><p>HAU Exam được định hướng là hệ thống hỗ trợ quản lý ngân hàng câu hỏi và đề thi trắc nghiệm tại Trường Đại học Kiến trúc Hà Nội.</p><div className="public-actions"><a className="button button-secondary" href="https://hau.edu.vn" target="_blank" rel="noopener noreferrer">Website HAU ↗</a><a className="button button-ghost" href="https://www.facebook.com/DHKIENTRUCHN" target="_blank" rel="noopener noreferrer">Facebook HAU ↗</a></div></div></section><section className="public-section public-cta"><div><span className="eyebrow">{branding.shortName||'HAU Exam'}</span><h2>Bắt đầu với HAU Exam</h2><p>Tạo, quản lý và phê duyệt ngân hàng câu hỏi trong một quy trình thống nhất.</p></div><div className="public-actions"><Link className="button button-primary" to={routes.login}>Đăng nhập</Link><Link className="button button-light" to={routes.register}>Đăng ký tài khoản</Link></div></section></div></PublicLayout>}

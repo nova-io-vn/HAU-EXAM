@@ -3,6 +3,7 @@ import { routes } from "../../../constants/routes";
 import campus from '../../../assets/toam.jpg';
 import { BrandLogo } from '../../branding/BrandLogo';
 import { useBranding } from '../../branding/brandingContext';
+import { Seo } from '../../../components/shared/Seo';
 
 export function AuthLayout({
   title,
@@ -14,6 +15,7 @@ export function AuthLayout({
   const branding = useBranding();
   return (
     <main className="auth-page">
+      <Seo title={`${title} | ${branding.shortName || 'HAU Exam'}`} description="Khu vực đăng nhập và đăng ký HAU Exam." path={window.location.pathname} noindex />
       <section className="auth-brand-panel" style={{ '--auth-campus': `url(${campus})` }}>
         <div className="auth-brand-content">
         <div className="auth-brand-mark"><BrandLogo /></div>
