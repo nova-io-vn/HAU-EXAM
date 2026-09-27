@@ -72,7 +72,6 @@ export function EditQuestionPage() {
   return (
     <section>
       <PageHeader
-        title="Chỉnh sửa câu hỏi"
         description={
           canEdit(form, auth)
             ? "Cập nhật nội dung; trạng thái chỉ thay đổi qua action nghiệp vụ."
@@ -83,6 +82,7 @@ export function EditQuestionPage() {
         form={form}
         onChange={setForm}
         onSubmit={submit}
+        onCancel={() => navigate(`/questions/${id}`)}
         editing
         saving={saving}
         readonly={!canEdit(form, auth)}

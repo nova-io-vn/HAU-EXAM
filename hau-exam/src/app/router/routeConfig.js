@@ -1,13 +1,62 @@
-import {routes} from '../../constants/routes'
-import {roles} from '../../constants/roles'
-const allRoles=Object.values(roles)
-export const protectedRoutes=[
- {path:routes.dashboard,title:'Dashboard',roles:allRoles},{path:routes.profile,title:'Profile',roles:allRoles},
- {path:routes.questions,title:'Question bank',roles:[roles.SUBJECT_ADMIN,roles.USER]},{path:routes.myQuestions,title:'My questions',roles:[roles.USER]},{path:routes.newQuestion,title:'Create question',roles:[roles.USER]},{path:'/questions/:id',title:'Question detail',roles:[roles.SUBJECT_ADMIN,roles.USER]},{path:'/questions/:id/edit',title:'Edit question',roles:[roles.USER]},
- {path:routes.review,title:'Pending review',roles:[roles.SUBJECT_ADMIN]},{path:'/review/:id',title:'Review question',roles:[roles.SUBJECT_ADMIN]},
- {path:routes.matrices,title:'Ma trận đề',roles:[roles.SUBJECT_ADMIN]},{path:'/exam-matrices/new',title:'Tạo ma trận',roles:[roles.SUBJECT_ADMIN]},{path:'/exam-matrices/:id/edit',title:'Chỉnh sửa ma trận',roles:[roles.SUBJECT_ADMIN]},{path:'/exam-matrices/:id',title:'Chi tiết ma trận',roles:[roles.SUBJECT_ADMIN]},{path:routes.exams,title:'Quản lý đề thi',roles:[roles.SUBJECT_ADMIN]},{path:'/exams/generate',title:'Tạo đề thi',roles:[roles.SUBJECT_ADMIN]},{path:'/exams/:id',title:'Thông tin đề thi',roles:[roles.SUBJECT_ADMIN]},
- {path:routes.documents,title:'Documents',roles:[roles.USER]},{path:routes.generate,title:'AI workspace',roles:[roles.SUBJECT_ADMIN,roles.USER]},{path:'/ai/analysis',title:'AI analysis',roles:[roles.SUBJECT_ADMIN,roles.USER]},{path:'/ai/jobs/:id',title:'AI job',roles:[roles.SUBJECT_ADMIN,roles.USER]},{path:routes.aiJobs,title:'AI jobs',roles:[roles.SUBJECT_ADMIN,roles.USER]},{path:routes.chat,title:'Chatbot',roles:[roles.USER]},
- {path:routes.notifications,title:'Notifications',roles:allRoles},{path:routes.telegram,title:'Tích hợp Telegram',roles:[roles.SYSTEM_ADMIN,roles.SUBJECT_ADMIN]},{path:routes.adminAiJobs,title:'AI jobs admin',roles:[roles.SYSTEM_ADMIN]},{path:routes.systemHelp,title:'Trợ lý HAU QM',roles:allRoles},{path:routes.contactAdmin,title:'Contact requests',roles:[roles.SYSTEM_ADMIN]},{path:routes.users,title:'Users',roles:[roles.SYSTEM_ADMIN]},{path:routes.userDetail,title:'User detail',roles:[roles.SYSTEM_ADMIN]},{path:routes.registrations,title:'Pending registrations',roles:[roles.SYSTEM_ADMIN]},{path:routes.faculties,title:'Faculties',roles:[roles.SYSTEM_ADMIN]},{path:routes.facultyDetail,title:'Faculty detail',roles:[roles.SYSTEM_ADMIN]},{path:routes.settings,title:'System settings',roles:[roles.SYSTEM_ADMIN]},{path:routes.subjects,title:'Subjects',roles:[roles.SUBJECT_ADMIN]},{path:routes.knowledge,title:'Knowledge structure',roles:[roles.SUBJECT_ADMIN]},{path:routes.coverage,title:'Knowledge coverage',roles:[roles.SUBJECT_ADMIN]},{path:routes.help,title:'Help',roles:allRoles},
+import { routes } from '../../constants/routes.js'
+import { roles } from '../../constants/roles.js'
+
+const allRoles = Object.values(roles)
+const crumb = (label, to) => ({ label, to })
+const route = (path, title, section, allowedRoles, sectionPath) => ({
+  path,
+  title,
+  documentTitle: title,
+  breadcrumb: section === title ? [crumb(title)] : [crumb(section, sectionPath), crumb(title)],
+  roles: allowedRoles,
+})
+
+export const protectedRoutes = [
+  route(routes.dashboard, 'Tổng quan', 'Tổng quan', allRoles),
+  route(routes.profile, 'Hồ sơ cá nhân', 'Tài khoản', allRoles),
+  route(routes.questions, 'Ngân hàng câu hỏi', 'Ngân hàng câu hỏi', [roles.SUBJECT_ADMIN, roles.USER]),
+  route(routes.myQuestions, 'Câu hỏi của tôi', 'Ngân hàng câu hỏi', [roles.USER], routes.questions),
+  route(routes.newQuestion, 'Tạo câu hỏi', 'Ngân hàng câu hỏi', [roles.USER], routes.myQuestions),
+  route('/questions/:id', 'Chi tiết câu hỏi', 'Ngân hàng câu hỏi', [roles.SUBJECT_ADMIN, roles.USER], routes.questions),
+  route('/questions/:id/edit', 'Chỉnh sửa câu hỏi', 'Ngân hàng câu hỏi', [roles.USER], routes.myQuestions),
+  route(routes.review, 'Câu hỏi chờ duyệt', 'Ngân hàng câu hỏi', [roles.SUBJECT_ADMIN], routes.questions),
+  route('/review/:id', 'Duyệt câu hỏi', 'Ngân hàng câu hỏi', [roles.SUBJECT_ADMIN], routes.review),
+  route(routes.matrices, 'Ma trận đề', 'Đề thi', [roles.SUBJECT_ADMIN], routes.exams),
+  route('/exam-matrices/new', 'Tạo ma trận', 'Đề thi', [roles.SUBJECT_ADMIN], routes.exams),
+  route('/exam-matrices/:id/edit', 'Chỉnh sửa ma trận', 'Đề thi', [roles.SUBJECT_ADMIN], routes.exams),
+  route('/exam-matrices/:id', 'Chi tiết ma trận', 'Đề thi', [roles.SUBJECT_ADMIN], routes.exams),
+  route(routes.exams, 'Quản lý đề thi', 'Đề thi', [roles.SUBJECT_ADMIN]),
+  route('/exams/generate', 'Tạo đề thi', 'Đề thi', [roles.SUBJECT_ADMIN], routes.exams),
+  route('/exams/:id', 'Thông tin đề thi', 'Đề thi', [roles.SUBJECT_ADMIN], routes.exams),
+  route(routes.documents, 'Tài liệu của tôi', 'Trợ lý AI', [roles.USER], routes.generate),
+  route(routes.generate, 'Trợ lý AI', 'Trợ lý AI', [roles.SUBJECT_ADMIN, roles.USER]),
+  route('/ai/analysis', 'Phân tích AI', 'Trợ lý AI', [roles.SUBJECT_ADMIN, roles.USER], routes.generate),
+  route('/ai/jobs/:id', 'Chi tiết tác vụ AI', 'Trợ lý AI', [roles.SUBJECT_ADMIN, roles.USER], routes.aiJobs),
+  route(routes.aiJobs, 'Tác vụ AI', 'Trợ lý AI', [roles.SUBJECT_ADMIN, roles.USER], routes.generate),
+  route(routes.chat, 'Chatbot học liệu', 'Trợ lý AI', [roles.USER], routes.generate),
+  route(routes.notifications, 'Thông báo', 'Thông báo', allRoles),
+  route(routes.telegram, 'Thông báo Telegram', 'Thông báo', [roles.SYSTEM_ADMIN, roles.SUBJECT_ADMIN], routes.notifications),
+  route(routes.adminAiJobs, 'Theo dõi tác vụ AI', 'Quản trị hệ thống', [roles.SYSTEM_ADMIN]),
+  route(routes.systemHelp, 'Trợ lý HAU QM', 'Trợ giúp', allRoles),
+  route(routes.contactAdmin, 'Yêu cầu liên hệ', 'Trợ giúp', [roles.SYSTEM_ADMIN]),
+  route(routes.users, 'Quản lý giảng viên', 'Quản trị hệ thống', [roles.SYSTEM_ADMIN]),
+  route(routes.userDetail, 'Chi tiết giảng viên', 'Quản trị hệ thống', [roles.SYSTEM_ADMIN], routes.users),
+  route(routes.registrations, 'Tài khoản chờ duyệt', 'Quản trị hệ thống', [roles.SYSTEM_ADMIN]),
+  route(routes.faculties, 'Quản lý khoa', 'Quản trị hệ thống', [roles.SYSTEM_ADMIN]),
+  route(routes.facultyDetail, 'Chi tiết khoa', 'Quản trị hệ thống', [roles.SYSTEM_ADMIN], routes.faculties),
+  route(routes.settings, 'Cấu hình hệ thống', 'Quản trị hệ thống', [roles.SYSTEM_ADMIN]),
+  route(routes.subjects, 'Môn học', 'Nội dung học thuật', [roles.SUBJECT_ADMIN]),
+  route(routes.knowledge, 'Cấu trúc kiến thức', 'Nội dung học thuật', [roles.SUBJECT_ADMIN]),
+  route(routes.coverage, 'Độ bao phủ kiến thức', 'Nội dung học thuật', [roles.SUBJECT_ADMIN]),
+  route(routes.help, 'Trung tâm trợ giúp', 'Trợ giúp', allRoles),
 ]
-function matches(pattern,pathname){const patternParts=pattern.split('/').filter(Boolean);const pathParts=pathname.split('/').filter(Boolean);return patternParts.length===pathParts.length&&patternParts.every((part,index)=>part.startsWith(':')||part===pathParts[index])}
-export function getRouteMeta(pathname){return protectedRoutes.find(route=>matches(route.path,pathname))}
+
+function matches(pattern, pathname) {
+  const patternParts = pattern.split('/').filter(Boolean)
+  const pathParts = pathname.split('/').filter(Boolean)
+  return patternParts.length === pathParts.length && patternParts.every((part, index) => part.startsWith(':') || part === pathParts[index])
+}
+
+export function getRouteMeta(pathname) {
+  return protectedRoutes.find(item => matches(item.path, pathname))
+}

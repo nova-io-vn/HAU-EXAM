@@ -1,10 +1,11 @@
-.telegram-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:1rem;align-items:start}
+.telegram-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:20px;align-items:start}
+.telegram-grid>.surface{padding:24px}
 .telegram-hero{grid-row:span 2;background:linear-gradient(145deg,rgba(26,96,150,.12),transparent 55%),var(--surface,#fff)}
 .telegram-icon{display:grid;place-items:center;width:3.25rem;height:3.25rem;border-radius:1rem;background:#229ed9;color:#fff;font-size:1.5rem;margin-bottom:1rem}
 .telegram-connected{color:#16844a;font-weight:700}
 .telegram-guide ol{padding-left:1.25rem;margin:1rem 0 0;display:grid;gap:.75rem}
 .telegram-guide li::marker{color:#1677b8;font-weight:700}
-.telegram-preferences,.telegram-admin{display:grid;gap:.75rem}
+.telegram-preferences,.telegram-admin{display:grid;gap:14px}
 .telegram-preferences h2,.telegram-admin h2,.telegram-guide h2,.telegram-hero h2{margin:.1rem 0}
 .settings-toggle{display:flex;gap:.65rem;align-items:center;min-height:2.5rem;padding:.6rem .7rem;border:1px solid var(--border,#d9e1ea);border-radius:.75rem}
 .settings-toggle input{accent-color:#176fae;width:1.05rem;height:1.05rem}

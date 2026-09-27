@@ -100,7 +100,7 @@ export function Sidebar({ collapsed, mobileOpen, onClose }) {
           {!collapsed && (
             <span className="brand-copy">
               <strong>{branding.shortName}</strong>
-              <small>Hệ thống Quản lý Khảo thí</small>
+              <small>{branding.systemName}</small>
             </span>
           )}
         </div>

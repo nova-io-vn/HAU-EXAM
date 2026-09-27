@@ -20,13 +20,38 @@ import {
   updateEmailSetting,
   validateEmailSettings,
 } from "../model/smtpSettings";
+import { IntegrationStatus } from "../components/IntegrationStatus";
+import { brandingApi } from "../../branding/api/brandingApi";
 
 function AiSettingsCard() {
-  const [form,setForm]=useState({provider:"GEMINI",model:"gemini-2.5-flash",apiKey:""}),[configured,setConfigured]=useState(false),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
-  useEffect(()=>{api.get("/api/v1/admin/ai-settings").then(v=>{if(!v)throw new Error("Không nhận được cấu hình AI.");setForm(x=>({...x,provider:v.provider||x.provider,model:v.model||x.model}));setConfigured(Boolean(v.apiKeyConfigured))}).catch(e=>setMessage(e.message))},[]);
-  async function save(){setBusy(true);setMessage("");try{const v=await api.put("/api/v1/admin/ai-settings",{provider:form.provider,model:form.model,apiKey:form.apiKey||undefined});setConfigured(Boolean(v.apiKeyConfigured));setForm(x=>({...x,apiKey:""}));setMessage("Đã lưu cấu hình AI.");toast.success("Đã lưu cấu hình AI.")}catch(e){setMessage(e.message);toast.error(e.message,{title:"Không thể lưu cấu hình AI"})}finally{setBusy(false)}}
-  async function test(){setBusy(true);try{const v=await api.post("/api/v1/admin/ai-settings/test",{});const ok=v.status==="CONFIGURATION_VALID";setMessage(ok?"Cấu hình hợp lệ.":"Kiểm tra thất bại.");ok?toast.success("Kết nối AI hoạt động bình thường."):toast.warning("Cấu hình AI chưa hợp lệ.")}catch(e){setMessage(e.message);toast.error(e.message,{title:"Không thể kiểm tra AI"})}finally{setBusy(false)}}
-  return <article className="surface settings-card"><span className="eyebrow">CẤU HÌNH AI</span><h2>Nhà cung cấp và model</h2><div className="settings-form"><Select label="Nhà cung cấp" value={form.provider} options={[{value:"GEMINI",label:"Google Gemini"},{value:"OPENAI",label:"OpenAI"},{value:"MISTRAL",label:"Mistral"}]} onChange={e=>setForm({...form,provider:e.target.value})}/><Input label="Model" value={form.model} onChange={e=>setForm({...form,model:e.target.value})} placeholder="gemini-2.5-flash"/><PasswordInput label="API Key" value={form.apiKey} onChange={e=>setForm({...form,apiKey:e.target.value})} placeholder={configured?"Đã cấu hình · nhập mới để thay đổi":"Nhập API key"}/><small className="settings-note">API key không được trả về giao diện; để trống sẽ giữ key hiện tại.</small><div className="settings-actions"><Button variant="secondary" onClick={test} loading={busy}>Kiểm tra kết nối</Button><Button onClick={save} loading={busy}>Lưu cấu hình</Button></div>{message&&<p className="settings-note" role="status">{message}</p>}</div></article>;
+  const [form,setForm]=useState({provider:"GEMINI",model:"gemini-2.5-flash",apiKey:""}),[meta,setMeta]=useState({status:"NOT_CONFIGURED",apiKeyConfigured:false}),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+  useEffect(()=>{api.get("/api/v1/admin/ai-settings").then(v=>{if(!v)throw new Error("Không nhận được cấu hình AI.");setForm(x=>({...x,provider:v.provider||x.provider,model:v.model||x.model}));setMeta(v)}).catch(e=>setMessage(e.message))},[]);
+  async function save(){setBusy(true);setMessage("");try{const v=await api.put("/api/v1/admin/ai-settings",{provider:form.provider,model:form.model,apiKey:form.apiKey||undefined});setMeta(v);setForm(x=>({...x,apiKey:""}));setMessage("Đã lưu cấu hình AI. Hãy kiểm tra kết nối để xác nhận runtime.");toast.success("Đã lưu cấu hình AI.")}catch(e){setMessage(e.message);toast.error(e.message,{title:"Không thể lưu cấu hình AI"})}finally{setBusy(false)}}
+  async function test(){setBusy(true);setMessage("");try{const v=await api.post("/api/v1/admin/ai-settings/test",{});setMeta(v);if(v.status==="WORKING"){setMessage("Provider phản hồi thành công.");toast.success("Kết nối AI thành công.")}else{setMessage("Provider chưa phản hồi thành công.");toast.warning("AI cần kiểm tra lại cấu hình.")}}catch(e){setMessage(e.message);toast.error(e.message,{title:"Không thể kiểm tra AI"})}finally{setBusy(false)}}
+  return <article className="surface settings-card"><span className="eyebrow">AI & MÔ HÌNH</span><h2>Nhà cung cấp và model</h2><IntegrationStatus status={meta.status} checkedAt={meta.lastCheckedAt} errorCode={meta.lastErrorCode}/><div className="settings-form"><Select label="Nhà cung cấp" value={form.provider} options={[{value:"GEMINI",label:"Google Gemini"},{value:"OPENAI",label:"OpenAI"},{value:"MISTRAL",label:"Mistral"}]} onChange={e=>setForm({...form,provider:e.target.value})}/><Input label="Model" value={form.model} onChange={e=>setForm({...form,model:e.target.value})} placeholder="gemini-2.5-flash"/><PasswordInput label="API Key" value={form.apiKey} onChange={e=>setForm({...form,apiKey:e.target.value})} placeholder={meta.apiKeyConfigured?"•••••••••••• · nhập mới để thay đổi":"Nhập API key"}/><small className="settings-note">API key không được trả về giao diện. Để trống nếu không muốn thay đổi khóa hiện tại.</small><div className="settings-actions"><Button variant="secondary" onClick={test} loading={busy}>Kiểm tra kết nối</Button><Button onClick={save} loading={busy}>Lưu cấu hình</Button></div>{message&&<p className="settings-note" role="status">{message}</p>}</div></article>;
+}
+
+function SystemStatusOverview() {
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    Promise.allSettled([
+      api.get('/api/v1/admin/ai-settings'),
+      adminSupportApi.emailSettings(),
+      api.get('/api/v1/admin/telegram'),
+      api.get('/api/v1/admin/platform/cloudinary'),
+      brandingApi.admin(),
+    ]).then(results => {
+      const [ai, email, telegram, storage, branding] = results.map(result => result.status === 'fulfilled' ? result.value : null);
+      setItems([
+        { name: 'AI', detail: ai?.provider || 'Provider', status: ai?.status || 'NOT_CONFIGURED', checkedAt: ai?.lastCheckedAt },
+        { name: 'Email', detail: 'SMTP', status: email?.smtpHost && email?.passwordConfigured && email?.enabled ? 'CONFIGURED_BUT_UNVERIFIED' : 'NOT_CONFIGURED' },
+        { name: 'Telegram', detail: telegram?.botUsername ? `@${telegram.botUsername}` : '', status: telegram?.configured ? (telegram.lastCheckedAt ? 'WORKING' : 'CONFIGURED_BUT_UNVERIFIED') : 'NOT_CONFIGURED', checkedAt: telegram?.lastCheckedAt },
+        { name: 'Lưu trữ ảnh', detail: 'Cloudinary', status: storage?.configured ? 'CONFIGURED_BUT_UNVERIFIED' : 'NOT_CONFIGURED' },
+        { name: 'Branding', detail: branding?.systemName || 'HAU QM', status: branding ? 'CONFIGURED_BUT_UNVERIFIED' : 'NOT_CONFIGURED' },
+      ]);
+    });
+  }, []);
+  return <section className="settings-overview" aria-labelledby="system-status-title"><div><span className="eyebrow">TRẠNG THÁI HỆ THỐNG</span><h2 id="system-status-title">Kiểm tra tích hợp</h2></div><div className="settings-status-grid">{items.map(item => <article className="settings-status-card" key={item.name}><strong>{item.name}</strong><IntegrationStatus status={item.status} checkedAt={item.checkedAt}/><small>{item.detail}</small></article>)}</div></section>;
 }
 
 export function SystemSettingsPage() {
@@ -128,9 +153,10 @@ export function SystemSettingsPage() {
   return (
     <section className="admin-settings">
       <PageHeader
-        title="Cài đặt hệ thống"
+        title="Cấu hình hệ thống"
         description="Quản lý AI, kho tri thức, lưu trữ ảnh và các kênh tích hợp của hệ thống."
       />
+      <SystemStatusOverview />
       {state.loadError && <p className="editor-error" role="alert">{state.loadError}{state.loadCorrelationId && <small> Mã đối chiếu: {state.loadCorrelationId}</small>}</p>}
       {state.saveError && <p className="editor-error" role="alert">{state.saveError}{state.saveCorrelationId && <small> Mã đối chiếu: {state.saveCorrelationId}</small>}</p>}
       {state.saveSuccess && <p className="settings-success" role="status">{state.saveSuccess}</p>}

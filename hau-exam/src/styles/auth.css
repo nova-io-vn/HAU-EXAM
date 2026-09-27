@@ -22,3 +22,4 @@
 .auth-wide{width:100%}
 .profile-button>.button{min-height:34px;padding:0 10px}
 @media(max-width:520px){.auth-page{align-items:start;padding:20px 12px}.auth-card{padding:24px 20px;border-radius:var(--radius-md)}.auth-brand{margin-bottom:28px}.auth-card header h1{font-size:27px}}
+.dialog-body .settings-form{gap:18px}.dialog-body .field{gap:8px}.dialog-footer{padding:18px 24px}

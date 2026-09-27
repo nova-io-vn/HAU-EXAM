@@ -28,6 +28,7 @@
 .breadcrumb li+li::before{content:'/';margin-right:7px;color:#aeaeb2}
 .breadcrumb a{color:var(--text-muted);text-decoration:none}
 .breadcrumb a:hover{color:var(--accent)}
+.topbar-date{color:var(--text);font-size:14px;font-weight:600;white-space:nowrap}
 .system-page{min-height:calc(100vh - var(--header) - 64px);display:grid;place-content:center;justify-items:center;max-width:560px;margin:auto;text-align:center}
 .system-code{color:var(--accent);font-size:13px;font-weight:800;letter-spacing:.1em}
 .system-page h1{margin:10px 0 8px;font-size:30px;letter-spacing:-.6px}

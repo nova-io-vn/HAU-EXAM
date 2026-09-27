@@ -1,28 +1,26 @@
-import { useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Icon } from "../ui";
 import { NotificationBell } from "../../features/notifications";
 import { UserMenu } from "./UserMenu";
 import { GlobalSearch } from "./GlobalSearch";
-import { useAuth } from "../../features/auth/hooks/useAuth";
-import { getRouteMeta } from "../../app/router/routeConfig";
 import { HumanChatDropdown } from "../../features/support/components/HumanChatDropdown";
-import { useBranding } from "../../features/branding/brandingContext";
+import { useAuth } from "../../features/auth/hooks/useAuth";
+
+function useCurrentDate() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return useMemo(() => {
+    const value = new Intl.DateTimeFormat("vi-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(now);
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }, [now]);
+}
+
 export function Header({ collapsed, onToggle, onMobileMenu }) {
-  const branding = useBranding();
-  const { pathname } = useLocation();
-  const { role, currentUser, facultyId } = useAuth();
-  const page = getRouteMeta(pathname);
-  const faculty =
-    currentUser?.facultyName ||
-    currentUser?.faculty?.name ||
-    facultyId ||
-    "chưa phân công";
-  const breadcrumb =
-    role === "SUBJECT_ADMIN"
-      ? `Khoa ${faculty} / Quản lý chuyên môn`
-      : role === "USER"
-        ? "Không gian giảng viên"
-        : "Quản trị hệ thống";
+  const date = useCurrentDate();
+  const { role } = useAuth();
   return (
     <header className="topbar">
       <Button
@@ -41,10 +39,7 @@ export function Header({ collapsed, onToggle, onMobileMenu }) {
       >
         <Icon name="dashboard" size={17} />
       </Button>
-      <div className="breadcrumb-context">
-        <span>{branding.shortName} / {breadcrumb}</span>
-        <strong>{page?.title || "Tổng quan"}</strong>
-      </div>
+      <time className="topbar-date" dateTime={new Date().toISOString().slice(0, 10)}>{date}</time>
       <GlobalSearch role={role} />
       <NotificationBell />
       <HumanChatDropdown />

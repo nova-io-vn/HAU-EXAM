@@ -47,6 +47,7 @@ export const test=base.extend({gateway:async({context},use)=>{
     if(path==='/api/v1/subjects'&&method==='GET')return respond([{id:ids.subject,name:'E2E Subject'}])
     if(path==='/api/v1/chapters'&&method==='GET')return respond([{id:ids.chapter,name:'E2E Chapter'}])
     if(path==='/api/v1/topics'&&method==='GET')return respond([{id:ids.topic,name:'E2E Topic'}])
+    if(path==='/api/v1/questions/images'&&method==='POST')return respond(ok({secureUrl:'https://example.test/question-image.png',publicId:'e2e-question-image'}))
     if(path==='/api/v1/questions'&&method==='GET')return respond(page(state.questionStatus==='PENDING_REVIEW'?[question()]:[]))
     if(path==='/api/v1/questions'&&method==='POST'){state.questionStatus='DRAFT';return respond(ok(question()),201)}
     if(path===`/api/v1/questions/${ids.question}`&&method==='GET')return respond(ok(question()))

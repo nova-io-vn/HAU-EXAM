@@ -25,7 +25,7 @@ export function PublicLandingPage() {
   const branding = useBranding()
   return <PublicLayout>
     <div className="public-landing">
-      <section className="public-hero public-hero-enhanced">
+      <section className="public-hero public-hero-enhanced" style={{ '--landing-banner': `url(${LANDING_MEDIA.hero})` }}>
         <div className="public-hero-copy">
           <span className="eyebrow">HỆ THỐNG QUẢN LÝ KHẢO THÍ</span>
           <h1>Xây dựng ngân hàng câu hỏi thông minh và có hệ thống.</h1>

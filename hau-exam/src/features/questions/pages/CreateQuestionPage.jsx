@@ -45,13 +45,13 @@ export function CreateQuestionPage() {
   return (
     <section>
       <PageHeader
-        title="Tạo câu hỏi"
-        description="Tạo câu hỏi thủ công ở trạng thái do Question Service quyết định."
+        description="Tạo và hoàn thiện nội dung câu hỏi trắc nghiệm trước khi gửi duyệt."
       />
       <QuestionEditor
         form={form}
         onChange={setForm}
         onSubmit={submit}
+        onCancel={() => navigate('/questions/mine')}
         saving={saving}
         error={error}
       />

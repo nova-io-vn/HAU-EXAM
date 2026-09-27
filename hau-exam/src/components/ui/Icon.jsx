@@ -12,4 +12,11 @@ paths.eyeOff='m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A11.7 11.7 0 0 1 12 
 paths.support='M20 11.5a8 8 0 0 0-16 0c0 4 2 6 4 7v2h8v-2c2-1 4-3 4-7ZM8 21h8M8 12h.01M12 12h.01M16 12h.01'
 paths.paperclip='m21.4 11.6-8.9 8.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5'
 paths.messages='M4 5a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H9l-5 4v-4a3 3 0 0 1-0-3V5Zm4 3h8M8 11h5'
+paths.list='M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01'
+paths.orderedList='M10 6h11M10 12h11M10 18h11M4 5h2v3M4 11h2l-2 3h2M4 17h2a1 1 0 0 1 0 2H4m2 0a1 1 0 0 1 0 2H4'
+paths.undo='M9 7 4 12l5 5M4 12h9a7 7 0 0 1 7 7'
+paths.redo='m15 7 5 5-5 5m5-5h-9a7 7 0 0 0-7 7'
+paths.image='M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5Zm0 11 5-5 4 4 2-2 7 7M16 8h.01'
+paths.trash='M4 7h16M9 7V4h6v3m3 0-1 14H7L6 7m4 4v6m4-6v6'
+paths.more='M5 12h.01M12 12h.01M19 12h.01'
 export function Icon({name,size=17,strokeWidth=1.8,className=''}){return <svg className={`icon ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]||paths.file}/></svg>}
