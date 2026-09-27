@@ -1,9 +1,30 @@
 -- Reconcile legacy duplicate direct conversations before enforcing uniqueness.
-CREATE TEMP TABLE support_conversation_merge ON COMMIT DROP AS
+CREATE TEMP TABLE support_conversation_merge AS
 SELECT id,
-       min(id) OVER (PARTITION BY LEAST(created_by_user_id, assigned_admin_id), GREATEST(created_by_user_id, assigned_admin_id)) AS canonical_id
+       first_value(id) OVER (
+         PARTITION BY LEAST(created_by_user_id, assigned_admin_id), GREATEST(created_by_user_id, assigned_admin_id)
+         ORDER BY created_at ASC, id::text ASC
+       ) AS canonical_id
 FROM support_conversations
 WHERE assigned_admin_id IS NOT NULL;
+
+-- Preserve the complete activity window on the canonical row before removing
+-- duplicate conversation shells. Messages (and therefore attachments/read state)
+-- are reassigned below and remain untouched.
+UPDATE support_conversations canonical
+SET created_at = activity.first_created_at,
+    updated_at = activity.last_updated_at,
+    last_message_at = activity.last_message_at
+FROM (
+  SELECT merge.canonical_id,
+         min(conversation.created_at) AS first_created_at,
+         max(conversation.updated_at) AS last_updated_at,
+         max(conversation.last_message_at) AS last_message_at
+  FROM support_conversation_merge merge
+  JOIN support_conversations conversation ON conversation.id = merge.id
+  GROUP BY merge.canonical_id
+) activity
+WHERE canonical.id = activity.canonical_id;
 
 UPDATE support_messages m
 SET conversation_id = x.canonical_id

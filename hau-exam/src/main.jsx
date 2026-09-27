@@ -31,6 +31,8 @@ import './styles/responsive.css'
 import './styles/workspace.css'
 import './styles/public-redesign.css'
 import './styles/knowledge-tools.css'
+import './styles/landing-polish.css'
+import './styles/whats-new.css'
 import 'intro.js/introjs.css'
 import App from './App.jsx'
 

@@ -42,7 +42,7 @@ export function Header({ collapsed, onToggle, onMobileMenu }) {
       <time className="topbar-date" dateTime={new Date().toISOString().slice(0, 10)}>{date}</time>
       <GlobalSearch role={role} />
       <NotificationBell />
-      <HumanChatDropdown />
+      <div data-tour="human-chat"><HumanChatDropdown /></div>
       <UserMenu />
     </header>
   );

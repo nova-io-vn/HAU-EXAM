@@ -1,6 +1,6 @@
 import { routes } from "../../constants/routes";
 
-export const CURRENT_ONBOARDING_VERSION = 1;
+export const CURRENT_ONBOARDING_VERSION = 2;
 const step = (id, route, target, title, description, position = "bottom") => ({
   id,
   route,
@@ -67,6 +67,20 @@ export const onboardingTours = {
       '[data-tour="notifications-menu"]',
       "Thông báo",
       "Nhận phản hồi phê duyệt, yêu cầu chỉnh sửa và trạng thái các tác vụ trong hệ thống.",
+    ),
+    step(
+      "messages",
+      routes.dashboard,
+      '[data-tour="human-chat"]',
+      "Tin nhắn",
+      "Trao đổi trực tiếp với người dùng và quản trị viên phù hợp với vai trò, Khoa của bạn.",
+    ),
+    step(
+      "kute",
+      routes.dashboard,
+      '[data-tour="kute-assistant"]',
+      "Trợ lý Kute",
+      "Mở Trợ lý Kute khi bạn cần hướng dẫn từng bước hoặc muốn tìm hiểu chức năng HAU Exam.",
     ),
     step(
       "profile",
@@ -141,6 +155,13 @@ export const onboardingTours = {
       "Nhận thông tin về câu hỏi, AI và các hoạt động liên quan.",
     ),
     step(
+      "messages",
+      routes.dashboard,
+      '[data-tour="human-chat"]',
+      "Tin nhắn theo phạm vi Khoa",
+      "Trao đổi với người dùng trong đúng phạm vi chuyên môn được phân công.",
+    ),
+    step(
       "help",
       routes.help,
       '[data-tour="help-menu"]',
@@ -190,6 +211,20 @@ export const onboardingTours = {
       '[data-tour="email-settings"]',
       "Cấu hình Email",
       "Kiểm tra cấu hình gửi email của hệ thống mà không hiển thị mật khẩu.",
+    ),
+    step(
+      "ai-knowledge",
+      routes.settings,
+      '[data-tour="ai-knowledge"]',
+      "Kho tri thức Trợ lý Kute",
+      "Quản lý tài liệu, nội dung trích xuất và các chunk mà Trợ lý Kute sử dụng.",
+    ),
+    step(
+      "messages",
+      routes.dashboard,
+      '[data-tour="human-chat"]',
+      "Tin nhắn hỗ trợ",
+      "Theo dõi và trao đổi trực tiếp qua kênh tin nhắn của hệ thống.",
     ),
     step(
       "notifications",

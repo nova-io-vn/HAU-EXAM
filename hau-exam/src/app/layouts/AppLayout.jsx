@@ -5,6 +5,7 @@ import {Header} from '../../components/layout/Header'
 import {Sidebar} from '../../components/layout/Sidebar'
 import {NotificationProvider} from '../../features/notifications'
 import {OnboardingTour} from '../../components/layout/OnboardingTour'
+import {WhatsNewModal} from '../../components/layout/WhatsNewModal'
 import {AiAssistantWidget} from '../../features/ai/components/AiAssistantWidget'
 import {RouteIdentity} from '../router/RouteIdentity'
-export function AppLayout(){const[collapsed,setCollapsed]=useState(false);const[mobileOpen,setMobileOpen]=useState(false);return <NotificationProvider><RouteIdentity/><AppShell className={collapsed?'is-collapsed':''}><Sidebar collapsed={collapsed} mobileOpen={mobileOpen} onClose={()=>setMobileOpen(false)}/><div className="app-frame"><Header collapsed={collapsed} onToggle={()=>setCollapsed(value=>!value)} onMobileMenu={()=>setMobileOpen(true)}/><main className="app-content"><Outlet/></main></div><AiAssistantWidget/><OnboardingTour/></AppShell></NotificationProvider>}
+export function AppLayout(){const[collapsed,setCollapsed]=useState(false);const[mobileOpen,setMobileOpen]=useState(false);return <NotificationProvider><RouteIdentity/><AppShell className={collapsed?'is-collapsed':''}><Sidebar collapsed={collapsed} mobileOpen={mobileOpen} onClose={()=>setMobileOpen(false)}/><div className="app-frame"><Header collapsed={collapsed} onToggle={()=>setCollapsed(value=>!value)} onMobileMenu={()=>setMobileOpen(true)}/><main className="app-content"><Outlet/></main></div><div data-tour="kute-assistant"><AiAssistantWidget/></div><WhatsNewModal/><OnboardingTour/></AppShell></NotificationProvider>}

@@ -207,6 +207,37 @@ jobs:
               --timeout=900s
           done
 
+      - name: Show failed rollout diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          set +e
+
+          echo '${{ needs.detect-changes.outputs.services }}' |
+          jq -r '.[]' |
+          while read -r SERVICE
+          do
+            echo "===== DEPLOYMENT: $SERVICE ====="
+            kubectl get deployment "$SERVICE" -n hau-exam -o wide
+            kubectl describe deployment "$SERVICE" -n hau-exam
+
+            echo "===== REPLICA SETS: $SERVICE ====="
+            kubectl get rs -n hau-exam -o wide
+
+            echo "===== PODS: $SERVICE ====="
+            PODS=$(kubectl get pods -n hau-exam -o name | grep "$SERVICE")
+            for POD in $PODS
+            do
+              kubectl get "$POD" -n hau-exam -o wide
+              kubectl describe "$POD" -n hau-exam
+              kubectl logs "$POD" -n hau-exam --tail=300
+              kubectl logs "$POD" -n hau-exam --previous --tail=300
+            done
+          done
+
+          echo "===== RECENT EVENTS ====="
+          kubectl get events -n hau-exam --sort-by=.metadata.creationTimestamp
+
       - name: Show production workloads
         if: always()
         run: |

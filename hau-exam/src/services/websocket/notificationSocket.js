@@ -2,7 +2,7 @@ import { Client } from "@stomp/stompjs";
 import { authStore } from "../../stores/authStore";
 import { notificationDestination, websocketEndpoint } from "./config";
 
-export function connectNotificationSocket({ onMessage, onSupport, onConnect, onStatus }) {
+export function connectNotificationSocket({ onMessage = () => {}, onSupport, onConnect = () => {}, onStatus = () => {} }) {
   const client = new Client({
     brokerURL: websocketEndpoint,
     reconnectDelay: 5000,

@@ -166,7 +166,7 @@ export function SystemSettingsPage() {
         <AiSettingsCard />
         <CloudinarySettingsCard />
         <VercelAnalyticsSettingsCard />
-        <AiKnowledgeSettingsCard />
+        <div data-tour="ai-knowledge"><AiKnowledgeSettingsCard /></div>
         <article className="surface settings-card email-settings-card">
           <span className="eyebrow">CẤU HÌNH EMAIL</span>
           <h2>Máy chủ gửi thư</h2>
