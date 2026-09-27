@@ -1,6 +1,7 @@
 package com.userservice.presentation.controller;
 
 import com.userservice.application.dto.UpdateProfileCommand;
+import com.userservice.application.dto.UserContact;
 import com.userservice.application.port.in.UserProfileUseCase;
 import com.userservice.presentation.mapper.UserProfileResponseMapper;
 import com.userservice.presentation.request.UpdateProfileRequest;
@@ -46,6 +47,14 @@ public class UserProfileController {
     @GetMapping("/chat-contacts")
     public ApiResponse<List<UserContactQueryService.ChatContact>> chatContacts(@AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.success(contacts.contacts(userId(jwt), jwt.getClaimAsString("role"), jwt.getClaimAsString("facultyId")));
+    }
+
+    @GetMapping("/directory")
+    public ApiResponse<List<UserContact>> directory(@AuthenticationPrincipal Jwt jwt, @RequestParam List<UUID> ids) {
+        String role = jwt.getClaimAsString("role"), faculty = jwt.getClaimAsString("facultyId");
+        List<UserContact> result = new java.util.ArrayList<>();
+        for (UUID id : ids.stream().distinct().toList()) { try { UserContact person = contacts.find(id); if ("SYSTEM_ADMIN".equals(role) || ("SUBJECT_ADMIN".equals(role) && java.util.Objects.equals(faculty, person.facultyId())) || ("USER".equals(role) && person.userId().toString().equals(jwt.getSubject()))) result.add(person); } catch (RuntimeException ignored) { } }
+        return ApiResponse.success(result);
     }
 
     @PutMapping

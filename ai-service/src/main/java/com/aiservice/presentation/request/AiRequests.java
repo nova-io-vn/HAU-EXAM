@@ -10,9 +10,9 @@ public final class AiRequests {
 
     public enum OutputLanguage { VI, EN }
 
-    public record GenerateRequest(@NotNull UUID documentId, @Min(1) @Max(100) int count, String difficulty,
+    public record GenerateRequest(UUID documentId, @Min(1) @Max(100) int count, String difficulty,
                                   UUID topicId, @NotNull UUID subjectId, @NotNull UUID chapterId, OutputLanguage language,
-                                  Boolean includeImages) {
+                                  Boolean includeImages, @Size(max = 10000) String description, String additionalRequirements) {
         public OutputLanguage languageOrDefault() { return language == null ? OutputLanguage.VI : language; }
         public boolean includeImagesOrDefault() { return Boolean.TRUE.equals(includeImages); }
     }

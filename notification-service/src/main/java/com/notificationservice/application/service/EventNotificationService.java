@@ -50,6 +50,12 @@ public class EventNotificationService implements EventNotificationUseCase {
         NotificationType type = type(event.eventType());
         Map<String,Object> payload = event.payload() == null ? Map.of() : event.payload();
 
+        if (event.eventType().startsWith("QUESTIONS_BULK_")) {
+            fanoutBulkReview(type, payload);
+            inbox.record(event.eventId(), event.eventType(), Instant.now(clock));
+            return true;
+        }
+
         if (type == NotificationType.USER_LOGIN_SUCCESS) {
             // Successful logins remain an audit/security event; they are never fanout notifications by default.
             inbox.record(event.eventId(), event.eventType(), Instant.now(clock));
@@ -61,7 +67,7 @@ public class EventNotificationService implements EventNotificationUseCase {
             inbox.record(event.eventId(), event.eventType(), Instant.now(clock));
             return true;
         }
-        if (type == NotificationType.NEW_USER_REGISTERED || type == NotificationType.QUESTION_SUBMITTED) {
+        if (type == NotificationType.NEW_USER_REGISTERED || type == NotificationType.QUESTION_SUBMITTED || type == NotificationType.AI_JOB_CREATED || type == NotificationType.AI_JOB_PROCESSING || type == NotificationType.AI_GENERATION_COMPLETED || type == NotificationType.AI_GENERATION_FAILED) {
             fanout(type, payload);
             if (type == NotificationType.NEW_USER_REGISTERED && payload.get("email") != null) {
                 email.send(string(payload,"email"), title(type), renderer.render(string(payload,"fullName"), title(type), content(type,payload), "Xem tài khoản", website()+"/admin/registrations"));
@@ -85,13 +91,25 @@ public class EventNotificationService implements EventNotificationUseCase {
     }
 
     private void fanout(NotificationType type, Map<String,Object> p) {
-        if (audience == null) return;
-        String role = type == NotificationType.QUESTION_SUBMITTED ? "SUBJECT_ADMIN" : "SYSTEM_ADMIN";
-        String faculty = type == NotificationType.QUESTION_SUBMITTED ? string(p,"facultyId") : null;
-        for (Recipient r : audience.resolve(role, faculty)) {
-            deliver(r.userId(), type, p);
-            if (r.email() != null && !r.email().isBlank()) email.send(r.email(), title(type), renderer.render(string(p,"fullName"), title(type), content(type,p), "Mở HAU QM", website()));
+        String role = type == NotificationType.QUESTION_SUBMITTED || type == NotificationType.AI_JOB_CREATED || type == NotificationType.AI_JOB_PROCESSING || type == NotificationType.AI_GENERATION_COMPLETED || type == NotificationType.AI_GENERATION_FAILED ? "SUBJECT_ADMIN" : "SYSTEM_ADMIN";
+        String faculty = role.equals("SUBJECT_ADMIN") ? string(p,"facultyId") : null;
+        if (audience != null) {
+            for (Recipient r : audience.resolve(role, faculty)) {
+                deliver(r.userId(), type, p);
+                if (r.email() != null && !r.email().isBlank()) email.send(r.email(), title(type), renderer.render(string(p,"fullName"), title(type), content(type,p), "Mở HAU QM", website()));
+            }
         }
+        if (type == NotificationType.AI_JOB_CREATED || type == NotificationType.AI_JOB_PROCESSING || type == NotificationType.AI_GENERATION_COMPLETED || type == NotificationType.AI_GENERATION_FAILED) {
+            String owner = string(p, "requestedBy"); if (owner != null) deliver(UUID.fromString(owner), type, p);
+        }
+    }
+
+    private void fanoutBulkReview(NotificationType type, Map<String,Object> p) {
+        Object raw = p.get("authorUserIds");
+        if (!(raw instanceof Collection<?> authors)) return;
+        Set<String> unique = new LinkedHashSet<>();
+        authors.forEach(author -> { if (author != null) unique.add(String.valueOf(author)); });
+        for (String author : unique) deliver(UUID.fromString(author), type, p);
     }
 
     private void deliver(UUID user, NotificationType type, Map<String,Object> p) {
@@ -128,12 +146,15 @@ public class EventNotificationService implements EventNotificationUseCase {
         case "USER_ROLE_CHANGED" -> NotificationType.USER_ROLE_CHANGED;
         case "USER_FACULTY_CHANGED" -> NotificationType.USER_FACULTY_CHANGED;
         case "USER_STATUS_CHANGED" -> NotificationType.USER_STATUS_CHANGED;
-        case "QUESTION_SUBMITTED" -> NotificationType.QUESTION_SUBMITTED;
-        case "QUESTION_APPROVED" -> NotificationType.QUESTION_APPROVED;
-        case "QUESTION_REJECTED" -> NotificationType.QUESTION_REJECTED;
-        case "QUESTION_REVISION_REQUESTED" -> NotificationType.QUESTION_REVISION_REQUESTED;
+        case "QUESTION_SUBMITTED", "QUESTION_SUBMITTED_FOR_REVIEW", "QUESTIONS_SUBMITTED_FOR_REVIEW", "QUESTIONS_BULK_SUBMITTED" -> NotificationType.QUESTION_SUBMITTED;
+        case "QUESTION_APPROVED", "QUESTIONS_BULK_APPROVED" -> NotificationType.QUESTION_APPROVED;
+        case "QUESTION_REJECTED", "QUESTIONS_BULK_REJECTED" -> NotificationType.QUESTION_REJECTED;
+        case "QUESTION_REVISION_REQUESTED", "QUESTIONS_BULK_NEED_REVISION" -> NotificationType.QUESTION_REVISION_REQUESTED;
         case "AI_GENERATION_COMPLETED" -> NotificationType.AI_GENERATION_COMPLETED;
         case "AI_GENERATION_FAILED" -> NotificationType.AI_GENERATION_FAILED;
+        case "AI_JOB_CREATED" -> NotificationType.AI_JOB_CREATED;
+        case "AI_JOB_PROCESSING" -> NotificationType.AI_JOB_PROCESSING;
+        case "AI_JOB_FAILED" -> NotificationType.AI_GENERATION_FAILED;
         case "EXAM_GENERATED" -> NotificationType.EXAM_GENERATED;
         default -> throw new IllegalArgumentException("Unsupported event type");
     };}
@@ -149,12 +170,20 @@ public class EventNotificationService implements EventNotificationUseCase {
         case QUESTION_APPROVED -> "[HAU QM] Câu hỏi của bạn đã được phê duyệt";
         case QUESTION_REJECTED -> "[HAU QM] Câu hỏi của bạn đã bị từ chối";
         case QUESTION_REVISION_REQUESTED -> "[HAU QM] Câu hỏi cần chỉnh sửa";
+        case AI_JOB_CREATED -> "Tiến trình AI mới";
+        case AI_JOB_PROCESSING -> "Tiến trình AI đang xử lý";
+        case AI_GENERATION_COMPLETED -> "Tiến trình AI đã hoàn tất";
+        case AI_GENERATION_FAILED -> "Tiến trình AI thất bại";
         case PASSWORD_RESET_OTP -> "[HAU QM] Mã xác thực đặt lại mật khẩu";
         default -> "HAU QM - Thông báo hệ thống";
     };}
-    private String content(NotificationType t, Map<String,Object> p) { String name=string(p,"fullName"), code=string(p,"lecturerCode"); return switch(t) {
+    private String content(NotificationType t, Map<String,Object> p) { String name=displayName(p), code=string(p,"lecturerCode"); return switch(t) {
         case NEW_USER_REGISTERED -> (name==null?"Người dùng":name)+" ("+code+") đã đăng ký tài khoản và đang chờ phê duyệt.";
-        case QUESTION_SUBMITTED -> (name==null?"Người dùng":name)+" vừa gửi một câu hỏi thuộc môn "+string(p,"subjectId")+" để phê duyệt.";
+        case QUESTION_SUBMITTED -> (name==null?"Người dùng":name)+" vừa gửi "+(p.get("questionCount") == null ? "một câu hỏi" : string(p,"questionCount")+" câu hỏi")+" chờ phê duyệt.";
+        case AI_JOB_CREATED -> "Một tiến trình AI mới đã được tạo.";
+        case AI_JOB_PROCESSING -> "Tiến trình AI đang được xử lý.";
+        case AI_GENERATION_COMPLETED -> "Tiến trình AI đã hoàn tất.";
+        case AI_GENERATION_FAILED -> "Tiến trình AI thất bại. Vui lòng mở chi tiết để xem lý do an toàn.";
         case USER_APPROVED -> "Xin chào "+name+", tài khoản HAU QM của bạn đã được quản trị viên phê duyệt.";
         case USER_REJECTED -> "Xin chào "+name+", yêu cầu đăng ký tài khoản HAU QM chưa được chấp thuận.";
         default -> string(p,"message") == null ? title(t) : string(p,"message");
@@ -163,9 +192,19 @@ public class EventNotificationService implements EventNotificationUseCase {
     private String otpBody(Map<String,Object> p) { return "Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản HAU QM của bạn.\n\nMã xác thực:  "+required(p,"otp")+"\n\nMã có hiệu lực trong 5 phút. Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email."; }
     private String questionBody(NotificationType t, Map<String,Object> p, UserContact c) { return "Câu hỏi "+string(p,"questionId")+" của bạn đã được cập nhật trạng thái. Vui lòng mở HAU QM để xem chi tiết."; }
     private boolean isQuestionEmail(NotificationType t) { return t==NotificationType.QUESTION_APPROVED || t==NotificationType.QUESTION_REJECTED || t==NotificationType.QUESTION_REVISION_REQUESTED; }
-    private String referenceId(NotificationType t, Map<String,Object> p) { return t==NotificationType.NEW_USER_REGISTERED ? null : string(p,"questionId"); }
-    private String referenceType(NotificationType t, Map<String,Object> p) { return t==NotificationType.NEW_USER_REGISTERED ? "PENDING_USERS" : t==NotificationType.QUESTION_SUBMITTED || isQuestionEmail(t) ? "QUESTION" : null; }
+    private String referenceId(NotificationType t, Map<String,Object> p) { if (t==NotificationType.NEW_USER_REGISTERED) return null; if (t==NotificationType.AI_JOB_CREATED || t==NotificationType.AI_JOB_PROCESSING || t==NotificationType.AI_GENERATION_COMPLETED || t==NotificationType.AI_GENERATION_FAILED) return string(p,"jobId"); return string(p,"questionId"); }
+    private String referenceType(NotificationType t, Map<String,Object> p) { if (t==NotificationType.NEW_USER_REGISTERED) return "PENDING_USERS"; if (t==NotificationType.AI_JOB_CREATED || t==NotificationType.AI_JOB_PROCESSING || t==NotificationType.AI_GENERATION_COMPLETED || t==NotificationType.AI_GENERATION_FAILED) return "AI_JOB"; return t==NotificationType.QUESTION_SUBMITTED || isQuestionEmail(t) ? "QUESTION" : null; }
     private String website() { return "https://exam.nova.io.vn"; }
+    private String displayName(Map<String,Object> p) {
+        String name = string(p, "fullName");
+        if (name != null && !name.isBlank()) return name;
+        String actor = string(p, "actorUserId");
+        if (actor != null && contacts != null) {
+            try { UserContact contact = contacts.resolve(UUID.fromString(actor)); if (contact != null) return contact.fullName(); }
+            catch (IllegalArgumentException ignored) { }
+        }
+        return null;
+    }
     private String required(Map<String,Object> p,String k){String v=string(p,k);if(v==null||v.isBlank())throw new IllegalArgumentException("Missing event field: "+k);return v;}
     private String string(Map<String,Object> p,String k){Object v=p.get(k);return v==null?null:String.valueOf(v);}
 }

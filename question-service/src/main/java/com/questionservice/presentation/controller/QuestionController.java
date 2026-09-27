@@ -103,6 +103,23 @@ public class QuestionController {
         return ApiResponse.ok(QuestionResponse.from(service.archive(id, actors.from(jwt))));
     }
 
+    @PostMapping("/bulk/{action}")
+    @PreAuthorize("hasAnyRole('USER','SUBJECT_ADMIN')")
+    public ApiResponse<java.util.Map<String, Object>> bulk(@PathVariable String action, @AuthenticationPrincipal Jwt jwt, @RequestBody BulkRequest request, @RequestHeader(value = "X-Correlation-Id", required = false) UUID correlationId) {
+        Actor actor = actors.from(jwt);
+        if (!java.util.Set.of("submit", "approve", "request-revision", "reject").contains(action))
+            throw new IllegalArgumentException("Unsupported bulk action");
+        var result = service.bulk(action, actor, request.ids(), request.reason(), correlationId);
+        return ApiResponse.ok(java.util.Map.of("total", request.ids() == null ? 0 : request.ids().size(), "success", result.success(), "failed", result.errors().size(), "errors", result.errors()));
+    }
+
+    public record BulkRequest(java.util.List<UUID> ids, String reason) {}
+
+    private static String safeMessage(RuntimeException ex) {
+        String message = ex.getMessage();
+        return message == null || message.isBlank() ? "Không thể xử lý câu hỏi" : message;
+    }
+
     private static QuestionInput input(QuestionRequest r) {
         return new QuestionInput(r.facultyId(), r.subjectId(), r.chapterId(), r.topicId(), r.content(), r.imageUrl(), r.storageKey(), r.type(), r.difficulty(), r.options().stream().map(o -> new QuestionOption(null, o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList());
     }

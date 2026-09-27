@@ -15,10 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class CatalogService {
     private final CatalogRepository repo;
     private final Clock clock;
+    private final com.questionservice.application.port.out.SubjectAssignmentRepository assignments;
+    private final com.questionservice.application.port.out.UserDirectoryPort users;
 
-    public CatalogService(CatalogRepository r, Clock c) {
+    public CatalogService(CatalogRepository r, Clock c) { this(r, c, null, null); }
+    public CatalogService(CatalogRepository r, Clock c, com.questionservice.application.port.out.SubjectAssignmentRepository assignments) { this(r, c, assignments, null); }
+    @org.springframework.beans.factory.annotation.Autowired
+    public CatalogService(CatalogRepository r, Clock c, com.questionservice.application.port.out.SubjectAssignmentRepository assignments, com.questionservice.application.port.out.UserDirectoryPort users) {
         repo = r;
         clock = c;
+        this.assignments = assignments;
+        this.users = users;
     }
 
     public Subject saveSubject(UUID id, String code, String name, Actor a) {
@@ -48,8 +55,33 @@ public class CatalogService {
 
     @Transactional(readOnly = true)
     public List<Subject> subjects(Actor a, String f) {
-        return repo.findSubjects(a.role() == Role.SUBJECT_ADMIN || a.role() == Role.USER ? a.facultyId() : f);
+        if (a.role() == Role.USER && assignments != null) {
+            var ids = assignments.findActiveSubjectIds(a.userId());
+            return repo.findSubjects(a.facultyId()).stream().filter(s -> ids.contains(s.id())).toList();
+        }
+        return repo.findSubjects(a.role() == Role.SUBJECT_ADMIN ? a.facultyId() : f);
     }
+
+    public void assignLecturer(UUID subjectId, UUID userId, Actor actor) {
+        Subject subject = repo.findSubject(subjectId).orElseThrow(() -> new NotFoundException("Subject not found"));
+        catalogAdmin(actor, subject.facultyId());
+        if (userId == null || actor.userId() == null) throw new ForbiddenException("Authenticated user is required");
+        if (users != null && !users.isLecturerInFaculty(userId, subject.facultyId())) throw new ForbiddenException("Lecturer is outside subject faculty");
+        assignments.assign(subjectId, userId, actor.userId(), Instant.now(clock));
+    }
+    public void removeLecturer(UUID subjectId, UUID userId, Actor actor) {
+        Subject subject = repo.findSubject(subjectId).orElseThrow(() -> new NotFoundException("Subject not found"));
+        catalogAdmin(actor, subject.facultyId());
+        assignments.remove(subjectId, userId);
+    }
+    @Transactional(readOnly = true)
+    public List<UUID> lecturers(UUID subjectId, Actor actor) {
+        Subject subject = repo.findSubject(subjectId).orElseThrow(() -> new NotFoundException("Subject not found"));
+        requireReadScope(actor, subject.facultyId());
+        return assignments.findActiveUserIds(subjectId);
+    }
+    @Transactional(readOnly = true)
+    public boolean isAssigned(UUID subjectId, UUID userId) { return assignments.existsActive(subjectId, userId); }
 
     @Transactional(readOnly = true)
     public List<Chapter> chapters(UUID id, Actor a) {
@@ -86,11 +118,12 @@ public class CatalogService {
     }
 
     private static void catalogAdmin(Actor a, String f) {
+        if (a.role() == Role.SYSTEM_ADMIN) return;
         if (a.role() != Role.SUBJECT_ADMIN || a.facultyId() == null || !a.facultyId().equals(f))
             throw new ForbiddenException("Catalog is outside administrator faculty scope");
     }
     private static String requiredFaculty(Actor a) { if (a == null || a.facultyId() == null || a.facultyId().isBlank()) throw new ForbiddenException("A faculty assignment is required"); return a.facultyId(); }
-    private static void requireReadScope(Actor a,String faculty){if(a==null||a.facultyId()==null||!a.facultyId().equals(faculty))throw new ForbiddenException("Catalog is outside faculty scope");}
+    private static void requireReadScope(Actor a,String faculty){if(a==null || a.role()==Role.SYSTEM_ADMIN) return; if(a.facultyId()==null||!a.facultyId().equals(faculty))throw new ForbiddenException("Catalog is outside faculty scope");}
 
     private static String required(String v) {
         if (v == null || v.isBlank()) throw new IllegalArgumentException("Value is required");

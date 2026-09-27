@@ -65,7 +65,7 @@ public class SystemHelpService {
         try {
             var sources = knowledge == null ? List.<AiKnowledgeService.Source>of() : knowledge.retrieve(message, 4);
             String source = mapper.writeValueAsString(Map.of("role", role, "articles", articles, "policySources", sources,
-                    "responsePolicy", "Answer safe everyday conversation and general knowledge normally. Use supplied sources for HAU-specific workflows. Never reveal secrets or grant access."));
+                    "responsePolicy", "Answer safe everyday conversation and general knowledge normally. Use supplied sources for HAU-specific workflows. If a document question has no relevant supplied source, say that the knowledge base does not contain enough evidence instead of guessing. Never reveal secrets or grant access."));
             String request = mapper.writeValueAsString(Map.of("message", message));
             var root = mapper.readTree(provider.systemHelp(source, request));
             String answer = root.path("answer").asText("").trim();

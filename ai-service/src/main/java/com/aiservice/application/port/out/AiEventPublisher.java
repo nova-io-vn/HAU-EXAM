@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public interface AiEventPublisher {
     void requested(AiJob job, UUID correlationId);
+    default void processing(AiJob job, UUID correlationId) { }
     void completed(AiJob job, UUID correlationId);
     void failed(AiJob job, UUID correlationId);
 }

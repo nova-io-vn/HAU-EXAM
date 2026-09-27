@@ -63,6 +63,21 @@ public class VercelWebAnalyticsAdapter implements WebAnalyticsPort {
         }
     }
 
+    @Override
+    public String testConnection() {
+        if (!configured()) return "NOT_CONFIGURED";
+        try {
+            dailyTraffic(LocalDate.now(ZoneOffset.UTC).minusDays(1), LocalDate.now(ZoneOffset.UTC));
+            return "WORKING";
+        } catch (WebAnalyticsException ex) {
+            Throwable cause = ex.getCause();
+            if (cause instanceof org.springframework.web.client.HttpClientErrorException http) {
+                return switch (http.getStatusCode().value()) { case 401, 403 -> "FORBIDDEN"; case 404 -> "PROJECT_NOT_FOUND"; case 429 -> "RATE_LIMITED"; default -> "API_ERROR"; };
+            }
+            return "NETWORK_ERROR";
+        }
+    }
+
     public record VercelResponse(List<VercelRow> data) { }
     public record VercelRow(Instant timestamp, long pageviews, long visitors) { }
 }

@@ -63,6 +63,7 @@ export const notificationStore = {
   receive(message) {
     const item = normalizeNotification(message);
     if (!remember(keyOf(item))) return;
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("hau:realtime", { detail: item }));
     publish({
       notifications: [item, ...state.notifications].slice(0, 50),
       unreadCount: state.unreadCount + (item.isRead ? 0 : 1),

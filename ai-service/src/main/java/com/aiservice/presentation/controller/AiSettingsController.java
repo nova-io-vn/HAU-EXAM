@@ -80,6 +80,7 @@ public class AiSettingsController {
         String normalized = message.toLowerCase(Locale.ROOT);
         if (normalized.contains("credential")) return "AI_KEY_NOT_CONFIGURED";
         if (normalized.contains("invalid") && normalized.contains("key")) return "AI_KEY_INVALID";
+        if (normalized.contains("model")) return "AI_MODEL_INVALID";
         if (normalized.contains("timeout")) return "AI_PROVIDER_TIMEOUT";
         return "AI_CONNECTION_FAILED";
     }

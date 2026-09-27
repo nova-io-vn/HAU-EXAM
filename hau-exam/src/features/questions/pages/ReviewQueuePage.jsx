@@ -60,6 +60,7 @@ function ReviewQueue({ params, setParams }) {
       active = false;
     };
   }, [keyword, source, difficulty, page, refresh]);
+  useEffect(() => { const refreshOnEvent = (event) => { const type = event.detail?.type || event.detail?.eventType || ""; if (type.includes("QUESTION") || type.includes("AI_JOB")) { setState({ loading: true }); setRefresh((value) => value + 1); } }; window.addEventListener("hau:realtime", refreshOnEvent); return () => window.removeEventListener("hau:realtime", refreshOnEvent); }, []);
   function query(values) {
     setState({ loading: true });
     setRefresh((value) => value + 1);

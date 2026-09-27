@@ -1,6 +1,7 @@
 package com.questionservice.infrastructure.rabbitmq;
 
 import com.questionservice.application.port.out.QuestionEventPublisher;
+import com.questionservice.domain.model.Actor;
 import com.questionservice.domain.model.Question;
 
 import java.time.*;
@@ -30,6 +31,20 @@ public class RabbitQuestionEventPublisher implements QuestionEventPublisher {
         if (!q.reviewHistory().isEmpty())
             payload.put("reviewComment", q.reviewHistory().get(q.reviewHistory().size() - 1).comment());
         rabbit.convertAndSend(RabbitTopology.QUESTION_EXCHANGE, key, new OutboundEnvelope(UUID.randomUUID(), type, correlation == null ? UUID.randomUUID() : correlation, OffsetDateTime.now(ZoneOffset.UTC), 1, payload));
+    }
+
+    @Override
+    public void publishBulk(String key, String type, Actor actor, List<Question> questions, UUID correlation) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("actorUserId", actor.userId());
+        payload.put("facultyId", actor.facultyId());
+        payload.put("questionIds", questions.stream().map(Question::id).toList());
+        payload.put("questionCount", questions.size());
+        payload.put("subjectIds", questions.stream().map(Question::subjectId).distinct().toList());
+        payload.put("authorUserIds", questions.stream().map(Question::createdBy).distinct().toList());
+        rabbit.convertAndSend(RabbitTopology.QUESTION_EXCHANGE, key,
+                new OutboundEnvelope(UUID.randomUUID(), type, correlation == null ? UUID.randomUUID() : correlation,
+                        OffsetDateTime.now(ZoneOffset.UTC), 1, payload));
     }
 
     public record OutboundEnvelope(UUID eventId, String eventType, UUID correlationId, OffsetDateTime occurredAt,

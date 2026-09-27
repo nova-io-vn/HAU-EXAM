@@ -16,12 +16,14 @@ public class AiJobService {
     private final DocumentRepository docs;
     private final AiEventPublisher events;
     private final Clock clock;
+    private final SubjectAuthorizationPort authorization;
 
     public AiJobService(AiJobRepository j, DocumentRepository d, AiEventPublisher e, Clock c) {
-        jobs = j;
-        docs = d;
-        events = e;
-        clock = c;
+        this(j, d, e, c, null);
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    public AiJobService(AiJobRepository j, DocumentRepository d, AiEventPublisher e, Clock c, SubjectAuthorizationPort authorization) {
+        jobs = j; docs = d; events = e; clock = c; this.authorization = authorization;
     }
 
     @Transactional
@@ -31,8 +33,17 @@ public class AiJobService {
 
     @Transactional
     public AiJob create(UUID user, UUID document, JobType type, String request, UUID correlation, String faculty, UUID subject, UUID chapter, UUID topic) {
+        return create(user, document, type, request, correlation, faculty, subject, chapter, topic, "USER");
+    }
+    @Transactional
+    public AiJob create(UUID user, UUID document, JobType type, String request, UUID correlation, String faculty, UUID subject, UUID chapter, UUID topic, String role) {
         if (type == JobType.QUESTION_GENERATION && (faculty == null || faculty.isBlank() || subject == null || chapter == null)) {
             throw new IllegalArgumentException("Question generation requires faculty, subject and chapter context");
+        }
+        if (type == JobType.QUESTION_GENERATION && "USER".equals(role) && authorization != null && !authorization.assigned(subject, user))
+            throw new ForbiddenException("SUBJECT_NOT_ASSIGNED");
+        if (type == JobType.QUESTION_GENERATION && document == null && (request == null || !request.contains("description"))) {
+            throw new IllegalArgumentException("Question generation requires a document or description");
         }
         if (document != null) {
             var d = docs.findById(document).orElseThrow(() -> new NotFoundException("Document not found"));

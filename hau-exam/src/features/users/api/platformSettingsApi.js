@@ -6,4 +6,5 @@ export const platformSettingsApi = {
   vercelAnalyticsStatus: () => api.get("/api/v1/admin/platform/vercel-analytics"),
   saveVercelAnalytics: settings => api.put("/api/v1/admin/platform/vercel-analytics", settings),
   webTraffic: () => api.get("/api/v1/admin/analytics/traffic"),
+  testVercelAnalytics: () => api.post("/api/v1/admin/analytics/test", {}),
 };

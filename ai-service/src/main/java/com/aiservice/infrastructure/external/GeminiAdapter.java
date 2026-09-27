@@ -71,7 +71,7 @@ public class GeminiAdapter implements AiProvider {
             if (!text.isTextual()) throw new ProviderException("Provider returned no text", false, null);
             return stripFence(text.asText());
         } catch (HttpClientErrorException e) {
-            throw new ProviderException("Provider rejected request", e.getStatusCode().is5xxServerError(), e);
+            throw new ProviderException(e.getStatusCode().value() == 400 ? "AI_MODEL_INVALID" : e.getStatusCode().value() == 401 ? "AI_KEY_INVALID" : "Provider rejected request", e.getStatusCode().is5xxServerError(), e);
         } catch (ResourceAccessException e) {
             throw new ProviderException("Provider timeout or unavailable", true, e);
         } catch (ProviderException e) {

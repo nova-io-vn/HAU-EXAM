@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Dialog, Input, Loading } from "../../../components/ui";
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { catalogApi } from "../api/catalogApi";
 import { toast } from "../../notifications/store/notificationStore";
+import { api } from "../../../services/api/client";
 
 export function KnowledgeStructurePage() {
   const [subjects, setSubjects] = useState([]);
@@ -10,6 +11,11 @@ export function KnowledgeStructurePage() {
   const [chapters, setChapters] = useState([]);
   const [chapter, setChapter] = useState(null);
   const [topics, setTopics] = useState([]);
+  const [topic, setTopic] = useState(null);
+  const [lecturerIds, setLecturerIds] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignSearch, setAssignSearch] = useState("");
   const [dialog, setDialog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,6 +44,7 @@ export function KnowledgeStructurePage() {
         .then((data) => {
           if (active) {
             setChapter(null);
+            setTopic(null);
             setTopics([]);
             setChapters(data);
           }
@@ -57,7 +64,7 @@ export function KnowledgeStructurePage() {
     catalogApi
       .topics(chapter.id)
       .then((data) => {
-        if (active) setTopics(data);
+        if (active) { setTopics(data); setTopic(null); }
       })
       .catch((reason) => {
         if (active) setError(reason);
@@ -66,6 +73,17 @@ export function KnowledgeStructurePage() {
       active = false;
     };
   }, [chapter]);
+  useEffect(() => {
+    if (!selected) return;
+    Promise.all([catalogApi.lecturers(selected.id), api.get("/api/v1/users/me/chat-contacts")])
+      .then(([ids, people]) => { setLecturerIds(ids || []); setContacts(people || []); })
+      .catch(setError);
+  }, [selected]);
+  const assignedLecturers = useMemo(() => contacts.filter((person) => lecturerIds.includes(person.userId)), [contacts, lecturerIds]);
+  const availableLecturers = useMemo(() => contacts.filter((person) => person.role === "USER" && !lecturerIds.includes(person.userId) && (!assignSearch || `${person.displayName} ${person.lecturerCode}`.toLowerCase().includes(assignSearch.toLowerCase()))), [contacts, lecturerIds, assignSearch]);
+  async function assignLecturer(userId) { try { await catalogApi.assignLecturer(selected.id, userId); setLecturerIds(await catalogApi.lecturers(selected.id)); setAssignOpen(false); } catch (reason) { setError(reason); } }
+  async function removeLecturer(userId) { try { await catalogApi.removeLecturer(selected.id, userId); setLecturerIds(await catalogApi.lecturers(selected.id)); } catch (reason) { setError(reason); } }
+
   async function save(event) {
     event.preventDefault();
     const values = Object.fromEntries(new FormData(event.currentTarget));
@@ -163,6 +181,7 @@ export function KnowledgeStructurePage() {
                         type="button"
                         className="tree-topic"
                         key={topic.id}
+                        onClick={() => setTopic(topic)}
                       >
                         <span>•</span>
                         {topic.name}
@@ -181,10 +200,19 @@ export function KnowledgeStructurePage() {
           )}
           {!selected ? (
             <p>Chọn một Môn học để xem cấu trúc.</p>
+          ) : topic ? (
+            <>
+              <span className="eyebrow">CHỦ ĐỀ</span>
+              <h2>{topic.name}</h2>
+              <p className="muted">Chương: {chapter.name} · Môn học: {selected.name}</p>
+            </>
           ) : !chapter ? (
             <>
               <span className="eyebrow">MÔN HỌC</span>
               <h2>{selected.name}</h2>
+              <p className="muted">Mã môn: {selected.code} · Khoa: {selected.facultyId || "—"}</p>
+              <p>{chapters.length} chương · {topics.length} chủ đề đang tải</p>
+              <div className="knowledge-lecturers"><header><strong>Giảng viên phụ trách</strong><Button variant="ghost" onClick={() => setAssignOpen(true)}>+ Phân công giảng viên</Button></header>{assignedLecturers.length ? assignedLecturers.map((person) => <div className="knowledge-lecturer" key={person.userId}><span className="human-avatar">{person.avatarUrl ? <img src={person.avatarUrl} alt="" /> : "GV"}</span><span><strong>{person.displayName}</strong><small>{person.lecturerCode} · Khoa {person.facultyId}</small></span><Button variant="ghost" onClick={() => void removeLecturer(person.userId)}>Xóa phân công</Button></div>) : <p>Chưa có giảng viên được phân công.</p>}</div>
               <p className="muted">
                 Chọn Chương trong cây bên trái để quản lý Chủ đề.
               </p>
@@ -263,6 +291,7 @@ export function KnowledgeStructurePage() {
           </div>
         </form>
       </Dialog>
+      <Dialog open={assignOpen} title="Phân công giảng viên" onClose={() => setAssignOpen(false)}><Input value={assignSearch} onChange={(event) => setAssignSearch(event.target.value)} placeholder="Tìm tên hoặc mã giảng viên" />{availableLecturers.map((person) => <button className="tree-node" type="button" key={person.userId} onClick={() => void assignLecturer(person.userId)}><span>{person.displayName}</span><small>{person.lecturerCode} · Khoa {person.facultyId}</small></button>)}{!availableLecturers.length && <p>Không tìm thấy giảng viên phù hợp.</p>}</Dialog>
     </section>
   );
 }

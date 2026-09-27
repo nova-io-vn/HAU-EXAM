@@ -17,4 +17,7 @@ public final class CatalogRequests {
 
     public record TopicRequest(@NotNull UUID chapterId, @NotBlank String code, @NotBlank String name) {
     }
+
+    public record LecturerAssignmentRequest(@NotNull UUID userId) {
+    }
 }

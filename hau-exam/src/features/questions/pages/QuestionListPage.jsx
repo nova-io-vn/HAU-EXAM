@@ -9,9 +9,10 @@ import { questionsApi } from "../api/questionsApi";
 import { QuestionFilters } from "../components/QuestionFilters";
 import { QuestionPagination } from "../components/QuestionPagination";
 import { QuestionPreview } from "../components/QuestionPreview";
-import { QuestionTable } from "../components/QuestionTable";
+import { QuestionTable } from "../components/QuestionTableFixed";
 import { useQuestionCatalogs } from "../hooks/useQuestionCatalogs";
 import { normalizePage } from "../model/questionModel";
+import { api } from "../../../services/api/client";
 
 const initialFilters = {
   facultyId: "",
@@ -43,6 +44,8 @@ export function QuestionListPage() {
   const [error, setError] = useState(null);
   const [preview, setPreview] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [creatorMap, setCreatorMap] = useState({});
   const catalogs = useQuestionCatalogs(draft.subjectId, draft.chapterId);
   const load = useCallback(async () => {
     const version = ++requestVersion.current;
@@ -55,7 +58,7 @@ export function QuestionListPage() {
         page,
         size: 10,
       });
-      if (version === requestVersion.current) setData(normalizePage(result));
+      if (version === requestVersion.current) { setSelectedIds(new Set()); setData(normalizePage(result)); }
     } catch (reason) {
       if (version === requestVersion.current) setError(reason);
     } finally {
@@ -66,6 +69,22 @@ export function QuestionListPage() {
     const task = setTimeout(load, 0);
     return () => clearTimeout(task);
   }, [load]);
+  useEffect(() => { Promise.allSettled([api.get("/api/v1/users/me"), api.get("/api/v1/users/me/chat-contacts")]).then(([me, contacts]) => { const values = []; if (me.status === "fulfilled") values.push(me.value); if (contacts.status === "fulfilled") values.push(...contacts.value); setCreatorMap(Object.fromEntries(values.filter(Boolean).map((person) => [person.userId || person.id, person]))); }); }, []);
+  useEffect(() => { const refresh = (event) => { const type = event.detail?.type || event.detail?.eventType || ""; if (type.includes("QUESTION") || type.includes("AI_JOB")) load(); }; window.addEventListener("hau:realtime", refresh); return () => window.removeEventListener("hau:realtime", refresh); }, [load]);
+  const toggleSelected = (id) => setSelectedIds((old) => { const next = new Set(old); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  const togglePage = () => setSelectedIds((old) => {
+    const next = new Set(old); const ids = data.items.map((item) => item.id);
+    const all = ids.length > 0 && ids.every((id) => next.has(id));
+    ids.forEach((id) => all ? next.delete(id) : next.add(id)); return next;
+  });
+  async function bulkAction(action) {
+    if (!selectedIds.size) return;
+    const reason = action === "request-revision" || action === "reject" ? window.prompt("Lý do xử lý (không bắt buộc):", "") : null;
+    setBusy(true);
+    try { await questionsApi.bulk(action, [...selectedIds], reason); setSelectedIds(new Set()); await load(); }
+    catch (reasonError) { setError(reasonError); }
+    finally { setBusy(false); }
+  }
   async function confirmAction() {
     if (busy) return;
     const { action, question } = confirmation;
@@ -131,9 +150,15 @@ export function QuestionListPage() {
           </div>
         ) : (
           <>
+            {data.items.length > 0 && <div className="question-bulk-toolbar"><label><input type="checkbox" checked={data.items.every((item) => selectedIds.has(item.id))} onChange={togglePage} /> Chọn trang</label><span>{selectedIds.size} câu đã chọn</span>{selectedIds.size > 0 && (isOwnerView ? <Button onClick={() => bulkAction("submit")}>Gửi duyệt</Button> : auth.role === roles.SUBJECT_ADMIN ? <><Button onClick={() => bulkAction("approve")}>Phê duyệt</Button><Button onClick={() => bulkAction("request-revision")}>Yêu cầu chỉnh sửa</Button><Button variant="danger" onClick={() => bulkAction("reject")}>Từ chối</Button></> : null)}</div>}
             <QuestionTable
               questions={data.items}
               auth={auth}
+              page={data.page}
+              pageSize={10}
+              creatorMap={creatorMap}
+              selectedIds={selectedIds}
+              onToggle={toggleSelected}
               onPreview={setPreview}
               onAction={(action, question) =>
                 setConfirmation({ action, question })

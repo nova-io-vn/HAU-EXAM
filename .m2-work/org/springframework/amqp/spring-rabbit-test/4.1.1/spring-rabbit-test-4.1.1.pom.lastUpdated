@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sun Sep 27 23:20:14 ICT 2026
+@default-central-https\://repo.maven.apache.org/maven2/.lastUpdated=1790526014658
+https\://repo.maven.apache.org/maven2/.error=Could not transfer artifact org.springframework.amqp\:spring-rabbit-test\:pom\:4.1.1 from/to central (https\://repo.maven.apache.org/maven2)\: Permission denied\: getsockopt

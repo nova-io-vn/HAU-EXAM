@@ -30,6 +30,9 @@ export function HumanChatDropdown(){
  const[files,setFiles]=useState([])
  const[filesOpen,setFilesOpen]=useState(false)
  const[loading,setLoading]=useState(true)
+ const[contactSearch,setContactSearch]=useState('')
+ const[facultyFilter,setFacultyFilter]=useState('')
+ const[roleFilter,setRoleFilter]=useState('')
  const isAdmin=role==='SYSTEM_ADMIN'
  const isSubject=role==='SUBJECT_ADMIN'
  const byId=useMemo(()=>new Map(contacts.map(contact=>[contact.userId,contact])),[contacts])
@@ -107,13 +110,14 @@ export function HumanChatDropdown(){
  async function showFiles(){try{setFiles(await supportChatApi.attachments(current.id));setFilesOpen(true)}catch(reason){setError(reason.message||'Không thể tải file đã gửi.')}}
  async function remove(){if(!current||!window.confirm('Xóa đoạn chat khỏi danh sách của bạn?'))return;await supportChatApi.remove(current.id);setList(items=>items.filter(conversation=>conversation.id!==current.id));setCurrent(null);setMessages([])}
 
- const contactsToStart=contacts.filter(contact=>isSubject?['USER','SYSTEM_ADMIN'].includes(contact.role):['SUBJECT_ADMIN','SYSTEM_ADMIN'].includes(contact.role))
+ const contactsToStart=contacts.filter(contact=>(isAdmin||isSubject?true:['SUBJECT_ADMIN','SYSTEM_ADMIN'].includes(contact.role))&&(!isSubject||['USER','SYSTEM_ADMIN'].includes(contact.role))&&(!contactSearch||identity(contact).toLowerCase().includes(contactSearch.toLowerCase())||String(contact.lecturerCode||'').toLowerCase().includes(contactSearch.toLowerCase()))&&(!facultyFilter||contact.facultyId===facultyFilter)&&(!roleFilter||contact.role===roleFilter))
  return <div className="human-chat" ref={root}>
    <button className="human-chat-button" type="button" aria-label="Mở tin nhắn" aria-expanded={open} onClick={()=>setOpen(value=>!value)}><Icon name="messages" size={23}/>{unread>0&&<b>{unread>99?'99+':unread}</b>}</button>
    {open&&<section className="human-chat-panel human-chat-blue-frame" aria-label="Tin nhắn">
      {!current?<>
        <header><div><strong>Tin nhắn</strong><small>Trao đổi với giảng viên và quản trị viên</small></div><button type="button" onClick={()=>setOpen(false)} aria-label="Đóng">×</button></header>
        {!isAdmin&&<div className="human-chat-contacts"><strong>Liên hệ mới</strong>{contactsToStart.slice(0,5).map(contact=><button key={contact.userId} type="button" disabled={busy} onClick={()=>void start(contact)}><span className="human-avatar">{contact.avatarUrl?<img src={contact.avatarUrl} alt=""/>:initials(identity(contact))}</span><span><b>{identity(contact)}</b><small>{subtitle(contact,facultyId)}</small></span><Icon name="plus" size={16}/></button>)}</div>}
+       {(isAdmin||isSubject)&&<div className="human-chat-contacts"><strong>Liên hệ mới</strong><input value={contactSearch} onChange={event=>setContactSearch(event.target.value)} placeholder="Tìm tên hoặc mã giảng viên..."/><select value={facultyFilter} onChange={event=>setFacultyFilter(event.target.value)}><option value="">Tất cả Khoa</option>{[...new Set(contacts.map(item=>item.facultyId).filter(Boolean))].map(item=><option key={item} value={item}>{item}</option>)}</select><select value={roleFilter} onChange={event=>setRoleFilter(event.target.value)}><option value="">Tất cả vai trò</option><option value="SUBJECT_ADMIN">Quản trị chuyên môn</option><option value="USER">Giảng viên</option></select>{contactsToStart.slice(0,8).map(contact=><button key={contact.userId} type="button" disabled={busy} onClick={()=>void start(contact)}><span className="human-avatar">{contact.avatarUrl?<img src={contact.avatarUrl} alt=""/>:initials(identity(contact))}</span><span><b>{identity(contact)}</b><small>{contact.lecturerCode||''} · {subtitle(contact,facultyId)}</small></span><Icon name="plus" size={16}/></button>)}</div>}
        <div className="human-chat-list">
          {loading&&<p className="human-chat-state">Đang tải cuộc trò chuyện…</p>}
          {!loading&&list.map(conversation=>{const contact=person(conversation);return <button key={conversation.id} type="button" onClick={()=>void openConversation(conversation)}><span className="human-avatar">{contact.avatarUrl?<img src={contact.avatarUrl} alt=""/>:initials(identity(contact))}</span><span className="human-chat-list-copy"><span className="human-chat-name-row"><strong>{identity(contact)}</strong><time>{time(conversation.lastMessageAt)}</time></span><small>{subtitle(contact,conversation.facultyId)}</small><span className="human-chat-preview">{conversation.lastMessage||'Chưa có tin nhắn'}</span></span>{conversation.unreadCount>0&&<b className="human-chat-unread">{conversation.unreadCount}</b>}</button>})}

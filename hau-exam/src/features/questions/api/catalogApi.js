@@ -14,4 +14,7 @@ export const catalogApi = {
   createTopic: (body) => api.post("/api/v1/topics", body),
   updateTopic: (id, body) => api.put("/api/v1/topics/" + id, body),
   deleteTopic: (id) => api.delete("/api/v1/topics/" + id),
+  lecturers: (subjectId) => api.get(`/api/v1/subjects/${subjectId}/lecturers`),
+  assignLecturer: (subjectId, userId) => api.post(`/api/v1/subjects/${subjectId}/lecturers`, { userId }),
+  removeLecturer: (subjectId, userId) => api.delete(`/api/v1/subjects/${subjectId}/lecturers/${userId}`),
 };

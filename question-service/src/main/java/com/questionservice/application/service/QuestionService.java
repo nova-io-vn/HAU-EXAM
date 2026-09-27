@@ -19,16 +19,20 @@ public class QuestionService {
     private final Clock clock;
     private final CatalogRepository catalog;
     private final ImageStoragePort imageStorage;
+    private final SubjectAssignmentRepository assignments;
 
     public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock) {
-        this(repository, publisher, clock, null, null);
+        this(repository, publisher, clock, null, null, null);
     }
     public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog) {
-        this(repository, publisher, clock, catalog, null);
+        this(repository, publisher, clock, catalog, null, null);
+    }
+    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog, ImageStoragePort imageStorage) {
+        this(repository, publisher, clock, catalog, imageStorage, null);
     }
     @org.springframework.beans.factory.annotation.Autowired
-    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog, ImageStoragePort imageStorage) {
-        this.repository = repository; this.publisher = publisher; this.clock = clock; this.catalog = catalog; this.imageStorage = imageStorage;
+    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog, ImageStoragePort imageStorage, SubjectAssignmentRepository assignments) {
+        this.repository = repository; this.publisher = publisher; this.clock = clock; this.catalog = catalog; this.imageStorage = imageStorage; this.assignments = assignments;
     }
 
     public Question create(Actor actor, QuestionInput in) {
@@ -37,6 +41,7 @@ public class QuestionService {
         if (actor.facultyId() == null || actor.facultyId().isBlank())
             throw new ForbiddenException("Question creator must have a faculty assignment");
         validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), actor.facultyId());
+        requireAssignment(in.subjectId(), actor);
         var q = Question.create(UUID.randomUUID(), actor.facultyId(), in.subjectId(), in.chapterId(), in.topicId(), in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), QuestionSource.MANUAL, null, actor.userId(), withIds(in.options()), Instant.now(clock));
         return repository.save(q);
     }
@@ -47,6 +52,7 @@ public class QuestionService {
         String oldImage = q.storageKey();
         var oldOptionImages = q.options().stream().map(QuestionOption::storageKey).filter(Objects::nonNull).toList();
         validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), actor.facultyId());
+        requireAssignment(in.subjectId(), actor);
         q.edit(in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), withIds(in.options()), Instant.now(clock));
         var saved = repository.save(q);
         if (oldImage != null && !Objects.equals(oldImage, saved.storageKey())) deleteImage(oldImage);
@@ -95,6 +101,49 @@ public class QuestionService {
         publisher.publish("question.revision.requested", "QUESTION_REVISION_REQUESTED", q, correlationId);
         return q;
     }
+
+    public BulkResult bulk(String action, Actor actor, List<UUID> ids, String reason, UUID correlationId) {
+        List<Question> changed = new ArrayList<>();
+        List<Map<String, String>> failed = new ArrayList<>();
+        for (UUID id : ids == null ? List.<UUID>of() : ids) {
+            try {
+                Question q = get(id);
+                if ("submit".equals(action)) {
+                    owner(q, actor); q.submit(Instant.now(clock)); q = repository.save(q);
+                } else {
+                    facultyReviewer(q, actor);
+                    if ("approve".equals(action)) q.approve(actor.userId(), reason, Instant.now(clock));
+                    else if ("reject".equals(action)) q.reject(actor.userId(), reason, Instant.now(clock));
+                    else if ("request-revision".equals(action)) q.requestRevision(actor.userId(), reason, Instant.now(clock));
+                    else throw new IllegalArgumentException("Unsupported bulk action");
+                    q = repository.save(q);
+                }
+                changed.add(q);
+            } catch (RuntimeException ex) {
+                failed.add(Map.of("id", id.toString(), "error", ex.getMessage() == null ? "Operation failed" : ex.getMessage()));
+            }
+        }
+        if (!changed.isEmpty()) {
+            String key = switch (action) {
+                case "submit" -> "question.bulk.submitted";
+                case "approve" -> "question.bulk.approved";
+                case "reject" -> "question.bulk.rejected";
+                case "request-revision" -> "question.bulk.revision.requested";
+                default -> throw new IllegalArgumentException("Unsupported bulk action");
+            };
+            String type = switch (action) {
+                case "submit" -> "QUESTIONS_SUBMITTED_FOR_REVIEW";
+                case "approve" -> "QUESTIONS_BULK_APPROVED";
+                case "reject" -> "QUESTIONS_BULK_REJECTED";
+                case "request-revision" -> "QUESTIONS_BULK_NEED_REVISION";
+                default -> throw new IllegalArgumentException("Unsupported bulk action");
+            };
+            publisher.publishBulk(key, type, actor, changed, correlationId);
+        }
+        return new BulkResult(changed.size(), failed);
+    }
+
+    public record BulkResult(int success, List<Map<String, String>> errors) {}
 
     public Question archive(UUID id, Actor actor) {
         var q = get(id);
@@ -176,5 +225,10 @@ public class QuestionService {
             var topic = catalog.findTopic(topicId).orElseThrow(() -> new NotFoundException("Topic not found"));
             if (!Objects.equals(topic.chapterId(), chapterId)) throw new IllegalArgumentException("Topic does not belong to chapter");
         }
+    }
+
+    private void requireAssignment(UUID subjectId, Actor actor) {
+        if (actor.role() == Role.USER && assignments != null && !assignments.existsActive(subjectId, actor.userId()))
+            throw new ForbiddenException("SUBJECT_NOT_ASSIGNED");
     }
 }

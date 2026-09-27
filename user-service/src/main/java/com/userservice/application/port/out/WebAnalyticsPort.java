@@ -8,5 +8,7 @@ public interface WebAnalyticsPort {
 
     List<DailyTraffic> dailyTraffic(LocalDate since, LocalDate until);
 
+    default String testConnection() { return configured() ? "WORKING" : "NOT_CONFIGURED"; }
+
     record DailyTraffic(LocalDate date, long visitors, long pageviews) { }
 }

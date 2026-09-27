@@ -18,7 +18,8 @@ public class RabbitAiEventPublisher implements AiEventPublisher {
     }
 
     public void requested(AiJob j, UUID c) {
-        send("ai.generation.requested", "AI_GENERATION_REQUESTED", j, c, Map.of("jobId", j.id(), "jobType", j.type()));
+        var p = new LinkedHashMap<String, Object>(); p.put("jobId", j.id()); p.put("jobType", j.type()); p.put("requestedBy", j.requestedBy()); p.put("facultyId", j.facultyId()); p.put("subjectId", j.subjectId());
+        send("ai.generation.requested", "AI_JOB_CREATED", j, c, p);
     }
 
     public void completed(AiJob j, UUID c) {
@@ -32,9 +33,11 @@ public class RabbitAiEventPublisher implements AiEventPublisher {
         p.put("resultReference", j.resultReference());
         send("ai.generation.completed", "AI_GENERATION_COMPLETED", j, c, p);
     }
+    public void processing(AiJob j, UUID c) { var p = new LinkedHashMap<String,Object>(); p.put("jobId", j.id()); p.put("requestedBy", j.requestedBy()); p.put("facultyId", j.facultyId()); p.put("subjectId", j.subjectId()); send("ai.generation.processing", "AI_JOB_PROCESSING", j, c, p); }
 
     public void failed(AiJob j, UUID c) {
-        send("ai.generation.failed", "AI_GENERATION_FAILED", j, c, Map.of("jobId", j.id(), "errorCode", j.errorCode(), "requestedBy", j.requestedBy()));
+        var p = new LinkedHashMap<String,Object>(); p.put("jobId", j.id()); p.put("errorCode", j.errorCode()); p.put("requestedBy", j.requestedBy()); p.put("facultyId", j.facultyId()); p.put("subjectId", j.subjectId());
+        send("ai.generation.failed", "AI_JOB_FAILED", j, c, p);
     }
 
     private void send(String key, String type, AiJob j, UUID c, Object payload) {

@@ -17,6 +17,9 @@ public class GlobalExceptionHandler {
     ApiResponse<Void> notFound(Exception e) {
         return err("RESOURCE_NOT_FOUND", e.getMessage());
     }
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    ApiResponse<Void> forbidden(ForbiddenException e) { return err("SUBJECT_NOT_ASSIGNED", e.getMessage()); }
 
     @ExceptionHandler({UnsupportedDocumentException.class, InvalidAiOutputException.class, IllegalArgumentException.class, MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)

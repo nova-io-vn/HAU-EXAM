@@ -19,10 +19,7 @@ public class AiWorkspaceService {
     private final AiJobService jobService;
 
     public AiWorkspaceService(DocumentRepository documents, AiJobRepository jobs, AiResultRepository results, AiJobService jobService) {
-        this.documents = documents;
-        this.jobs = jobs;
-        this.results = results;
-        this.jobService = jobService;
+        this.documents = documents; this.jobs = jobs; this.results = results; this.jobService = jobService;
     }
 
     public WorkspacePage<DocumentMetadata> documents(UUID owner, int page, int size) {

@@ -5,6 +5,7 @@ import com.userservice.application.service.WebAnalyticsService;
 import com.userservice.presentation.response.ApiResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,4 +23,9 @@ public class WebAnalyticsController {
     public ApiResponse<WebTrafficSummary> traffic() {
         return ApiResponse.success(service.trafficSummary());
     }
+
+    @PostMapping("/test")
+    public ApiResponse<TestResult> test() { return ApiResponse.success(new TestResult(service.testConnection())); }
+
+    public record TestResult(String status) { }
 }

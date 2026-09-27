@@ -29,7 +29,7 @@ public class TelegramController {
     @PutMapping("/api/v1/telegram/preferences") public ApiResponse<Void> preferences(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody TelegramNotificationService.PreferenceInput input) { service.savePreferences(user(jwt), input); return ApiResponse.success(null); }
     @PreAuthorize("hasRole('SYSTEM_ADMIN')") @GetMapping("/api/v1/admin/telegram") public ApiResponse<?> admin() { return ApiResponse.success(service.adminConfig()); }
     @PreAuthorize("hasRole('SYSTEM_ADMIN')") @PutMapping("/api/v1/admin/telegram") public ApiResponse<?> save(@Valid @RequestBody BotRequest request) { return ApiResponse.success(service.saveConfig(request.botUsername(), request.botToken(), request.enabled())); }
-    @PreAuthorize("hasRole('SYSTEM_ADMIN')") @PostMapping("/api/v1/admin/telegram/test") public ApiResponse<Void> testConfig() { service.verifyBot(); return ApiResponse.success(null); }
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')") @PostMapping("/api/v1/admin/telegram/test") public ApiResponse<?> testConfig() { return ApiResponse.success(service.verifyBot()); }
     @PostMapping({"/api/v1/integrations/telegram/webhook", "/api/v1/public/telegram/webhook"})
     public ApiResponse<String> webhook(@RequestHeader(value = "X-Telegram-Bot-Api-Secret-Token", required = false) String secret, @RequestBody JsonNode update) {
         if (webhookSecret.isBlank() || secret == null || !MessageDigest.isEqual(secret.getBytes(StandardCharsets.UTF_8), webhookSecret.getBytes(StandardCharsets.UTF_8))) throw new ResponseStatusException(HttpStatus.FORBIDDEN);

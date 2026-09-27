@@ -12,6 +12,7 @@ export function VercelAnalyticsSettingsCard() {
   async function load(){setLoading(true);try{const next=await platformSettingsApi.vercelAnalyticsStatus();setStatus(next);setForm(current=>({...current,projectId:next.projectId||"",teamId:next.teamId||""}));setError("")}catch(e){setError(getErrorMessage(e,"Không thể kiểm tra cấu hình Vercel Analytics."))}finally{setLoading(false)}}
   useEffect(()=>{const timer=setTimeout(load,0);return()=>clearTimeout(timer)},[]);
   async function save(event){event.preventDefault();setSaving(true);setMessage("");setError("");try{const next=await platformSettingsApi.saveVercelAnalytics(form);setStatus(next);setForm(current=>({...current,token:""}));setMessage("Đã lưu cấu hình Vercel Analytics.");toast.success("Đã lưu cấu hình Vercel Analytics.")}catch(e){setError(getErrorMessage(e,"Không thể lưu cấu hình Vercel Analytics."));toast.error(getErrorMessage(e,"Vui lòng thử lại."),{title:"Không thể lưu Vercel Analytics"})}finally{setSaving(false)}}
+  async function test(){setLoading(true);setError("");try{const next=await platformSettingsApi.testVercelAnalytics();setMessage(`Kết quả kiểm tra: ${next.status}`)}catch(e){setError(getErrorMessage(e,"Không thể kiểm tra Vercel Analytics."))}finally{setLoading(false)}}
   return <article className="surface settings-card">
     <span className="eyebrow">VERCEL WEB ANALYTICS</span><h2>Thống kê người truy cập</h2>
     <p>Nhập thông tin API để Dashboard quản trị đọc số liệu từ project Vercel. Token được mã hóa ở backend và không hiển thị lại.</p>
@@ -21,7 +22,7 @@ export function VercelAnalyticsSettingsCard() {
       <Input label="VERCEL_TEAM_ID" value={form.teamId} onChange={e=>setForm({...form,teamId:e.target.value})} placeholder="team_xxxxxxxxx" />
       <PasswordInput label="VERCEL_TOKEN" value={form.token} onChange={e=>setForm({...form,token:e.target.value})} placeholder={status?.tokenConfigured?"Nhập token mới để thay đổi":"x-vc-xxxxxxxxx"} />
       <small className="settings-note">Nhập đủ 3 trường rồi bấm lưu. Sau đó mở lại Dashboard hoặc bấm thử lại.</small>
-      <div className="settings-actions"><Button type="submit" loading={saving} disabled={!form.projectId.trim()||!form.teamId.trim()||!form.token.trim()}>Lưu Vercel Analytics</Button><Button type="button" variant="secondary" onClick={load} loading={loading}>Kiểm tra lại</Button></div>
+      <div className="settings-actions"><Button type="submit" loading={saving} disabled={!form.projectId.trim()||!form.teamId.trim()||(!form.token.trim()&&!status?.tokenConfigured)}>Lưu Vercel Analytics</Button><Button type="button" variant="secondary" onClick={test} loading={loading}>Kiểm tra kết nối</Button><Button type="button" variant="ghost" onClick={load} loading={loading}>Tải lại</Button></div>
     </form>
     {error&&<p className="field-error" role="alert">{error}</p>}{message&&<p className="settings-success" role="status">{message}</p>}
   </article>;

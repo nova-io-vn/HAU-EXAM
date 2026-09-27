@@ -17,4 +17,5 @@ export const aiKnowledgeApi = {
   remove: (id) => api.delete(`${base}/${id}`),
   content: id => api.get(`${base}/${id}/content`),
   chunks: id => api.get(`${base}/${id}/chunks`),
+  debug: (query, topK = 8) => api.get(`${base}/debug/retrieval?query=${encodeURIComponent(query)}&topK=${topK}`),
 };

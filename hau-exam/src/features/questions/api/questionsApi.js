@@ -40,6 +40,8 @@ export const questionsApi = {
     api.post(`/api/v1/questions/${id}/reject`, { reason }),
   requestRevision: (id, reason) =>
     api.post(`/api/v1/questions/${id}/request-revision`, { reason }),
+  bulk: (action, ids, reason) =>
+    api.post(`/api/v1/questions/bulk/${action}`, { ids, reason: reason || null }),
   subjects: () => api.get("/api/v1/subjects"),
   chapters: (subjectId) =>
     api.get(`/api/v1/chapters${queryString({ subjectId })}`),
@@ -49,8 +51,10 @@ export const questionsApi = {
 // Display names are resolved from catalog endpoints, not assumed response fields.
 async function catalogNames(items = []) {
   if (!items.length) return items;
+  const creatorIds = [...new Set(items.map((q) => q.createdBy).filter(Boolean))];
   const results = await Promise.allSettled([
     questionsApi.subjects(),
+    api.get(`/api/v1/users/directory?ids=${creatorIds.map((id) => encodeURIComponent(id)).join(",")}`),
     ...[...new Set(items.map((q) => q.subjectId))].map((id) =>
       questionsApi.chapters(id),
     ),
@@ -60,13 +64,18 @@ async function catalogNames(items = []) {
   ]);
   const names = new Map(
     results
+      .filter((_, index) => index !== 1)
       .flatMap((result) => (result.status === "fulfilled" ? result.value : []))
       .map((item) => [item.id, item.name]),
   );
+  const people = new Map(results[1].status === "fulfilled" ? results[1].value.map((item) => [item.userId, item]) : []);
   return items.map((q) => ({
     ...q,
     subjectName: names.get(q.subjectId),
     chapterName: names.get(q.chapterId),
     topicName: names.get(q.topicId),
+    createdByName: people.get(q.createdBy)?.displayName || people.get(q.createdBy)?.fullName,
+    lecturerCode: people.get(q.createdBy)?.lecturerCode,
+    creatorAvatar: people.get(q.createdBy)?.avatarUrl,
   }));
 }

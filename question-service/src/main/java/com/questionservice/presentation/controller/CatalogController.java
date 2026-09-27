@@ -6,6 +6,7 @@ import com.questionservice.presentation.request.CatalogRequests.*;
 import com.questionservice.presentation.response.*;
 import com.questionservice.presentation.response.CatalogResponse.*;
 import com.questionservice.presentation.support.ActorResolver;
+import com.questionservice.infrastructure.security.InternalServiceTokenVerifier;
 import jakarta.validation.Valid;
 
 import java.util.*;
@@ -20,15 +21,40 @@ import org.springframework.web.bind.annotation.*;
 public class CatalogController {
     private final CatalogService service;
     private final ActorResolver actors;
+    private final InternalServiceTokenVerifier internalTokens;
 
-    public CatalogController(CatalogService s, ActorResolver a) {
-        service = s;
-        actors = a;
+    public CatalogController(CatalogService s, ActorResolver a, InternalServiceTokenVerifier internalTokens) {
+        service = s; actors = a; this.internalTokens = internalTokens;
     }
 
     @GetMapping("/subjects")
     public ApiResponse<List<SubjectView>> subjects(@AuthenticationPrincipal Jwt j, @RequestParam(required = false) String facultyId) {
         return ApiResponse.ok(service.subjects(actors.from(j), facultyId).stream().map(SubjectView::from).toList());
+    }
+
+    @PostMapping("/subjects/{id}/lecturers")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    public ApiResponse<Void> assignLecturer(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody LecturerAssignmentRequest r) {
+        service.assignLecturer(id, r.userId(), actors.from(j));
+        return ApiResponse.ok(null);
+    }
+
+    @DeleteMapping("/subjects/{id}/lecturers/{userId}")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    public ApiResponse<Void> removeLecturer(@PathVariable UUID id, @PathVariable UUID userId, @AuthenticationPrincipal Jwt j) {
+        service.removeLecturer(id, userId, actors.from(j));
+        return ApiResponse.ok(null);
+    }
+
+    @GetMapping("/subjects/{id}/lecturers")
+    public ApiResponse<List<UUID>> lecturers(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
+        return ApiResponse.ok(service.lecturers(id, actors.from(j)));
+    }
+
+    @GetMapping("/internal/subjects/{subjectId}/assignments/{userId}")
+    public Boolean assigned(@PathVariable UUID subjectId, @PathVariable UUID userId, @RequestHeader(value = "X-Internal-Service-Token", required = false) String token) {
+        if (!internalTokens.matches(token)) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid service token");
+        return service.isAssigned(subjectId, userId);
     }
 
     @PostMapping("/subjects")

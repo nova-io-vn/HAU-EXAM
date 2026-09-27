@@ -49,11 +49,20 @@ public class AiJobProcessor {
         if (job.status() == JobStatus.PENDING) {
             job.start(Instant.now(clock));
             jobs.save(job);
+            events.processing(job, correlation);
         }
         String source = "";
-        if (job.documentId() != null) {
-            var d = docs.findById(job.documentId()).orElseThrow(() -> new NotFoundException("Document not found"));
-            source = extractor.extract(d.contentType(), storage.read(d.storageKey()));
+        try {
+            if (job.documentId() != null) {
+                var d = docs.findById(job.documentId()).orElseThrow(() -> new NotFoundException("Document not found"));
+                source = extractor.extract(d.contentType(), storage.read(d.storageKey()));
+            }
+            var requestNode = new tools.jackson.databind.ObjectMapper().readTree(job.requestJson());
+            if (requestNode != null && requestNode.has("description") && requestNode.get("description").isTextual()) source = source + "\nDESCRIPTION:\n" + requestNode.get("description").asText();
+        } catch (RuntimeException e) {
+            fail(job, "DOCUMENT_PROCESSING_FAILED", "Không thể trích xuất tài liệu nguồn.", correlation);
+            inbox.record(eventId, "AI_GENERATION_REQUESTED");
+            return;
         }
         try {
             String raw = switch (job.type()) {

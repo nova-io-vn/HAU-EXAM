@@ -46,6 +46,8 @@ public class WebAnalyticsService {
         );
     }
 
+    public String testConnection() { return analytics.testConnection(); }
+
     private TrafficCount sum(List<DailyTraffic> rows, LocalDate date) {
         return totals(rows.stream().filter(row -> row.date().equals(date)).toList());
     }

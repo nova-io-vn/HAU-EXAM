@@ -25,6 +25,7 @@ public class AiKnowledgeController {
  @GetMapping public ApiResponse<List<View>> list(){return ApiResponse.ok(service.list().stream().map(this::view).toList());}
  @GetMapping("/{id}/content") public ApiResponse<Content> content(@PathVariable UUID id){var d=service.document(id);return ApiResponse.ok(new Content(d.title,d.originalFileName,d.extractedText,service.chunkCount(id)));}
  @GetMapping("/{id}/chunks") public ApiResponse<List<Chunk>> chunks(@PathVariable UUID id){return ApiResponse.ok(service.chunks(id).stream().map(c->new Chunk(c.id,c.chunkIndex,c.text,c.metadataJson)).toList());}
+ @GetMapping("/debug/retrieval") public ApiResponse<List<AiKnowledgeService.DebugSource>> debug(@RequestParam String query,@RequestParam(defaultValue="8") int topK){return ApiResponse.ok(service.debugRetrieve(query,topK));}
  @PatchMapping("/{id}") public ApiResponse<View> toggle(@PathVariable UUID id,@RequestParam boolean enabled){return ApiResponse.ok(view(service.toggle(id,enabled)));}
  @PostMapping("/{id}/reprocess") public ApiResponse<Void> reprocess(@PathVariable UUID id){service.reprocess(id);return ApiResponse.ok(null);}
  @DeleteMapping("/{id}") public ApiResponse<Void> delete(@PathVariable UUID id){service.delete(id);return ApiResponse.ok(null);}
