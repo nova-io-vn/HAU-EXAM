@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react'
 import {Button,Input,Select,ProfileSkeleton} from '../../../components/ui'
+import {Dialog} from '../../../components/ui/Dialog'
 import {PageHeader} from '../../../components/shared/PageHeader'
 import {Avatar} from '../../../components/shared/Avatar'
 import {usersApi} from '../api/usersApi'
@@ -8,6 +9,8 @@ import {calculateAge} from '../model/userModel'
 import {formatAcademicName,formatRoleFaculty} from '../model/academic'
 import {authStore} from '../../../stores/authStore'
 import {toast} from '../../notifications/store/notificationStore'
+import {authApi} from '../../auth/api/authApi'
+import {useNavigate} from 'react-router-dom'
 
 const roleLabel={SYSTEM_ADMIN:'Quản trị viên hệ thống',SUBJECT_ADMIN:'Quản trị viên chuyên môn',USER:'Giảng viên'}
 const rankOptions=[{value:'NONE',label:'Không có'},{value:'PGS',label:'PGS'},{value:'GS',label:'GS'}]
@@ -15,7 +18,7 @@ const degreeOptions=[{value:'NONE',label:'Không có'},{value:'CN',label:'Cử n
 const allowedImageTypes=['image/jpeg','image/png','image/webp','image/gif']
 const maxAvatarSize=5*1024*1024
 
-export function ProfilePage(){
+function ProfileEditor(){
   const [profile,setProfile]=useState(null);const [form,setForm]=useState({});const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(false);const [avatarUploading,setAvatarUploading]=useState(false);const [previewUrl,setPreviewUrl]=useState('');const [error,setError]=useState(null);const [success,setSuccess]=useState('');const fileInput=useRef(null)
   const load=useCallback(async()=>{setLoading(true);setError(null);try{const result=await usersApi.getMe();setProfile(result);setForm({...result,fullName:result.fullName||'',dateOfBirth:result.dateOfBirth||'',phone:result.phone||'',email:result.email||'',address:result.address||'',academicRank:result.academicRank||'NONE',academicDegree:result.academicDegree||'NONE'})}catch(reason){setError(reason)}finally{setLoading(false)}},[])
   useEffect(()=>{const timer=setTimeout(()=>{void load()},0);return()=>clearTimeout(timer)},[load]);useEffect(()=>{if(profile)authStore.updateCurrentUser(profile)},[profile]);useEffect(()=>()=>{if(previewUrl)URL.revokeObjectURL(previewUrl)},[previewUrl])
@@ -27,3 +30,11 @@ export function ProfilePage(){
   const displayUser={...profile,avatar:previewUrl||profile?.avatar};const faculty=profile?.facultyName||profile?.faculty?.name||profile?.facultyId||'Chưa được gán'
   return <section><PageHeader title="Hồ sơ cá nhân" description="Quản lý thông tin cá nhân và học thuật của bạn."/><div className="surface profile-form-card">{error&&<p className="inline-error" role="alert">{error.message||'Không thể thực hiện thao tác.'}</p>}<form className="profile-form" onSubmit={submit}><div className="profile-summary"><Avatar user={displayUser} size="lg"/><div><strong>{formatAcademicName(profile||{})}</strong><span>{profile?.lecturerCode||''}</span><span>{formatRoleFaculty(profile||{})}</span></div><button type="button" className="button button-secondary profile-avatar-action" onClick={()=>fileInput.current?.click()} disabled={avatarUploading}>{avatarUploading?'Đang tải ảnh…':'Đổi ảnh đại diện'}</button><input ref={fileInput} className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={uploadAvatar} disabled={avatarUploading}/></div>{success&&<p className="inline-success" role="status">{success}</p>}<div className="form-grid"><Input label="Họ và tên" value={form.fullName||''} onChange={event=>setField('fullName',event.target.value)}/><Input label="Ngày sinh" type="date" value={form.dateOfBirth||''} helper={calculateAge(form.dateOfBirth)!==null?`Tuổi hiện tại: ${calculateAge(form.dateOfBirth)}`:undefined} onChange={event=>setField('dateOfBirth',event.target.value)}/><Input label="Điện thoại" type="tel" value={form.phone||''} onChange={event=>setField('phone',event.target.value)}/><Input label="Email" type="email" value={form.email||''} onChange={event=>setField('email',event.target.value)}/><Input label="Địa chỉ" value={form.address||''} onChange={event=>setField('address',event.target.value)}/><Select label="Học hàm" value={form.academicRank||'NONE'} options={rankOptions} onChange={event=>setField('academicRank',event.target.value)}/><Select label="Học vị" value={form.academicDegree||'NONE'} options={degreeOptions} onChange={event=>setField('academicDegree',event.target.value)}/><Input label="Khoa" value={faculty} disabled/><Input label="Vai trò" value={roleLabel[profile?.role]||profile?.role||''} disabled/><Input label="Mã giảng viên" value={profile?.lecturerCode||''} disabled/></div><div className="form-actions"><Button type="submit" loading={saving} disabled={avatarUploading}>Lưu thay đổi</Button></div></form></div></section>
 }
+
+function AccountDeletionCard(){
+  const navigate=useNavigate(); const [open,setOpen]=useState(false); const [password,setPassword]=useState(''); const [confirmation,setConfirmation]=useState(''); const [busy,setBusy]=useState(false); const [error,setError]=useState('')
+  async function remove(){setBusy(true);setError('');try{await authApi.deleteSelf({currentPassword:password,confirmation});authStore.clear();navigate('/login',{replace:true,state:{message:'Tài khoản đã được vô hiệu hóa.'}})}catch(reason){setError(reason.message||'Không thể xóa tài khoản.')}finally{setBusy(false)}}
+  return <><article className="surface account-danger-zone"><span className="eyebrow">VÙNG NGUY HIỂM</span><h2>Xóa tài khoản</h2><p>Xóa hoặc vô hiệu hóa tài khoản HAU QM theo chính sách hệ thống. Nội dung học thuật và lịch sử cần thiết sẽ không bị xóa dây chuyền.</p><Button variant="danger" onClick={()=>setOpen(true)}>Xóa tài khoản</Button></article><Dialog open={open} title="Xóa tài khoản?" onClose={()=>!busy&&setOpen(false)} footer={<><Button variant="secondary" onClick={()=>setOpen(false)}>Hủy</Button><Button variant="danger" loading={busy} disabled={!password||confirmation!=='XOA TAI KHOAN'} onClick={remove}>Xóa tài khoản</Button></>}><p>Để xác nhận, nhập <strong>XOA TAI KHOAN</strong> và mật khẩu hiện tại.</p><Input label="Mật khẩu hiện tại" type="password" value={password} onChange={e=>setPassword(e.target.value)}/><Input label="Xác nhận" value={confirmation} onChange={e=>setConfirmation(e.target.value)}/>{error&&<p className="inline-error" role="alert">{error}</p>}</Dialog></>
+}
+
+export function ProfilePage(){return <><ProfileEditor/><AccountDeletionCard/></>}

@@ -28,13 +28,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("REGISTERED", "Registration submitted", auth.register(input, correlationId)));
     }
 
-    public ApiResponse<AuthDtos.Session> login(@Valid @RequestBody AuthRequests.Login request) {
-        return login(request, null);
-    }
-
     @PostMapping("/login")
-    public ApiResponse<AuthDtos.Session> login(@Valid @RequestBody AuthRequests.Login request, @RequestHeader(value = "X-Correlation-Id", required = false) UUID correlationId) {
-        return ApiResponse.success("LOGIN_SUCCESS", "Login successful", auth.login(request.lecturerCode(), request.password(), correlationId));
+    public ApiResponse<AuthDtos.Session> login(@Valid @RequestBody AuthRequests.Login request) {
+        return ApiResponse.success("LOGIN_SUCCESS", "Login successful", auth.login(request.lecturerCode(), request.password()));
     }
 
     @PostMapping("/refresh")
@@ -70,4 +66,13 @@ public class AuthController {
         auth.changePassword(UUID.fromString(jwt.getSubject()), request.currentPassword(), request.newPassword());
         return ApiResponse.success("PASSWORD_CHANGED", "Password changed successfully", null);
     }
+
+    @DeleteMapping("/me")
+    public ApiResponse<Void> deleteSelf(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody DeleteAccount request) {
+        auth.deleteSelf(UUID.fromString(jwt.getSubject()), request.currentPassword(), request.confirmation());
+        return ApiResponse.success("ACCOUNT_DELETED", "Account deactivated", null);
+    }
+
+    public record DeleteAccount(@jakarta.validation.constraints.NotBlank String currentPassword,
+                                @jakarta.validation.constraints.NotBlank String confirmation) {}
 }

@@ -76,7 +76,7 @@ public class AuthApplicationService {
             throw new AuthException("ACCOUNT_PENDING_APPROVAL", "Account is pending approval");
         if (account.getStatus() == AccountStatus.REJECTED)
             throw new AuthException("ACCOUNT_REJECTED", "Account was rejected");
-        if (account.getStatus() == AccountStatus.LOCKED)
+        if (account.getStatus() == AccountStatus.LOCKED || account.getStatus() == AccountStatus.DELETED)
             throw new AuthException("ACCOUNT_LOCKED", "Account is locked");
         if (!passwordHasher.matches(password, account.getPasswordHash()))
             throw new AuthException("INVALID_CREDENTIALS", "Invalid credentials");
@@ -154,6 +154,16 @@ public class AuthApplicationService {
         Instant changedAt = Instant.now();
         accounts.save(account.changePasswordHash(passwordHasher.hash(newPassword), changedAt));
         refreshTokens.revokeAllForAccount(account.getId(), changedAt);
+    }
+
+    public void deleteSelf(UUID accountId, String currentPassword, String confirmation) {
+        if (!"XOA TAI KHOAN".equals(confirmation)) throw new AuthException("DELETE_CONFIRMATION_REQUIRED", "Delete confirmation is invalid");
+        AuthAccount account = accounts.findById(accountId).orElseThrow(() -> new AuthAccountNotFoundException(accountId));
+        if (!passwordHasher.matches(currentPassword, account.getPasswordHash())) throw new AuthException("INVALID_CURRENT_PASSWORD", "Current password is incorrect");
+        Instant deletedAt = Instant.now();
+        accounts.save(account.changeStatus(AccountStatus.DELETED, deletedAt));
+        refreshTokens.revokeAllForAccount(accountId, deletedAt);
+        events.publish("USER_ACCOUNT_DELETED", "user.account.deleted", accountId, Map.of("userId", accountId, "occurredAt", deletedAt.toString()));
     }
 
     private AuthDtos.Session issueSession(AuthAccount account) {

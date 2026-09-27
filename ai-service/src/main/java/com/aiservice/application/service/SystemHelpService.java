@@ -57,6 +57,9 @@ public class SystemHelpService {
         if (isSensitive(message)) return new Result("Tôi không thể cung cấp bí mật hệ thống, hỗ trợ vượt quyền, truy cập dữ liệu trái phép hoặc thực thi câu lệnh nguy hiểm. Tôi có thể hướng dẫn cách sử dụng HAU QM an toàn.", List.of(), List.of());
         Result simple = simpleAnswer(message);
         if (simple != null) return simple;
+        String intent = message.toLowerCase(Locale.ROOT);
+        if ("USER".equals(role) && (intent.contains("phê duyệt") || intent.contains("phe duyet") || intent.contains("duyệt câu hỏi") || intent.contains("duyet cau hoi")))
+            return new Result("Giảng viên không trực tiếp phê duyệt câu hỏi. Bạn hãy mở Câu hỏi của tôi, kiểm tra nội dung rồi chọn Gửi duyệt để Quản trị viên chuyên môn của Khoa xem xét.", List.of(new Action("NAVIGATE", "Mở câu hỏi của tôi", "MY_QUESTIONS")), List.of());
         List<Article> articles = KNOWLEDGE.get(role);
         if (articles == null) throw new IllegalArgumentException("Unsupported role");
         try {
@@ -89,8 +92,7 @@ public class SystemHelpService {
         String normalized = message.toLowerCase(java.util.Locale.ROOT);
         Article match = articles.stream().max(java.util.Comparator.comparingInt(article -> score(normalized, article))).orElse(articles.getFirst());
         if (score(normalized, match) == 0) {
-            String available = articles.stream().map(Article::title).collect(java.util.stream.Collectors.joining(", "));
-            return new Result("Tôi chưa xác định được chức năng bạn cần. Bạn có thể hỏi về: " + available + ".", List.of(), List.of());
+            return new Result("HAU QM có các nhóm chức năng chính: hồ sơ và tài khoản, ngân hàng câu hỏi, học liệu và AI, phê duyệt chuyên môn, ma trận và đề thi, thông báo, tin nhắn và hỗ trợ. Bạn có thể nói rõ mục tiêu, ví dụ ‘làm sao tạo câu hỏi?’ để mình hướng dẫn từng bước.", List.of(), List.of());
         }
         return new Result(match.title() + ":\n" + match.workflow(), List.of(new Action("NAVIGATE", "Mở " + match.title(), match.routeKey())), List.of());
     }

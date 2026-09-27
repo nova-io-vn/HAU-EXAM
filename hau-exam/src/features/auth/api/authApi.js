@@ -45,4 +45,5 @@ export const authApi = {
     }),
   changePassword: body =>
     apiRequest(`${AUTH_PATH}/change-password`, { method: "POST", body }),
+  deleteSelf: body => apiRequest(`${AUTH_PATH}/me`, { method: "DELETE", body }),
 };

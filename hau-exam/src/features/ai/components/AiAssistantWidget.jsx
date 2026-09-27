@@ -1,41 +1,22 @@
+/* eslint-disable react-hooks/set-state-in-effect, no-empty */
 import {useEffect,useRef,useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {systemHelpApi} from '../../help/systemHelpApi'
-import {Icon} from '../../../components/ui'
+import kute from '../../../assets/Kute.gif'
 import './ai-assistant.css'
 
-const quick=['Hướng dẫn tạo câu hỏi','Cách tạo câu hỏi từ tài liệu','Xem trạng thái câu hỏi','Quản lý thông báo']
-const routesByKey={PROFILE:'/profile',NOTIFICATIONS:'/notifications',QUESTION_CREATE:'/questions/new',MY_QUESTIONS:'/questions/mine',AI_GENERATE:'/ai/generate',AI_DOCUMENTS:'/ai/documents',QUESTION_REVIEW:'/review',SUBJECTS:'/subjects',EXAM_MATRICES:'/exam-matrices',USERS:'/admin/users',FACULTIES:'/admin/faculties',SYSTEM_SETTINGS:'/admin/settings',CONTACT_REQUESTS:'/admin/contact'}
+const routes={PROFILE:'/profile',NOTIFICATIONS:'/notifications',QUESTION_CREATE:'/questions/new',MY_QUESTIONS:'/questions/mine',AI_GENERATE:'/ai/generate',AI_DOCUMENTS:'/ai/documents',QUESTION_REVIEW:'/review',SUBJECTS:'/subjects',EXAM_MATRICES:'/exam-matrices',USERS:'/admin/users',FACULTIES:'/admin/faculties',SYSTEM_SETTINGS:'/admin/settings',CONTACT_REQUESTS:'/admin/contact'}
+const quick=['Làm sao tạo câu hỏi?','Làm sao tạo đề?','Có những chức năng nào?']
+const KEY='hau-qm-kute-position'
 
+function clamp(position){const margin=12;const size=64;return {x:Math.max(margin,Math.min(position.x,window.innerWidth-size-margin)),y:Math.max(70,Math.min(position.y,window.innerHeight-size-margin))}}
 export function AiAssistantWidget(){
- const navigate=useNavigate()
- const[open,setOpen]=useState(false),[input,setInput]=useState(''),[messages,setMessages]=useState([]),[busy,setBusy]=useState(false),[error,setError]=useState('')
- const inputRef=useRef(null),endRef=useRef(null)
- useEffect(()=>{if(open)inputRef.current?.focus()},[open])
- useEffect(()=>{endRef.current?.scrollIntoView({block:'end'})},[messages,busy])
- async function send(value=input){
-  const question=value.trim()
-  if(!question||busy)return
-  setInput('');setBusy(true);setError('')
-  setMessages(items=>[...items,{role:'USER',content:question}])
-  try{
-   const response=await systemHelpApi.ask(question)
-   setMessages(items=>[...items,{role:'ASSISTANT',content:response.answer||'Tôi chưa nhận được nội dung phản hồi.',actions:response.actions||[]}])
-  }catch(reason){setError(reason.message||'Không thể nhận phản hồi từ trợ lý. Vui lòng thử lại.')}
-  finally{setBusy(false)}
- }
- function act(action){const route=routesByKey[action.routeKey];if(route){navigate(route);setOpen(false)}}
- return <div className="ai-assistant-widget">
-  <button type="button" className="ai-assistant-fab" aria-label="Mở Trợ lý HAU QM" aria-expanded={open} onClick={()=>setOpen(value=>!value)}><Icon name="sparkles" size={23}/></button>
-  {open&&<section className="ai-assistant-window" aria-label="Trợ lý HAU QM">
-   <header><span className="ai-assistant-mark"><Icon name="sparkles" size={19}/></span><div><strong>Trợ lý HAU QM</strong><span>Hướng dẫn sử dụng theo vai trò của bạn</span></div><button type="button" aria-label="Đóng trợ lý" onClick={()=>setOpen(false)}>×</button></header>
-   <div className="ai-assistant-messages" aria-live="polite">
-    {!messages.length&&<div className="ai-assistant-welcome"><strong>Xin chào, tôi có thể hỗ trợ gì?</strong><p>Hỏi về cách sử dụng chức năng, tài liệu, câu hỏi và quy trình duyệt trong HAU QM.</p><div>{quick.map(question=><button type="button" key={question} onClick={()=>void send(question)}>{question}</button>)}</div></div>}
-    {messages.map((message,index)=><article key={`${message.role}-${index}`} className={message.role.toLowerCase()}><small>{message.role==='USER'?'Bạn':'Trợ lý HAU QM'}</small><p>{message.content}</p>{message.actions?.map(action=>routesByKey[action.routeKey]&&<button type="button" className="ai-assistant-action" key={`${action.routeKey}-${action.label}`} onClick={()=>act(action)}>{action.label}</button>)}</article>)}
-    {busy&&<p className="ai-assistant-typing">Trợ lý đang chuẩn bị câu trả lời…</p>}<span ref={endRef}/>
-   </div>
-   <form onSubmit={event=>{event.preventDefault();void send()}}><textarea ref={inputRef} value={input} maxLength={1000} onChange={event=>setInput(event.target.value)} placeholder="Hỏi về HAU QM hoặc một kiến thức phổ thông…" aria-label="Câu hỏi cho trợ lý" rows="2" onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();void send()}}}/><button type="submit" disabled={busy||!input.trim()} aria-label="Gửi câu hỏi">➤</button></form>
-   {error&&<p className="ai-assistant-error" role="alert">{error}</p>}
-  </section>}
- </div>
+ const navigate=useNavigate();const [open,setOpen]=useState(false);const [input,setInput]=useState('');const [messages,setMessages]=useState([]);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [position,setPosition]=useState(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{x:window.innerWidth-86,y:window.innerHeight-110}}catch{return{x:window.innerWidth-86,y:window.innerHeight-110}}});const drag=useRef(null);const moved=useRef(false);const end=useRef(null)
+ useEffect(()=>{setPosition(p=>clamp(p));const onResize=()=>setPosition(p=>clamp(p));window.addEventListener('resize',onResize);return()=>window.removeEventListener('resize',onResize)},[])
+ useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(position))}catch{}},[position]);useEffect(()=>end.current?.scrollIntoView({block:'end'}),[messages,busy])
+ function down(event){event.currentTarget.setPointerCapture?.(event.pointerId);moved.current=false;drag.current={x:event.clientX-position.x,y:event.clientY-position.y}}
+ function move(event){if(!drag.current)return;const next=clamp({x:event.clientX-drag.current.x,y:event.clientY-drag.current.y});if(Math.abs(next.x-position.x)>4||Math.abs(next.y-position.y)>4)moved.current=true;setPosition(next)}
+ function up(){drag.current=null}
+ async function send(value=input){const question=value.trim();if(!question||busy)return;setInput('');setBusy(true);setError('');setMessages(items=>[...items,{role:'USER',content:question}]);try{const response=await systemHelpApi.ask(question);setMessages(items=>[...items,{role:'ASSISTANT',content:response.answer||'Mình chưa có đủ thông tin để trả lời.',actions:response.actions||[],sources:response.sources||[]}])}catch(reason){setError(reason.message||'Không thể nhận phản hồi từ Trợ lý Kute.')}finally{setBusy(false)}}
+ return <div className="ai-assistant-widget" style={{left:position.x,top:position.y}}><button type="button" className="ai-assistant-fab kute-fab" aria-label="Mở Trợ lý Kute" aria-expanded={open} onPointerDown={down} onPointerMove={move} onPointerUp={up} onClick={()=>{if(!moved.current)setOpen(v=>!v)}}><img src={kute} alt="Trợ lý Kute"/><span>Trợ lý Kute</span></button>{open&&<section className="ai-assistant-window" aria-label="Trợ lý Kute"><header><img src={kute} alt=""/><div><strong>Trợ lý Kute</strong><span>Hướng dẫn sử dụng HAU QM</span></div><button type="button" aria-label="Đóng trợ lý" onClick={()=>setOpen(false)}>×</button></header><div className="ai-assistant-messages" aria-live="polite">{!messages.length&&<div className="ai-assistant-welcome"><strong>Xin chào, mình là Kute.</strong><p>Mình có thể hướng dẫn HAU QM, trả lời kiến thức phổ thông và hỗ trợ theo vai trò của bạn.</p><div>{quick.map(q=><button type="button" key={q} onClick={()=>void send(q)}>{q}</button>)}</div></div>}{messages.map((message,index)=><article key={`${message.role}-${index}`} className={message.role.toLowerCase()}><small>{message.role==='USER'?'Bạn':'Trợ lý Kute'}</small><p>{message.content}</p>{message.actions?.map(action=>routes[action.routeKey]&&<button type="button" className="ai-assistant-action" key={action.routeKey} onClick={()=>{navigate(routes[action.routeKey]);setOpen(false)}}>{action.label}</button>)}{message.sources?.length>0&&<small>Nguồn: {message.sources.map(source=>source.title).join(', ')}</small>}</article>)}{busy&&<p className="ai-assistant-typing">Kute đang chuẩn bị câu trả lời…</p>}<span ref={end}/></div><form onSubmit={e=>{e.preventDefault();void send()}}><textarea value={input} maxLength={1000} onChange={e=>setInput(e.target.value)} placeholder="Hỏi về HAU QM..." aria-label="Câu hỏi cho Trợ lý Kute" rows="2"/><button type="submit" disabled={busy||!input.trim()} aria-label="Gửi câu hỏi">➤</button></form>{error&&<p className="ai-assistant-error" role="alert">{error}</p>}</section>}</div>
 }

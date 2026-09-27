@@ -15,4 +15,6 @@ export const aiKnowledgeApi = {
     api.patch(`${base}/${id}?enabled=${encodeURIComponent(enabled)}`),
   reprocess: (id) => api.post(`${base}/${id}/reprocess`, {}),
   remove: (id) => api.delete(`${base}/${id}`),
+  content: id => api.get(`${base}/${id}/content`),
+  chunks: id => api.get(`${base}/${id}/chunks`),
 };

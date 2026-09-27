@@ -12,4 +12,6 @@ export const supportChatApi = {
   read: (id) => api.patch(`${base}/${id}/read`),
   unread: () => api.get("/api/v1/support/unread-count"),
   status: (id, status) => api.patch(`/api/v1/admin/support/conversations/${id}/status`, { status }),
+  attachments: id => api.get(`${base}/${id}/attachments`),
+  remove: id => api.delete(`${base}/${id}`),
 };
