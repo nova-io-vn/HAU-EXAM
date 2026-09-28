@@ -17,3 +17,24 @@
 .ai-assistant-messages pre{max-width:100%;overflow-x:auto;white-space:pre;word-break:normal}
 @media(max-width:640px){.kute-fab{position:absolute;inset:0 auto auto 0}.ai-assistant-window{inset:0;right:0;bottom:0}}
 @media(prefers-reduced-motion:reduce){.kute-fab:hover,.kute-fab[aria-expanded=true]{transform:none}.ai-assistant-widget{will-change:auto}}
+
+.kute-fab .kute-avatar {
+  display: block;
+  width: 78px;
+  height: 88px;
+  opacity: 1;
+  visibility: visible;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 11px rgba(42, 24, 28, .24));
+  pointer-events: none;
+}
+
+.ai-assistant-window header .kute-avatar {
+  display: block;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  opacity: 1;
+  visibility: visible;
+  object-fit: contain;
+}

@@ -9,7 +9,8 @@ import { facultiesApi } from "../../users/api/facultiesApi";
 import { formatAcademicName } from "../../users/model/academic";
 import { normalizePage } from "../../users/model/userModel";
 import { catalogApi } from "../api/catalogApi";
-import { belongsToSelection, chaptersForSubject, topicsForChapter } from "../model/knowledgeModel";
+import { chaptersForSubject, topicsForChapter } from "../model/knowledgeModel";
+import "./knowledge-structure.css";
 
 export function KnowledgeStructurePage() {
   const auth = useAuth();
@@ -100,7 +101,6 @@ export function KnowledgeStructurePage() {
     return () => { active = false; clearTimeout(timer); };
   }, [assignOpen, assignSearch, selectedSubject]);
 
-  const selectedTopics = selectedChapter ? topicsByChapter[selectedChapter.id] || [] : [];
   const totalTopics = useMemo(
     () => Object.values(topicsByChapter).reduce((total, items) => total + items.length, 0),
     [topicsByChapter],
@@ -185,27 +185,16 @@ export function KnowledgeStructurePage() {
     <PageHeader title="Cấu trúc kiến thức" description="Quản lý Môn học → Chương → Chủ đề theo đơn vị quản lý và phạm vi áp dụng." />
     <div className="knowledge-layout">
       <aside className="surface knowledge-tree">
-        <header><strong>Môn học</strong>{canManage && <Button variant="ghost" onClick={() => setDialog({ type: "chapter" })}>+ Chương</Button>}</header>
+        <header><strong>Môn học</strong></header>
         {subjects.length ? subjects.map((subject) => <div key={subject.id}>
           <button type="button" className={selectedSubject?.id === subject.id ? "tree-node selected" : "tree-node"} onClick={() => { if (selectedSubject?.id !== subject.id) selectSubject(subject); }}>
             <span className="mono">{subject.code}</span><span>{subject.name}</span>
           </button>
-          {selectedSubject?.id === subject.id && <div className="tree-children">
-            {chapters.map((item) => <div key={item.id}>
-              <button type="button" className={selectedChapter?.id === item.id ? "tree-node selected" : "tree-node"} onClick={() => selectChapter(item)}><span>↳</span><span>{item.name}</span></button>
-              {(topicsByChapter[item.id] || []).map((itemTopic) => <button type="button" className={selectedTopic?.id === itemTopic.id ? "tree-topic selected" : "tree-topic"} key={itemTopic.id} onClick={() => { selectChapter(item); setSelectedTopic(itemTopic); }}><span>•</span>{itemTopic.name}</button>)}
-            </div>)}
-          </div>}
         </div>) : <p>Chưa có môn học.</p>}
       </aside>
       <section className="surface knowledge-detail">
         {error && <p className="request-error" role="alert">{error.message}</p>}
-        {!selectedSubject ? <p>Chọn một môn học để xem cấu trúc.</p> : structureLoading ? <Loading label={`Đang tải ${selectedSubject.name}`} /> : selectedTopic && belongsToSelection(selectedSubject, selectedChapter, selectedTopic) ? <>
-          <span className="eyebrow">CHỦ ĐỀ</span><h2>{selectedTopic.name}</h2><p className="muted">Chương: {selectedChapter.name} · Môn học: {selectedSubject.name}</p>
-        </> : selectedChapter && belongsToSelection(selectedSubject, selectedChapter, null) ? <>
-          <header className="knowledge-detail-header"><div><span className="eyebrow">CHƯƠNG</span><h2>{selectedChapter.name}</h2><p className="muted">Môn học: {selectedSubject.name}</p></div>{canManage && <Button onClick={() => setDialog({ type: "topic" })}>+ Chủ đề</Button>}</header>
-          <div className="knowledge-topic-list">{selectedTopics.length ? selectedTopics.map((item) => <article key={item.id}><div><span className="mono">{item.code}</span><strong>{item.name}</strong></div>{canManage && <Button variant="ghost" onClick={() => setDialog({ type: "topic", item })}>Sửa</Button>}</article>) : <p>Chưa có chủ đề trong chương này.</p>}</div>
-        </> : <SubjectDetail subject={selectedSubject} chapters={chapters} topicsByChapter={topicsByChapter} totalTopics={totalTopics} questionCount={questionCount} assignedLecturers={assignedLecturers} facultyNames={facultyNames} canManage={canManage} assignBusy={assignBusy} onAssign={() => setAssignOpen(true)} onRemove={removeLecturer} />}
+        {!selectedSubject ? <p>Chọn một môn học để xem cấu trúc.</p> : structureLoading ? <Loading label={`Đang tải ${selectedSubject.name}`} /> : <SubjectDetail subject={selectedSubject} chapters={chapters} topicsByChapter={topicsByChapter} totalTopics={totalTopics} questionCount={questionCount} assignedLecturers={assignedLecturers} facultyNames={facultyNames} canManage={canManage} assignBusy={assignBusy} selectedChapter={selectedChapter} selectedTopic={selectedTopic} onSelectChapter={selectChapter} onSelectTopic={(chapter, topic) => { selectChapter(chapter); setSelectedTopic(topic); }} onAddChapter={() => setDialog({ type: "chapter" })} onEditChapter={(item) => setDialog({ type: "chapter", item })} onAddTopic={(chapter) => { selectChapter(chapter); setDialog({ type: "topic" }); }} onEditTopic={(chapter, item) => { selectChapter(chapter); setDialog({ type: "topic", item }); }} onAssign={() => setAssignOpen(true)} onRemove={removeLecturer} />}
       </section>
     </div>
     <Dialog open={Boolean(dialog)} title={dialog?.type === "chapter" ? (dialog?.item ? "Sửa chương" : "Thêm chương") : (dialog?.item ? "Sửa chủ đề" : "Thêm chủ đề")} onClose={() => setDialog(null)}>
@@ -218,13 +207,29 @@ export function KnowledgeStructurePage() {
   </section>;
 }
 
-function SubjectDetail({ subject, chapters, topicsByChapter, totalTopics, questionCount, assignedLecturers, facultyNames, canManage, assignBusy, onAssign, onRemove }) {
+function SubjectDetail({ subject, chapters, topicsByChapter, totalTopics, questionCount, assignedLecturers, facultyNames, canManage, assignBusy, selectedChapter, selectedTopic, onSelectChapter, onSelectTopic, onAddChapter, onEditChapter, onAddTopic, onEditTopic, onAssign, onRemove }) {
   return <>
-    <span className="eyebrow">MÔN HỌC</span><h2>{subject.name}</h2>
+    <header className="knowledge-subject-header"><div><span className="eyebrow">MÔN HỌC</span><h2>{subject.name}</h2></div>{canManage && <Button onClick={onAddChapter}>+ Chương</Button>}</header>
     <dl className="subject-meta"><div><dt>Mã môn</dt><dd className="mono">{subject.code}</dd></div><div><dt>Đơn vị quản lý</dt><dd>{facultyNames.get(subject.managingFacultyId) || subject.managingFacultyId}</dd></div></dl>
     <section className="subject-scope"><strong>Phạm vi áp dụng</strong><div className="faculty-chips">{subject.participatingFacultyIds?.map((facultyId) => <span className="scope-chip" key={facultyId}>{facultyNames.get(facultyId) || facultyId}</span>)}</div></section>
     <div className="knowledge-stats"><span><strong>{chapters.length}</strong> chương</span><span><strong>{totalTopics}</strong> chủ đề</span>{questionCount !== null && <span><strong>{questionCount}</strong> câu hỏi</span>}</div>
+    <section className="subject-structure knowledge-subject-structure">
+      <header><div><strong>CẤU TRÚC KIẾN THỨC</strong><p>Chương và các mục con của môn học được hiển thị tại đây.</p></div></header>
+      <div className="knowledge-chapter-list">{chapters.length ? chapters.map((chapter, chapterIndex) => {
+        const chapterNumber = Number(chapter.ordinal) > 0 ? Number(chapter.ordinal) : chapterIndex + 1;
+        const topics = topicsByChapter[chapter.id] || [];
+        return <article className={selectedChapter?.id === chapter.id ? "knowledge-chapter selected" : "knowledge-chapter"} key={chapter.id}>
+          <div className="knowledge-chapter-row">
+            <button type="button" className="knowledge-structure-select" onClick={() => onSelectChapter(chapter)}><span className="knowledge-order">Chương {chapterNumber}</span><span><strong>{chapter.name}</strong><small className="mono">{chapter.code}</small></span></button>
+            {canManage && <div className="knowledge-structure-actions"><Button variant="ghost" onClick={() => onEditChapter(chapter)}>Sửa</Button><Button variant="ghost" onClick={() => onAddTopic(chapter)}>+ Chủ đề</Button></div>}
+          </div>
+          <div className="knowledge-topic-tree">{topics.length ? topics.map((topic, topicIndex) => <div className={selectedTopic?.id === topic.id ? "knowledge-topic-row selected" : "knowledge-topic-row"} key={topic.id}>
+            <button type="button" onClick={() => onSelectTopic(chapter, topic)}><span className="knowledge-order">{chapterNumber}.{topicIndex + 1}</span><span>{topic.name}</span></button>
+            {canManage && <Button variant="ghost" onClick={() => onEditTopic(chapter, topic)}>Sửa</Button>}
+          </div>) : <p>Chưa có chủ đề trong chương này.</p>}</div>
+        </article>;
+      }) : <p>Chưa có chương.</p>}</div>
+    </section>
     <section className="knowledge-lecturers"><header><strong>GIẢNG VIÊN PHỤ TRÁCH</strong>{canManage && <Button variant="ghost" onClick={onAssign}>+ Phân công giảng viên</Button>}</header>{assignedLecturers.length ? assignedLecturers.map((person) => <div className="knowledge-lecturer" key={person.userId}><Avatar user={person} /><span><strong>{formatAcademicName(person)}</strong><small>{person.lecturerCode} · {facultyNames.get(person.facultyId) || person.facultyId}</small></span>{canManage && <Button variant="ghost" loading={assignBusy === person.userId} onClick={() => void onRemove(person.userId)}>Xóa phân công</Button>}</div>) : <p>Chưa có giảng viên được phân công.</p>}</section>
-    <section className="subject-structure"><strong>CẤU TRÚC KIẾN THỨC</strong>{chapters.length ? chapters.map((chapter) => <article key={chapter.id}><h3>{chapter.name}</h3><ul>{(topicsByChapter[chapter.id] || []).map((topic) => <li key={topic.id}>{topic.name}</li>)}</ul></article>) : <p>Chưa có chương.</p>}</section>
   </>;
 }

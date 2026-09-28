@@ -1,0 +1,39 @@
+.system-help-welcome-copy {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.system-help-welcome-copy > img {
+  display: block;
+  width: 92px;
+  height: 92px;
+  flex: 0 0 92px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 12px rgba(42, 24, 28, .18));
+}
+
+.system-help-welcome-copy > div {
+  min-width: 0;
+}
+
+.system-help-welcome-copy strong {
+  font-size: 18px;
+}
+
+.system-help-welcome-copy p {
+  margin-bottom: 0;
+}
+
+@media (max-width: 560px) {
+  .system-help-welcome-copy {
+    align-items: flex-start;
+  }
+
+  .system-help-welcome-copy > img {
+    width: 72px;
+    height: 72px;
+    flex-basis: 72px;
+  }
+}
