@@ -203,15 +203,106 @@ jobs:
             [notification-service]=8086
           )
 
-          echo '${{ needs.detect-changes.outputs.services }}' |
-          jq -r '.[]' |
-          while read -r SERVICE
+          mapfile -t SERVICES < <(
+            echo '${{ needs.detect-changes.outputs.services }}' | jq -r '.[]'
+          )
+
+          declare -A STARTUP_PROBE_TYPES=()
+
+          for SERVICE in "${SERVICES[@]}"
           do
             PORT="${PORTS[$SERVICE]}"
+
+            DEPLOYMENT_JSON="$(
+              kubectl get deployment "$SERVICE" \
+                -n hau-exam \
+                -o json
+            )"
+
+            CONTAINER_INDEX="$(
+              jq -er \
+                --arg containerName "$SERVICE" \
+                '.spec.template.spec.containers | map(.name) | index($containerName)' \
+                <<< "$DEPLOYMENT_JSON"
+            )"
+
+            CONTAINER_JSON="$(
+              jq -c \
+                --argjson containerIndex "$CONTAINER_INDEX" \
+                '.spec.template.spec.containers[$containerIndex]' \
+                <<< "$DEPLOYMENT_JSON"
+            )"
+
+            STARTUP_PROBE="$(
+              jq -c '.startupProbe // null' <<< "$CONTAINER_JSON"
+            )"
+
+            if [ "$STARTUP_PROBE" != "null" ]; then
+              HANDLER_COUNT="$(
+                jq \
+                  '[has("httpGet"), has("tcpSocket"), has("exec"), has("grpc")] | map(select(.)) | length' \
+                  <<< "$STARTUP_PROBE"
+              )"
+
+              if [ "$HANDLER_COUNT" -gt 1 ]; then
+                STARTUP_PROBE_TYPES[$SERVICE]="EXISTING_MULTIPLE"
+              else
+                STARTUP_PROBE_TYPES[$SERVICE]="$(
+                  jq -r '
+                    if has("httpGet") then "EXISTING_HTTP"
+                    elif has("tcpSocket") then "EXISTING_TCP"
+                    elif has("exec") then "EXISTING_EXEC"
+                    elif has("grpc") then "EXISTING_GRPC"
+                    else "EXISTING_UNKNOWN"
+                    end
+                  ' <<< "$STARTUP_PROBE"
+                )"
+              fi
+
+              echo "$SERVICE: existing startupProbe preserved"
+              continue
+            fi
+
+            PATCH="$(
+              jq -cn \
+                --arg containerPath "/spec/template/spec/containers/$CONTAINER_INDEX" \
+                --argjson container "$CONTAINER_JSON" \
+                --argjson port "$PORT" \
+                '[
+                  {
+                    op: "test",
+                    path: $containerPath,
+                    value: $container
+                  },
+                  {
+                    op: "add",
+                    path: ($containerPath + "/startupProbe"),
+                    value: {
+                      tcpSocket: {port: $port},
+                      periodSeconds: 10,
+                      timeoutSeconds: 2,
+                      failureThreshold: 30
+                    }
+                  }
+                ]'
+            )"
+
             kubectl patch deployment "$SERVICE" \
               -n hau-exam \
-              --type=strategic \
-              --patch "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$SERVICE\",\"startupProbe\":{\"tcpSocket\":{\"port\":$PORT},\"periodSeconds\":10,\"timeoutSeconds\":5,\"failureThreshold\":30}}]}}}}"
+              --type=json \
+              --patch "$PATCH"
+
+            STARTUP_PROBE_TYPES[$SERVICE]="ADDED_TCP"
+          done
+
+          echo
+          printf '%-24s | %s\n' "SERVICE" "STARTUP_PROBE_TYPE"
+          printf '%-24s-+-%s\n' "------------------------" "------------------"
+          for SERVICE in "${SERVICES[@]}"
+          do
+            printf '%-24s | %s\n' \
+              "$SERVICE" \
+              "${STARTUP_PROBE_TYPES[$SERVICE]}"
           done
 
       - name: Wait for changed service rollouts
