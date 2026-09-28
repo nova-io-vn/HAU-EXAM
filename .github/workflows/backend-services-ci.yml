@@ -188,6 +188,32 @@ jobs:
               -n hau-exam
           done
 
+      - name: Configure startup probes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          declare -A PORTS=(
+            [gateway]=8080
+            [auth-service]=8081
+            [user-service]=8082
+            [question-service]=8083
+            [exam-service]=8084
+            [ai-service]=8085
+            [notification-service]=8086
+          )
+
+          echo '${{ needs.detect-changes.outputs.services }}' |
+          jq -r '.[]' |
+          while read -r SERVICE
+          do
+            PORT="${PORTS[$SERVICE]}"
+            kubectl patch deployment "$SERVICE" \
+              -n hau-exam \
+              --type=strategic \
+              --patch "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$SERVICE\",\"startupProbe\":{\"tcpSocket\":{\"port\":$PORT},\"periodSeconds\":10,\"timeoutSeconds\":5,\"failureThreshold\":30}}]}}}}"
+          done
+
       - name: Wait for changed service rollouts
         shell: bash
         run: |

@@ -19,13 +19,13 @@ spring:
 
 ai:
   service:
-    url: ${AI_SERVICE_URL}
+    url: ${AI_SERVICE_URL:http://ai-service:8085}
   internal:
     result-token: ${INTERNAL_SERVICE_TOKEN}
 
 user:
   service:
-    url: ${USER_SERVICE_URL}
+    url: ${USER_SERVICE_URL:http://user-service:8082}
 
 eureka:
   client:

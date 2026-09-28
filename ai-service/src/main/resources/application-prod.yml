@@ -33,10 +33,10 @@ ai:
 
 user:
   service:
-    url: ${USER_SERVICE_URL}
+    url: ${USER_SERVICE_URL:http://user-service:8082}
 question:
   service:
-    url: ${QUESTION_SERVICE_URL}
+    url: ${QUESTION_SERVICE_URL:http://question-service:8083}
 
 eureka:
   client:
