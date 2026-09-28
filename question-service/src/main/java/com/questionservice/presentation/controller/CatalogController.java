@@ -8,6 +8,7 @@ import com.questionservice.presentation.response.CatalogResponse.*;
 import com.questionservice.presentation.support.ActorResolver;
 import com.questionservice.infrastructure.security.InternalServiceTokenVerifier;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 import java.util.*;
 
@@ -33,14 +34,14 @@ public class CatalogController {
     }
 
     @PostMapping("/subjects/{id}/lecturers")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<Void> assignLecturer(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody LecturerAssignmentRequest r) {
         service.assignLecturer(id, r.userId(), actors.from(j));
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/subjects/{id}/lecturers/{userId}")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<Void> removeLecturer(@PathVariable UUID id, @PathVariable UUID userId, @AuthenticationPrincipal Jwt j) {
         service.removeLecturer(id, userId, actors.from(j));
         return ApiResponse.ok(null);
@@ -52,7 +53,7 @@ public class CatalogController {
     }
 
     @GetMapping("/subjects/{id}/eligible-lecturers")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<List<LecturerView>> eligibleLecturers(@PathVariable UUID id,
                                                               @RequestParam(required = false) String keyword,
                                                               @AuthenticationPrincipal Jwt j) {
@@ -77,19 +78,19 @@ public class CatalogController {
     public record CatalogContextLookup(UUID subjectId, UUID chapterId, UUID topicId) { }
 
     @PostMapping("/subjects")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<SubjectView> createSubject(@AuthenticationPrincipal Jwt j, @Valid @RequestBody SubjectRequest r) {
         return ApiResponse.ok(SubjectView.from(service.saveSubject(null, r.code(), r.name(), r.managingFacultyId(), r.participatingFacultyIds(), actors.from(j))));
     }
 
     @PutMapping("/subjects/{id}")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<SubjectView> updateSubject(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody SubjectRequest r) {
         return ApiResponse.ok(SubjectView.from(service.saveSubject(id, r.code(), r.name(), r.managingFacultyId(), r.participatingFacultyIds(), actors.from(j))));
     }
 
     @DeleteMapping("/subjects/{id}")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<Void> deleteSubject(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
         service.deleteSubject(id, actors.from(j));
         return ApiResponse.ok(null);
@@ -101,19 +102,19 @@ public class CatalogController {
     }
 
     @PostMapping("/chapters")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<ChapterView> createChapter(@AuthenticationPrincipal Jwt j, @Valid @RequestBody ChapterRequest r) {
         return ApiResponse.ok(ChapterView.from(service.saveChapter(null, r.subjectId(), r.code(), r.name(), r.ordinal(), actors.from(j))));
     }
 
     @PutMapping("/chapters/{id}")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<ChapterView> updateChapter(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody ChapterRequest r) {
         return ApiResponse.ok(ChapterView.from(service.saveChapter(id, r.subjectId(), r.code(), r.name(), r.ordinal(), actors.from(j))));
     }
 
     @DeleteMapping("/chapters/{id}")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<Void> deleteChapter(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
         service.deleteChapter(id, actors.from(j));
         return ApiResponse.ok(null);
@@ -125,21 +126,61 @@ public class CatalogController {
     }
 
     @PostMapping("/topics")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<TopicView> createTopic(@AuthenticationPrincipal Jwt j, @Valid @RequestBody TopicRequest r) {
         return ApiResponse.ok(TopicView.from(service.saveTopic(null, r.chapterId(), r.code(), r.name(), actors.from(j))));
     }
 
     @PutMapping("/topics/{id}")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<TopicView> updateTopic(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody TopicRequest r) {
         return ApiResponse.ok(TopicView.from(service.saveTopic(id, r.chapterId(), r.code(), r.name(), actors.from(j))));
     }
 
     @DeleteMapping("/topics/{id}")
-    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
     public ApiResponse<Void> deleteTopic(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
         service.deleteTopic(id, actors.from(j));
         return ApiResponse.ok(null);
     }
+
+    @GetMapping("/knowledge-items")
+    public ApiResponse<List<KnowledgeItemView>> knowledgeItems(@AuthenticationPrincipal Jwt j, @RequestParam UUID topicId) {
+        return ApiResponse.ok(service.knowledgeItems(topicId, actors.from(j)).stream().map(KnowledgeItemView::from).toList());
+    }
+
+    @PostMapping("/knowledge-items")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    public ApiResponse<KnowledgeItemView> createKnowledgeItem(@AuthenticationPrincipal Jwt j, @Valid @RequestBody KnowledgeItemRequest r) {
+        return ApiResponse.ok(KnowledgeItemView.from(service.saveKnowledgeItem(null, r.topicId(), r.code(), r.name(), r.ordinal(), r.targetEasy(), r.targetMedium(), r.targetHard(), actors.from(j))));
+    }
+
+    @PutMapping("/knowledge-items/{id}")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    public ApiResponse<KnowledgeItemView> updateKnowledgeItem(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody KnowledgeItemRequest r) {
+        return ApiResponse.ok(KnowledgeItemView.from(service.saveKnowledgeItem(id, r.topicId(), r.code(), r.name(), r.ordinal(), r.targetEasy(), r.targetMedium(), r.targetHard(), actors.from(j))));
+    }
+
+    @DeleteMapping("/knowledge-items/{id}")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    public ApiResponse<Void> deleteKnowledgeItem(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
+        service.deleteKnowledgeItem(id, actors.from(j));
+        return ApiResponse.ok(null);
+    }
+
+    @PostMapping("/subjects/{id}/structure/import")
+    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    public ApiResponse<Void> importStructure(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt,
+                                             @Valid @RequestBody StructureImportRequest request) {
+        service.importStructure(id, request.chapters().stream().map(chapter -> new CatalogService.StructureChapter(
+                chapter.code(), chapter.name(), chapter.topics().stream().map(topic -> new CatalogService.StructureTopic(
+                topic.code(), topic.name(), topic.items().stream().map(item -> new CatalogService.StructureItem(
+                item.code(), item.name(), item.targetEasy(), item.targetMedium(), item.targetHard())).toList())).toList())).toList(), actors.from(jwt));
+        return ApiResponse.ok(null);
+    }
+
+    public record StructureImportRequest(@NotEmpty List<@Valid StructureChapterRequest> chapters){}
+    public record StructureChapterRequest(@NotBlank String code,@NotBlank String name,@NotEmpty List<@Valid StructureTopicRequest> topics){}
+    public record StructureTopicRequest(@NotBlank String code,@NotBlank String name,@NotEmpty List<@Valid StructureItemRequest> items){}
+    public record StructureItemRequest(@NotBlank String code,@NotBlank String name,@Min(0) int targetEasy,@Min(0) int targetMedium,@Min(0) int targetHard){}
 }

@@ -30,6 +30,13 @@ function remember(key) {
   return true;
 }
 
+function reconcile(serverItems, currentItems) {
+  const serverKeys = new Set(serverItems.map(keyOf).filter(Boolean));
+  return [...currentItems.filter(item => !serverKeys.has(keyOf(item))), ...serverItems]
+    .sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0))
+    .slice(0, 50);
+}
+
 export const notificationStore = {
   getSnapshot: () => state,
   subscribe(listener) {
@@ -48,12 +55,13 @@ export const notificationStore = {
       ]);
       const page = normalizeNotificationPage(list);
       page.items.forEach((item) => remember(keyOf(item)));
+      const notifications = reconcile(page.items, state.notifications);
       publish({
-        notifications: page.items,
-        unreadCount:
-          typeof count === "number"
-            ? count
-            : (count?.count ?? count?.unreadCount ?? 0),
+        notifications,
+        unreadCount: Math.max(
+          typeof count === "number" ? count : (count?.count ?? count?.unreadCount ?? 0),
+          notifications.filter(item => !item.isRead).length,
+        ),
         loading: false,
       });
     } catch (error) {

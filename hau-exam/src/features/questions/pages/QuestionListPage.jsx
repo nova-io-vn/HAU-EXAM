@@ -52,7 +52,7 @@ export function QuestionListPage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await questionsApi.list({
+      const result = await (isOwnerView ? questionsApi.list : questionsApi.approved)({
         ...query,
         createdBy: isOwnerView ? creatorId : undefined,
         page,

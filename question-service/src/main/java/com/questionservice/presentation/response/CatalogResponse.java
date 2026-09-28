@@ -38,4 +38,13 @@ public final class CatalogResponse {
             return new TopicView(t.id(), t.chapterId(), t.code(), t.name(), t.createdAt(), t.updatedAt());
         }
     }
+
+    public record KnowledgeItemView(UUID id, UUID topicId, String code, String name, int ordinal,
+                                    int targetEasy, int targetMedium, int targetHard,
+                                    Instant createdAt, Instant updatedAt) {
+        public static KnowledgeItemView from(KnowledgeItem item) {
+            return new KnowledgeItemView(item.id(), item.topicId(), item.code(), item.name(), item.ordinal(),
+                    item.targetEasy(), item.targetMedium(), item.targetHard(), item.createdAt(), item.updatedAt());
+        }
+    }
 }

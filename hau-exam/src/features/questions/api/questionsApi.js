@@ -28,6 +28,10 @@ export const questionsApi = {
     const result = await api.get(`/api/v1/questions${queryString(params)}`);
     return { ...result, items: await catalogNames(result.items) };
   },
+  approved: async (params) => {
+    const result = await api.get(`/api/v1/questions/approved${queryString(params)}`);
+    return { ...result, items: await catalogNames(result.items) };
+  },
   get: async (id) =>
     (await catalogNames([await api.get(`/api/v1/questions/${id}`)]))[0],
   create: (question) => api.post("/api/v1/questions", question),

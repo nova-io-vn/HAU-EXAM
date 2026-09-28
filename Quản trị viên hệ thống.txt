@@ -1,0 +1,31 @@
+Quản trị viên hệ thống
+
+Chưa đổi sang các model khác được 
+Môn học và cấu trúc kiến thức của quản trị viên chuyên môn đang bị nhầm sang của quản trị viên hệ thống 
+ở quản trị viên hệ thống chưa có chức năng xóa tài khoản người dùng khỏi cơ sở dữ liệu. Và thêm chức năng ví dụ có 1 file excel có mã giảng viên, tên thông tin như số điện thoại, học hầm học vị, email, thì admin chưa có có chức năng tạo tài khoản hàng loạt
+Chức năng thông báo ở quản trị viên hệ thống chưa hoạt động
+Chức năng nhắn tin thì tôi cần mỗi 3 thanh tìm kiếm, bên dưới nếu nhắn tin thì mới hiện, không thì thôi. Phần tin nhắn này thì khi có tin nhắn thì hiện đậm lên, sửa lỗi nhắn gửi bị trung 2 tin nhắn. Và có thể nhấn gửi bằng nút enter. Khi nhấn ra bên ngoài thì tắt ô chat.
+Trợ lý Kute chưa hiển thị logo tròn ở góc dưới bên phải và có thể kéo
+
+Phần về trợ lý Kute, bỏ phần Kho tri thức trợ lý Kute khỏi Cài đặt hệ thống, mà hãy làm 1 phần kho tri thức trợ lý Kute bằng cấp và bên dưới phần Cài đặt hệ thống. Ở đây ta có thể chọn model cho trợ lý, đưa tài liệu vào để trợ lý học, Chọn persona cho trợ lý.
+
+
+Quản trị viên chuyên môn
+
+Bỏ phần phạm vị áp dụng. tại vì đây chỉ là quản lý đề thi trắc nghiệm thôi
+Phần cấu trúc kiến trúc thì cho nó đi sau vào 3 cấp. Chương, chủ đề, ... Và thêm phần giảng viên có thể dưa tài liệu giáo trình và AI hoặc hệ thống có thể lấy dữ liệu các chương của bài. chú ý là tài liệu là dạng nhất định là pdf còn không nhận các tài liệu khác. Khi đưa vào thì hệ thống scan ra và lưu vào. có thể chỉnh sửa nội dung, có  thể xuất pdf phần này, thêm phần tìm kiếm môn
+Quản trị viên chuyên môn không cần theo dõi job AI, không được quản lý Khoa
+Câu hỏi chưa duyệt thì không được cho vào ngân hàng câu hỏi 
+Phần phân tích độ phủ kiến thức thì chưa thể hiện rõ đuọc độ bao phủ, nó sẽ dựa vào kiến thức của chương trình học và tính ra tỉ lệ phần trăm so với cấu trúc kiến thức, có thể nhấn vào xem nó đang thiếu phần nào và các mức độ của câu hỏi có đủ bao phủ kiến thức không
+
+Bỏ phần Tạo câu hỏi bằng AI và các tác vụ cho vai trò quản trị viên chuyên môn, và thay vào đó bằng chức năng phân công, thì Quản trị viên sẽ phân cho giảng viên phải làm bao nhiêu câu hỏi , deadline, ......
+Chưa thấy logo của trợ lý Kute đâu
+
+
+Giảng viên
+Thêm phần nhận công việc từ giảng viên 
+Chưa thấy logo của trợ lý Kute đâu
+
+ Validate lại các button, cách hiển thị dữ liệu, reposive trên lap và điện thoại và các màn hình khác
+
+Còn việc làm sao để đảm bảo chất lượng câu hỏi sẽ tốt hơn là ném tài liệu vào chatgpt và để nó đọc và chạy ra câu hỏi, và làm thế nào để giữ cái bảo mật ổn định, không rò rỉ thông tin nội bộ ra ngoài thì 2 công việc này để sau, xử lý các chức năng trên đã

@@ -17,8 +17,6 @@ export const navigationByRole = {
     {
       section: "QUẢN TRỊ",
       items: [
-        item("Môn học", routes.subjects, "book"),
-        item("Cấu trúc kiến thức", routes.knowledge, "network"),
         item("Theo dõi AI jobs", routes.adminAiJobs, "chart"),
         item("Quản lý Khoa", routes.faculties, "building", {
           tour: "faculty-menu",
@@ -48,6 +46,7 @@ export const navigationByRole = {
         item("Cài đặt hệ thống", routes.settings, "settings", {
           tour: "email-settings",
         }),
+        item("Trợ lý Kute", routes.kuteAdmin, "sparkles"),
       ],
     },
   ],
@@ -68,6 +67,7 @@ export const navigationByRole = {
           tour: "review-menu",
           badge: "pending",
         }),
+        item("Phân công câu hỏi", routes.assignments, "users"),
       ],
     },
     {
@@ -78,14 +78,6 @@ export const navigationByRole = {
         }),
         item("Ma trận đề", routes.matrices, "grid", { tour: "matrices-menu" }),
         item("Đề thi", routes.exams, "file"),
-      ],
-    },
-    {
-      section: "AI TRỢ LÝ",
-      items: [
-        item("Tạo câu hỏi bằng AI", routes.generate, "sparkles", {
-          tour: "ai-menu",
-        }),
       ],
     },
     {
@@ -105,6 +97,7 @@ export const navigationByRole = {
     {
       section: "CÂU HỎI",
       items: [
+        item("Công việc được giao", routes.assignments, "check"),
         item("Câu hỏi của tôi", routes.myQuestions, "file", {
           end: true,
           tour: "my-questions-menu",

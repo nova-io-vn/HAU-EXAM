@@ -17,4 +17,7 @@ public interface QuestionRepository {
     boolean existsByAiSourceId(String id);
 
     QuestionStatistics statistics(String facultyId, UUID createdBy);
+
+    AssignmentProgress assignmentProgress(UUID assignmentId);
+    List<CoverageCount> approvedCoverage(UUID subjectId);
 }

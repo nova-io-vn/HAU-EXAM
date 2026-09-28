@@ -6,6 +6,8 @@ import { RequestState } from "../components/RequestState";
 import { UserFilters } from "../components/UserFilters";
 import { UserTable } from "../components/UserTable";
 import { normalizePage } from "../model/userModel";
+import { Button } from "../../../components/ui";
+import { BulkLecturerImportDialog } from "../components/BulkLecturerImportDialog";
 
 export function UserListPage() {
   const [draft, setDraft] = useState({
@@ -19,6 +21,7 @@ export function UserListPage() {
   const [data, setData] = useState(normalizePage());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [importOpen, setImportOpen] = useState(false);
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -44,6 +47,7 @@ export function UserListPage() {
       <PageHeader
         title="Quản lý người dùng"
         description="Quản lý hồ sơ, vai trò, khoa và trạng thái tài khoản."
+        actions={<Button onClick={() => setImportOpen(true)}>Nhập giảng viên từ Excel</Button>}
       />
       <UserFilters filters={draft} onChange={setDraft} onSubmit={submit} />
       <div className="surface user-table-surface">
@@ -55,6 +59,7 @@ export function UserListPage() {
           </>
         )}
       </div>
+      <BulkLecturerImportDialog open={importOpen} onClose={() => setImportOpen(false)} onImported={load} />
     </section>
   );
 }

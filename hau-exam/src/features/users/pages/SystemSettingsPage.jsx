@@ -5,7 +5,6 @@ import { PasswordInput } from "../../auth/components/PasswordInput";
 import { getErrorMessage } from "../../../services/api/errorMessages";
 import { emailSecurityLabels } from "../../../utils/enumLabels";
 import { adminSupportApi } from "../../support/api/adminSupportApi";
-import { AiKnowledgeSettingsCard } from "../../ai/components/AiKnowledgeSettingsCard";
 import { CloudinarySettingsCard } from "../components/CloudinarySettingsCard";
 import { VercelAnalyticsSettingsCard } from "../components/VercelAnalyticsSettingsCard";
 import { BrandingSettingsCard } from "../components/BrandingSettingsCard";
@@ -22,14 +21,6 @@ import {
 } from "../model/smtpSettings";
 import { IntegrationStatus } from "../components/IntegrationStatus";
 import { brandingApi } from "../../branding/api/brandingApi";
-
-function AiSettingsCard() {
-  const [form,setForm]=useState({provider:"GEMINI",model:"gemini-2.5-flash",apiKey:""}),[meta,setMeta]=useState({status:"NOT_CONFIGURED",apiKeyConfigured:false}),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
-  useEffect(()=>{api.get("/api/v1/admin/ai-settings").then(v=>{if(!v)throw new Error("Không nhận được cấu hình AI.");setForm(x=>({...x,provider:v.provider||x.provider,model:v.model||x.model}));setMeta(v)}).catch(e=>setMessage(e.message))},[]);
-  async function save(){setBusy(true);setMessage("");try{const v=await api.put("/api/v1/admin/ai-settings",{provider:form.provider,model:form.model,apiKey:form.apiKey||undefined});setMeta(v);setForm(x=>({...x,apiKey:""}));setMessage("Đã lưu cấu hình AI. Hãy kiểm tra kết nối để xác nhận runtime.");toast.success("Đã lưu cấu hình AI.")}catch(e){setMessage(e.message);toast.error(e.message,{title:"Không thể lưu cấu hình AI"})}finally{setBusy(false)}}
-  async function test(){setBusy(true);setMessage("");try{const v=await api.post("/api/v1/admin/ai-settings/test",{});setMeta(v);if(v.status==="WORKING"){setMessage("Provider phản hồi thành công.");toast.success("Kết nối AI thành công.")}else{setMessage("Provider chưa phản hồi thành công.");toast.warning("AI cần kiểm tra lại cấu hình.")}}catch(e){setMessage(e.message);toast.error(e.message,{title:"Không thể kiểm tra AI"})}finally{setBusy(false)}}
-  return <article className="surface settings-card"><span className="eyebrow">AI & MÔ HÌNH</span><h2>Nhà cung cấp và model</h2><IntegrationStatus status={meta.status} checkedAt={meta.lastCheckedAt} errorCode={meta.lastErrorCode}/><div className="settings-form"><Select label="Nhà cung cấp" value={form.provider} options={[{value:"GEMINI",label:"Google Gemini"},{value:"OPENAI",label:"OpenAI"},{value:"MISTRAL",label:"Mistral"}]} onChange={e=>setForm({...form,provider:e.target.value})}/><Input label="Model" value={form.model} onChange={e=>setForm({...form,model:e.target.value})} placeholder="gemini-2.5-flash"/><PasswordInput label="API Key" value={form.apiKey} onChange={e=>setForm({...form,apiKey:e.target.value})} placeholder={meta.apiKeyConfigured?"•••••••••••• · nhập mới để thay đổi":"Nhập API key"}/><small className="settings-note">API key không được trả về giao diện. Để trống nếu không muốn thay đổi khóa hiện tại.</small><div className="settings-actions"><Button variant="secondary" onClick={test} loading={busy}>Kiểm tra kết nối</Button><Button onClick={save} loading={busy}>Lưu cấu hình</Button></div>{message&&<p className="settings-note" role="status">{message}</p>}</div></article>;
-}
 
 function SystemStatusOverview() {
   const [items, setItems] = useState([]);
@@ -154,7 +145,7 @@ export function SystemSettingsPage() {
     <section className="admin-settings">
       <PageHeader
         title="Cấu hình hệ thống"
-        description="Quản lý AI, kho tri thức, lưu trữ ảnh và các kênh tích hợp của hệ thống."
+        description="Quản lý branding, lưu trữ ảnh và các kênh tích hợp của hệ thống. Cấu hình Kute có trang quản trị riêng."
       />
       <SystemStatusOverview />
       {state.loadError && <p className="editor-error" role="alert">{state.loadError}{state.loadCorrelationId && <small> Mã đối chiếu: {state.loadCorrelationId}</small>}</p>}
@@ -163,10 +154,8 @@ export function SystemSettingsPage() {
       <div className="settings-grid">
         <BrandingSettingsCard />
         <TelegramBotSettingsCard />
-        <AiSettingsCard />
         <CloudinarySettingsCard />
         <VercelAnalyticsSettingsCard />
-        <div data-tour="ai-knowledge"><AiKnowledgeSettingsCard /></div>
         <article className="surface settings-card email-settings-card">
           <span className="eyebrow">CẤU HÌNH EMAIL</span>
           <h2>Máy chủ gửi thư</h2>

@@ -54,6 +54,9 @@ public class RabbitConfiguration {
     @Bean Binding replayBinding(Queue userSecurityQueue, TopicExchange userExchange) {
         return BindingBuilder.bind(userSecurityQueue).to(userExchange).with("user.security.replay");
     }
+    @Bean Binding accountImportBinding(Queue userSecurityQueue, TopicExchange userExchange) {
+        return BindingBuilder.bind(userSecurityQueue).to(userExchange).with("user.account.import.requested");
+    }
     @Bean Binding userSecurityRetryBinding(Queue userSecurityRetryQueue, DirectExchange authRetryExchange) {
         return BindingBuilder.bind(userSecurityRetryQueue).to(authRetryExchange).with(USER_SECURITY_RETRY_KEY);
     }

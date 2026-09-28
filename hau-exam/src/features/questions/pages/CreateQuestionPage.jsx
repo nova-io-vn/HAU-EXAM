@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { questionsApi } from "../api/questionsApi";
 import { QuestionEditor } from "../components/QuestionEditor";
@@ -14,9 +14,15 @@ import { toast } from "../../notifications/store/notificationStore";
 
 export function CreateQuestionPage() {
   const auth = useAuth();
+  const [searchParams] = useSearchParams();
   const [form, setForm] = useState(() => ({
     ...emptyQuestion(),
     facultyId: auth.facultyId || "",
+    assignmentId: searchParams.get("assignmentId") || "",
+    subjectId: searchParams.get("subjectId") || "",
+    chapterId: searchParams.get("chapterId") || "",
+    topicId: searchParams.get("topicId") || "",
+    knowledgeItemId: searchParams.get("knowledgeItemId") || "",
   }));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);

@@ -14,6 +14,7 @@ import { facultiesApi } from "../api/facultiesApi";
 import { usersApi } from "../api/usersApi";
 import { questionsApi } from "../../questions/api/questionsApi";
 import { platformSettingsApi } from "../api/platformSettingsApi";
+import { presenceApi } from "../api/presenceApi";
 import { normalizePage, formatDateTime } from "../model/userModel";
 export function AdminDashboardPage() {
   const { role } = useAuth();
@@ -21,6 +22,7 @@ export function AdminDashboardPage() {
   const [error, setError] = useState(null);
   const [traffic, setTraffic] = useState(null);
   const [trafficError, setTrafficError] = useState("");
+  const [onlineCount, setOnlineCount] = useState(null);
   const load = useCallback(async () => {
     setError(null);
     setTrafficError("");
@@ -54,7 +56,10 @@ export function AdminDashboardPage() {
   useEffect(() => {
     if (role !== "SYSTEM_ADMIN") return;
     const timer = setTimeout(load, 0);
-    return () => clearTimeout(timer);
+    const refreshPresence = () => presenceApi.onlineCount().then(value => setOnlineCount(Number(value?.count ?? 0))).catch(() => setOnlineCount(null));
+    refreshPresence();
+    const presenceTimer = setInterval(refreshPresence, 15000);
+    return () => { clearTimeout(timer); clearInterval(presenceTimer); };
   }, [load, role]);
   if (role !== "SYSTEM_ADMIN")
     return (
@@ -109,6 +114,12 @@ export function AdminDashboardPage() {
         }
       />
       <div className="admin-kpi-grid">
+        <article className="admin-kpi" aria-live="polite">
+          <span className="kpi-accent kpi-0" />
+          <small>Đang trực tuyến</small>
+          <strong>{onlineCount == null ? "—" : onlineCount.toLocaleString("vi-VN")}</strong>
+          <span>Người dùng hoạt động trong 90 giây gần nhất</span>
+        </article>
         {stats.map(([label, value, to], index) => (
           <Link className="admin-kpi" to={routes[to]} key={label}>
             <span className={"kpi-accent kpi-" + index} />

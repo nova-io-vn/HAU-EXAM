@@ -31,14 +31,17 @@ public class AiSettingsController {
         this.runtime = runtime;
     }
 
-    public record Request(@NotBlank String provider, @NotBlank @Size(max = 160) String model, String apiKey) {}
-    public record View(String provider, String model, boolean apiKeyConfigured, String status, Instant lastCheckedAt, String lastErrorCode) {
+    public record Request(@NotBlank String provider, @NotBlank @Size(max = 160) String model, String apiKey,
+                          @Size(max = 40) String persona, @Size(max = 4000) String personaInstructions) {}
+    public record View(String provider, String model, boolean apiKeyConfigured, String status, Instant lastCheckedAt, String lastErrorCode,
+                       String persona, String personaInstructions) {
         static View from(AiSettingsEntity e) {
             boolean configured = e.apiKeyEncrypted != null && !e.apiKeyEncrypted.isBlank();
             String status = configured ? (e.runtimeStatus == null ? "CONFIGURED_BUT_UNVERIFIED" : e.runtimeStatus) : "NOT_CONFIGURED";
-            return new View(e.provider, e.model, configured, status, e.lastCheckedAt, e.lastErrorCode);
+            return new View(e.provider, e.model, configured, status, e.lastCheckedAt, e.lastErrorCode,
+                    e.persona == null ? "FRIENDLY" : e.persona, e.personaInstructions);
         }
-        static View empty() { return new View("GEMINI", "gemini-2.5-flash", false, "NOT_CONFIGURED", null, null); }
+        static View empty() { return new View("GEMINI", "gemini-2.5-flash", false, "NOT_CONFIGURED", null, null, "FRIENDLY", null); }
     }
 
     @GetMapping
@@ -51,6 +54,11 @@ public class AiSettingsController {
         AiSettingsEntity e = repo.findAll().stream().findFirst().orElseGet(() -> { var n = new AiSettingsEntity(); n.id = UUID.randomUUID(); return n; });
         e.provider = provider;
         e.model = r.model().trim();
+        String persona = r.persona() == null || r.persona().isBlank() ? "FRIENDLY" : r.persona().trim().toUpperCase(Locale.ROOT);
+        if (!Set.of("FRIENDLY", "FORMAL", "CONCISE", "CUSTOM").contains(persona)) throw new IllegalArgumentException("Unsupported Kute persona");
+        if ("CUSTOM".equals(persona) && (r.personaInstructions() == null || r.personaInstructions().isBlank())) throw new IllegalArgumentException("Custom persona instructions are required");
+        e.persona = persona;
+        e.personaInstructions = r.personaInstructions() == null || r.personaInstructions().isBlank() ? null : r.personaInstructions().trim();
         if (r.apiKey() != null && !r.apiKey().isBlank()) e.apiKeyEncrypted = protector.encrypt(r.apiKey().trim());
         e.updatedAt = Instant.now();
         e.updatedBy = UUID.fromString(jwt.getSubject());

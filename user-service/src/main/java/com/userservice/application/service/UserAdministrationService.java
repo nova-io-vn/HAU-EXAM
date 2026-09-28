@@ -108,6 +108,14 @@ public class UserAdministrationService implements UserAdministrationUseCase {
         return change(a, id, u -> u.unlock(now()), u -> publisher.statusChanged(u, c));
     }
 
+    @Override
+    @Transactional
+    public UserProfile delete(ActorContext a, UUID id, UUID c) {
+        requireAdmin(a);
+        if (a.userId().equals(id)) throw new ForbiddenOperationException("You cannot delete the account currently in use");
+        return change(a, id, u -> u.anonymize(now()), u -> publisher.statusChanged(u, c));
+    }
+
     private UserProfile change(ActorContext actor, UUID id, UnaryOperator<UserProfile> operation, java.util.function.Consumer<UserProfile> event) {
         requireAdmin(actor);
         UserProfile saved = repository.save(operation.apply(find(id)));

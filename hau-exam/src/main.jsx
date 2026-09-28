@@ -34,6 +34,7 @@ import './styles/public-redesign.css'
 import './styles/knowledge-tools.css'
 import './styles/landing-polish.css'
 import './styles/whats-new.css'
+import './styles/visual-refinement.css'
 import 'intro.js/introjs.css'
 import App from './App.jsx'
 

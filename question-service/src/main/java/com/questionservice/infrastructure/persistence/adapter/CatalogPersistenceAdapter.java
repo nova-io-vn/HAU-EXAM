@@ -11,6 +11,7 @@ import com.questionservice.infrastructure.persistence.repository.ChapterJpaRepos
 import com.questionservice.infrastructure.persistence.repository.SubjectFacultyScopeJpaRepository;
 import com.questionservice.infrastructure.persistence.repository.SubjectJpaRepository;
 import com.questionservice.infrastructure.persistence.repository.TopicJpaRepository;
+import com.questionservice.infrastructure.persistence.repository.KnowledgeItemJpaRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -26,14 +27,17 @@ public class CatalogPersistenceAdapter implements CatalogRepository {
     private final SubjectFacultyScopeJpaRepository scopes;
     private final ChapterJpaRepository chapters;
     private final TopicJpaRepository topics;
+    private final KnowledgeItemJpaRepository knowledgeItems;
     private final CatalogMapper mapper;
 
     public CatalogPersistenceAdapter(SubjectJpaRepository subjects, SubjectFacultyScopeJpaRepository scopes,
-                                     ChapterJpaRepository chapters, TopicJpaRepository topics, CatalogMapper mapper) {
+                                     ChapterJpaRepository chapters, TopicJpaRepository topics,
+                                     KnowledgeItemJpaRepository knowledgeItems, CatalogMapper mapper) {
         this.subjects = subjects;
         this.scopes = scopes;
         this.chapters = chapters;
         this.topics = topics;
+        this.knowledgeItems = knowledgeItems;
         this.mapper = mapper;
     }
 
@@ -109,4 +113,12 @@ public class CatalogPersistenceAdapter implements CatalogRepository {
     public List<Topic> findTopics(UUID id) { return topics.findAllByChapterIdOrderByCode(id).stream().map(mapper::toDomain).toList(); }
     @Override
     public void deleteTopic(UUID id) { topics.deleteById(id); }
+    @Override
+    public com.questionservice.domain.model.KnowledgeItem saveKnowledgeItem(com.questionservice.domain.model.KnowledgeItem value) { return mapper.toDomain(knowledgeItems.save(mapper.toEntity(value))); }
+    @Override
+    public Optional<com.questionservice.domain.model.KnowledgeItem> findKnowledgeItem(UUID id) { return knowledgeItems.findById(id).map(mapper::toDomain); }
+    @Override
+    public List<com.questionservice.domain.model.KnowledgeItem> findKnowledgeItems(UUID topicId) { return knowledgeItems.findAllByTopicIdOrderByOrdinalAscCodeAsc(topicId).stream().map(mapper::toDomain).toList(); }
+    @Override
+    public void deleteKnowledgeItem(UUID id) { knowledgeItems.deleteById(id); }
 }

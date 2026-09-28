@@ -55,7 +55,11 @@ public class GeminiAdapter implements AiProvider {
     }
 
     public String systemHelp(String roleKnowledge, String request, String runtimeKey, String model) {
-        return invoke(KutePersona.SYSTEM_PROMPT
+        return systemHelp(roleKnowledge, request, runtimeKey, model, KutePersona.SYSTEM_PROMPT);
+    }
+
+    public String systemHelp(String roleKnowledge, String request, String runtimeKey, String model, String personaPrompt) {
+        return invoke(personaPrompt
                 + "For HAU QM workflows, give concise numbered steps when helpful. "
                 + "Return only JSON: {\"answer\":\"...\",\"actions\":[{\"type\":\"NAVIGATE\",\"label\":\"...\",\"routeKey\":\"...\"}]}. "
                 + "Actions are optional and routeKey must occur verbatim in ROLE_KNOWLEDGE.\nROLE_KNOWLEDGE:\n" + roleKnowledge + "\nREQUEST:\n" + request, runtimeKey, model);

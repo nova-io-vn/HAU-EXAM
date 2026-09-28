@@ -20,19 +20,23 @@ public class QuestionService {
     private final CatalogRepository catalog;
     private final ImageStoragePort imageStorage;
     private final SubjectAssignmentRepository assignments;
+    private final QuestionAssignmentRepository questionAssignments;
 
     public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock) {
-        this(repository, publisher, clock, null, null, null);
+        this(repository, publisher, clock, null, null, null, null);
     }
     public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog) {
-        this(repository, publisher, clock, catalog, null, null);
+        this(repository, publisher, clock, catalog, null, null, null);
     }
     public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog, ImageStoragePort imageStorage) {
-        this(repository, publisher, clock, catalog, imageStorage, null);
+        this(repository, publisher, clock, catalog, imageStorage, null, null);
+    }
+    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog, ImageStoragePort imageStorage, SubjectAssignmentRepository assignments) {
+        this(repository, publisher, clock, catalog, imageStorage, assignments, null);
     }
     @org.springframework.beans.factory.annotation.Autowired
-    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog, ImageStoragePort imageStorage, SubjectAssignmentRepository assignments) {
-        this.repository = repository; this.publisher = publisher; this.clock = clock; this.catalog = catalog; this.imageStorage = imageStorage; this.assignments = assignments;
+    public QuestionService(QuestionRepository repository, QuestionEventPublisher publisher, Clock clock, CatalogRepository catalog, ImageStoragePort imageStorage, SubjectAssignmentRepository assignments, QuestionAssignmentRepository questionAssignments) {
+        this.repository = repository; this.publisher = publisher; this.clock = clock; this.catalog = catalog; this.imageStorage = imageStorage; this.assignments = assignments; this.questionAssignments = questionAssignments;
     }
 
     public Question create(Actor actor, QuestionInput in) {
@@ -42,7 +46,8 @@ public class QuestionService {
             throw new ForbiddenException("Question creator must have a faculty assignment");
         validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), actor.facultyId());
         requireAssignment(in.subjectId(), actor);
-        var q = Question.create(UUID.randomUUID(), actor.facultyId(), in.subjectId(), in.chapterId(), in.topicId(), in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), QuestionSource.MANUAL, null, actor.userId(), withIds(in.options()), Instant.now(clock));
+        validateQuestionAssignment(in.assignmentId(), in.subjectId(), in.chapterId(), in.topicId(), in.knowledgeItemId(), actor);
+        var q = Question.create(UUID.randomUUID(), actor.facultyId(), in.subjectId(), in.chapterId(), in.topicId(), in.knowledgeItemId(), in.assignmentId(), in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), QuestionSource.MANUAL, null, actor.userId(), withIds(in.options()), Instant.now(clock));
         return repository.save(q);
     }
 
@@ -231,5 +236,32 @@ public class QuestionService {
     private void requireAssignment(UUID subjectId, Actor actor) {
         if (actor.role() == Role.USER && assignments != null && !assignments.existsActive(subjectId, actor.userId()))
             throw new ForbiddenException("SUBJECT_NOT_ASSIGNED", "User is not actively assigned to this subject");
+    }
+
+    @Transactional(readOnly = true)
+    public PageResult<Question> searchApproved(Actor actor, QuestionCriteria c) {
+        if (actor == null || actor.role() == Role.SYSTEM_ADMIN) {
+            throw new ForbiddenException("Approved question bank is not available to this role");
+        }
+        // The approved bank is shared within the authenticated faculty. USER-specific
+        // ownership filtering belongs to the workflow/my-questions query, not this bank.
+        String faculty = actor.facultyId();
+        if (faculty == null || faculty.isBlank()) {
+            throw new ForbiddenException("Faculty assignment is required");
+        }
+        return repository.search(new QuestionCriteria(faculty, c.subjectId(), c.chapterId(), c.topicId(), c.difficulty(),
+                QuestionStatus.APPROVED, c.source(), null, c.keyword(), c.page(), c.size(), c.sort()));
+    }
+
+    private void validateQuestionAssignment(UUID assignmentId, UUID subjectId, UUID chapterId, UUID topicId, UUID knowledgeItemId, Actor actor) {
+        if (assignmentId == null) return;
+        if (questionAssignments == null) throw new IllegalArgumentException("Question assignment support is unavailable");
+        var assignment = questionAssignments.findById(assignmentId).orElseThrow(() -> new NotFoundException("ASSIGNMENT_NOT_FOUND", "Question assignment not found"));
+        if (!Objects.equals(assignment.lecturerId(), actor.userId())) throw new ForbiddenException("ASSIGNMENT_ACCESS_DENIED", "Assignment belongs to another lecturer");
+        if (!Objects.equals(assignment.subjectId(), subjectId)
+                || (assignment.chapterId() != null && !Objects.equals(assignment.chapterId(), chapterId))
+                || (assignment.topicId() != null && !Objects.equals(assignment.topicId(), topicId))
+                || (assignment.knowledgeItemId() != null && !Objects.equals(assignment.knowledgeItemId(), knowledgeItemId)))
+            throw new IllegalArgumentException("Question taxonomy does not match assignment scope");
     }
 }

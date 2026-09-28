@@ -28,4 +28,9 @@ public interface CatalogRepository {
     List<Topic> findTopics(UUID chapterId);
 
     void deleteTopic(UUID id);
+
+    KnowledgeItem saveKnowledgeItem(KnowledgeItem value);
+    Optional<KnowledgeItem> findKnowledgeItem(UUID id);
+    List<KnowledgeItem> findKnowledgeItems(UUID topicId);
+    void deleteKnowledgeItem(UUID id);
 }

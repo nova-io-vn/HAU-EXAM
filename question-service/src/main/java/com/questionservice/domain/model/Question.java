@@ -10,6 +10,8 @@ public final class Question {
     private final UUID subjectId;
     private final UUID chapterId;
     private final UUID topicId;
+    private final UUID knowledgeItemId;
+    private final UUID assignmentId;
     private String content;
     private String imageUrl;
     private String storageKey;
@@ -29,9 +31,20 @@ public final class Question {
                     QuestionStatus status, QuestionSource source, String aiSourceId, UUID createdBy,
                     Instant createdAt, Instant updatedAt, List<QuestionOption> options,
                     List<QuestionReviewHistory> reviewHistory) {
+        this(id, facultyId, subjectId, chapterId, topicId, null, null, content, imageUrl, storageKey, type,
+                difficulty, status, source, aiSourceId, createdBy, createdAt, updatedAt, options, reviewHistory);
+    }
+
+    public Question(UUID id, String facultyId, UUID subjectId, UUID chapterId, UUID topicId,
+                    UUID knowledgeItemId, UUID assignmentId, String content,
+                    String imageUrl, String storageKey, QuestionType type, Difficulty difficulty,
+                    QuestionStatus status, QuestionSource source, String aiSourceId, UUID createdBy,
+                    Instant createdAt, Instant updatedAt, List<QuestionOption> options,
+                    List<QuestionReviewHistory> reviewHistory) {
         this.id = Objects.requireNonNull(id); this.facultyId = required(facultyId, "facultyId");
         this.subjectId = Objects.requireNonNull(subjectId); this.chapterId = Objects.requireNonNull(chapterId);
-        this.topicId = topicId; this.content = required(content, "content"); this.imageUrl = imageUrl;
+        this.topicId = topicId; this.knowledgeItemId = knowledgeItemId; this.assignmentId = assignmentId;
+        this.content = required(content, "content"); this.imageUrl = imageUrl;
         this.storageKey = storageKey; this.type = Objects.requireNonNull(type);
         this.difficulty = Objects.requireNonNull(difficulty); this.status = Objects.requireNonNull(status);
         this.source = Objects.requireNonNull(source); this.aiSourceId = aiSourceId;
@@ -48,6 +61,15 @@ public final class Question {
                                   UUID createdBy, List<QuestionOption> options, Instant now) {
         return new Question(id, facultyId, subjectId, chapterId, topicId, content, imageUrl, storageKey,
             type, difficulty, QuestionStatus.DRAFT, source, aiSourceId, createdBy, now, now, options, List.of());
+    }
+
+    public static Question create(UUID id, String facultyId, UUID subjectId, UUID chapterId, UUID topicId,
+                                  UUID knowledgeItemId, UUID assignmentId, String content, String imageUrl,
+                                  String storageKey, QuestionType type, Difficulty difficulty, QuestionSource source,
+                                  String aiSourceId, UUID createdBy, List<QuestionOption> options, Instant now) {
+        return new Question(id, facultyId, subjectId, chapterId, topicId, knowledgeItemId, assignmentId, content,
+                imageUrl, storageKey, type, difficulty, QuestionStatus.DRAFT, source, aiSourceId, createdBy,
+                now, now, options, List.of());
     }
 
     public void edit(String content, String imageUrl, String storageKey, QuestionType type,
@@ -78,7 +100,7 @@ public final class Question {
         if (type == QuestionType.TRUE_FALSE && options.size() != 2) throw new IllegalArgumentException("TRUE_FALSE requires two options");
     }
     public UUID id(){return id;} public String facultyId(){return facultyId;} public UUID subjectId(){return subjectId;}
-    public UUID chapterId(){return chapterId;} public UUID topicId(){return topicId;} public String content(){return content;}
+    public UUID chapterId(){return chapterId;} public UUID topicId(){return topicId;} public UUID knowledgeItemId(){return knowledgeItemId;} public UUID assignmentId(){return assignmentId;} public String content(){return content;}
     public String imageUrl(){return imageUrl;} public String storageKey(){return storageKey;} public QuestionType type(){return type;}
     public Difficulty difficulty(){return difficulty;} public QuestionStatus status(){return status;} public QuestionSource source(){return source;}
     public String aiSourceId(){return aiSourceId;} public UUID createdBy(){return createdBy;} public Instant createdAt(){return createdAt;}

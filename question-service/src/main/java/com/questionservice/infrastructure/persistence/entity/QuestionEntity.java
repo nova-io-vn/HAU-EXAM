@@ -19,6 +19,10 @@ public class QuestionEntity {
     public UUID chapterId;
     @Column(name = "topic_id")
     public UUID topicId;
+    @Column(name = "knowledge_item_id")
+    public UUID knowledgeItemId;
+    @Column(name = "assignment_id")
+    public UUID assignmentId;
     @Column(nullable = false, columnDefinition = "text")
     public String content;
     @Column(name = "image_url")

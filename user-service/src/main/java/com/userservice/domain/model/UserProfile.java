@@ -67,6 +67,11 @@ public final class UserProfile {
         return new UserProfile(id, lecturerCode, fullName, null, null, email, null, null, null, AcademicRank.NONE, AcademicDegree.NONE, facultyId,
                 Role.SYSTEM_ADMIN, UserStatus.ACTIVE, now, now, 0);
     }
+    public static UserProfile imported(UUID id, String lecturerCode, String fullName, String phone, String email,
+                                       AcademicRank academicRank, AcademicDegree academicDegree, String facultyId, Instant now) {
+        return new UserProfile(id, lecturerCode, fullName, null, phone, email, null, null, null,
+                academicRank, academicDegree, facultyId, Role.USER, UserStatus.PENDING_APPROVAL, now, now, 0);
+    }
     public UserProfile updateProfile(String fullName, LocalDate dob, String phone, String email, String address, String avatar, Instant at) {
         return updateProfile(fullName, dob, phone, email, address, avatar, academicRank, academicDegree, avatarPublicId, at);
     }
@@ -95,6 +100,12 @@ public final class UserProfile {
     public UserProfile unlock(Instant at) {
         if (status != UserStatus.LOCKED) throw new InvalidStatusTransitionException("Only locked users can be unlocked");
         return copy(role, UserStatus.ACTIVE, facultyId, at);
+    }
+    public UserProfile anonymize(Instant at) {
+        if (role == Role.SYSTEM_ADMIN) throw new InvalidStatusTransitionException("SYSTEM_ADMIN accounts cannot be deleted");
+        return new UserProfile(id, lecturerCode, "Tài khoản đã xóa", null, null,
+                "deleted+" + id + "@invalid.local", null, null, null, AcademicRank.NONE, AcademicDegree.NONE,
+                null, Role.USER, UserStatus.DELETED, createdAt, at, version);
     }
     public UserProfile assignRole(Role role, Instant at) { return copy(Objects.requireNonNull(role), status, facultyId, at); }
     public UserProfile assignFaculty(String facultyId, Instant at) { return copy(role, status, facultyId, at); }

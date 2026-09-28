@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.contains;
 
 class RuntimeAiProviderResolverTest {
     @Test
@@ -23,6 +24,7 @@ class RuntimeAiProviderResolverTest {
         AiSettingsEntity configured = new AiSettingsEntity();
         configured.provider = "GEMINI";
         configured.model = "gemini-custom";
+        configured.persona = "CONCISE";
         configured.apiKeyEncrypted = "encrypted";
         when(settings.findAll()).thenReturn(List.of(configured));
         when(protector.decrypt("encrypted")).thenReturn("runtime-key");
@@ -31,5 +33,21 @@ class RuntimeAiProviderResolverTest {
 
         assertEquals("[]", resolver.generateQuestions("source", "request"));
         verify(gemini).generateQuestions("source", "request", "runtime-key", "gemini-custom");
+    }
+
+    @Test
+    void savedPersonaIsAppliedToTheNextKuteRequest() {
+        AiSettingsRepository settings = mock(AiSettingsRepository.class);
+        AiSecretProtector protector = mock(AiSecretProtector.class);
+        GeminiAdapter gemini = mock(GeminiAdapter.class);
+        AiSettingsEntity configured = new AiSettingsEntity();
+        configured.provider = "GEMINI"; configured.model = "gemini-custom"; configured.apiKeyEncrypted = "encrypted"; configured.persona = "CONCISE";
+        when(settings.findAll()).thenReturn(List.of(configured));
+        when(protector.decrypt("encrypted")).thenReturn("runtime-key");
+        when(gemini.systemHelp(org.mockito.ArgumentMatchers.eq("source"), org.mockito.ArgumentMatchers.eq("request"), org.mockito.ArgumentMatchers.eq("runtime-key"), org.mockito.ArgumentMatchers.eq("gemini-custom"), org.mockito.ArgumentMatchers.anyString())).thenReturn("{}");
+        var resolver = new RuntimeAiProviderResolver(settings, protector, gemini, RestClient.builder(), new ObjectMapper(), new MockEnvironment());
+
+        assertEquals("{}", resolver.systemHelp("source", "request"));
+        verify(gemini).systemHelp(org.mockito.ArgumentMatchers.eq("source"), org.mockito.ArgumentMatchers.eq("request"), org.mockito.ArgumentMatchers.eq("runtime-key"), org.mockito.ArgumentMatchers.eq("gemini-custom"), contains("extremely concise"));
     }
 }

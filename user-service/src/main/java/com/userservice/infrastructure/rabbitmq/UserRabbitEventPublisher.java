@@ -25,6 +25,7 @@ public class UserRabbitEventPublisher implements UserEventPublisher {
     public void roleChanged(UserProfile u,UUID c){publish("USER_ROLE_CHANGED","user.role.changed",u,c);}
     public void facultyChanged(UserProfile u,UUID c){publish("USER_FACULTY_CHANGED","user.faculty.changed",u,c);}
     public void statusChanged(UserProfile u,UUID c){publish("USER_STATUS_CHANGED","user.status.changed",u,c);}
+    public void accountImportRequested(UserProfile u,UUID c){publish("USER_ACCOUNT_IMPORT_REQUESTED","user.account.import.requested",u,c);}
     private void publish(String type,String key,UserProfile u,UUID correlationId){
         UUID correlation=correlationId==null?UUID.randomUUID():correlationId;
         String facultyName=faculties==null||u.getFacultyId()==null?null:faculties.findByCode(u.getFacultyId()).map(f->f.name()).orElse(null);

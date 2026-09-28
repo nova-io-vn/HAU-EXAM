@@ -69,6 +69,11 @@ public class UserAdministrationController {
         return response(useCase.unlock(actor(jwt), id, correlation(c)));
     }
 
+    @DeleteMapping("/{id}")
+    public ApiResponse<UserProfileResponse> delete(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @RequestHeader(value = "X-Correlation-Id", required = false) String c) {
+        return response(useCase.delete(actor(jwt), id, correlation(c)));
+    }
+
     private ApiResponse<UserProfileResponse> response(com.userservice.domain.model.UserProfile u) {
         return ApiResponse.success(mapper.toResponse(u));
     }

@@ -3,4 +3,5 @@ import com.questionservice.domain.model.*; import com.questionservice.infrastruc
 @Mapper(componentModel="spring") public interface CatalogMapper {
  ChapterEntity toEntity(Chapter value); Chapter toDomain(ChapterEntity value);
  TopicEntity toEntity(Topic value); Topic toDomain(TopicEntity value);
+ KnowledgeItemEntity toEntity(KnowledgeItem value); KnowledgeItem toDomain(KnowledgeItemEntity value);
 }

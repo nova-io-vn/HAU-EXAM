@@ -5,7 +5,7 @@ import com.questionservice.domain.model.*;
 import java.time.Instant;
 import java.util.*;
 
-public record QuestionResponse(UUID id, String facultyId, UUID subjectId, UUID chapterId, UUID topicId, String content,
+public record QuestionResponse(UUID id, String facultyId, UUID subjectId, UUID chapterId, UUID topicId, UUID knowledgeItemId, UUID assignmentId, String content,
                                String imageUrl, String storageKey, QuestionType type, Difficulty difficulty,
                                QuestionStatus status, QuestionSource source, UUID createdBy, Instant createdAt,
                                Instant updatedAt, List<OptionResponse> options, List<ReviewResponse> reviewHistory) {
@@ -17,6 +17,6 @@ public record QuestionResponse(UUID id, String facultyId, UUID subjectId, UUID c
     }
 
     public static QuestionResponse from(Question q) {
-        return new QuestionResponse(q.id(), q.facultyId(), q.subjectId(), q.chapterId(), q.topicId(), q.content(), q.imageUrl(), q.storageKey(), q.type(), q.difficulty(), q.status(), q.source(), q.createdBy(), q.createdAt(), q.updatedAt(), q.options().stream().map(o -> new OptionResponse(o.id(), o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList(), q.reviewHistory().stream().map(h -> new ReviewResponse(h.id(), h.reviewerId(), h.action(), h.comment(), h.createdAt())).toList());
+        return new QuestionResponse(q.id(), q.facultyId(), q.subjectId(), q.chapterId(), q.topicId(), q.knowledgeItemId(), q.assignmentId(), q.content(), q.imageUrl(), q.storageKey(), q.type(), q.difficulty(), q.status(), q.source(), q.createdBy(), q.createdAt(), q.updatedAt(), q.options().stream().map(o -> new OptionResponse(o.id(), o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList(), q.reviewHistory().stream().map(h -> new ReviewResponse(h.id(), h.reviewerId(), h.action(), h.comment(), h.createdAt())).toList());
     }
 }

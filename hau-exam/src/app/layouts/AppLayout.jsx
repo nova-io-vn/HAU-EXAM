@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useEffect,useState} from 'react'
 import {Outlet} from 'react-router-dom'
 import {AppShell} from '../../components/layout/AppShell'
 import {Header} from '../../components/layout/Header'
@@ -10,4 +10,5 @@ import {AiAssistantWidget} from '../../features/ai/components/AiAssistantWidget'
 import {CursorEffects} from '../../components/layout/CursorEffects'
 import {useUiPreferences} from '../providers/ThemeProvider'
 import {RouteIdentity} from '../router/RouteIdentity'
-export function AppLayout(){const[collapsed,setCollapsed]=useState(false);const[mobileOpen,setMobileOpen]=useState(false);const preferences=useUiPreferences();return <NotificationProvider><RouteIdentity/><AppShell className={collapsed?'is-collapsed':''}><Sidebar collapsed={collapsed} mobileOpen={mobileOpen} onClose={()=>setMobileOpen(false)}/><div className="app-frame"><Header collapsed={collapsed} onToggle={()=>setCollapsed(value=>!value)} onMobileMenu={()=>setMobileOpen(true)}/><main className="app-content"><Outlet/></main></div><div data-tour="kute-assistant"><AiAssistantWidget visible={preferences?.kuteVisible!==false}/></div><CursorEffects/><WhatsNewModal/><OnboardingTour/></AppShell></NotificationProvider>}
+import {presenceApi} from '../../features/users/api/presenceApi'
+export function AppLayout(){const[collapsed,setCollapsed]=useState(false);const[mobileOpen,setMobileOpen]=useState(false);const preferences=useUiPreferences();useEffect(()=>{const beat=()=>presenceApi.heartbeat().catch(()=>{});beat();const timer=setInterval(beat,30000);return()=>clearInterval(timer)},[]);return <NotificationProvider><RouteIdentity/><AppShell className={collapsed?'is-collapsed':''}><Sidebar collapsed={collapsed} mobileOpen={mobileOpen} onClose={()=>setMobileOpen(false)}/><div className="app-frame"><Header collapsed={collapsed} onToggle={()=>setCollapsed(value=>!value)} onMobileMenu={()=>setMobileOpen(true)}/><main className="app-content"><Outlet/></main></div><div data-tour="kute-assistant"><AiAssistantWidget visible={preferences?.kuteVisible!==false}/></div><CursorEffects/><WhatsNewModal/><OnboardingTour/></AppShell></NotificationProvider>}

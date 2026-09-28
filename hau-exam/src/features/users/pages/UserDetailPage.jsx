@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button, ConfirmDialog, Dialog, Select, StatusBadge } from '../../../components/ui';
 import { PageHeader } from '../../../components/shared/PageHeader';
 import { routes } from '../../../constants/routes';
@@ -11,12 +11,156 @@ import { roleLabels } from '../../../utils/enumLabels';
 import { FacultyCombobox } from '../components/FacultyCombobox';
 import { toast } from '../../notifications/store/notificationStore';
 
+const confirmationContent = {
+  lock: {
+    title: 'Khóa tài khoản?',
+    description: lecturerCode => `Tài khoản ${lecturerCode} sẽ không thể tiếp tục hoạt động.`,
+    label: 'Khóa tài khoản',
+  },
+  unlock: {
+    title: 'Mở khóa tài khoản?',
+    description: lecturerCode => `Tài khoản ${lecturerCode} sẽ được mở khóa ở góc độ nghiệp vụ.`,
+    label: 'Mở khóa',
+  },
+  remove: {
+    title: 'Xóa tài khoản?',
+    description: lecturerCode => `Tài khoản ${lecturerCode} sẽ bị vô hiệu hóa và hồ sơ cá nhân được ẩn danh. Dữ liệu lịch sử không bị xóa dây chuyền.`,
+    label: 'Xóa tài khoản',
+  },
+};
+
 export function UserDetailPage() {
-  const { id } = useParams(); const [user, setUser] = useState(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(null); const [dialog, setDialog] = useState(null); const [value, setValue] = useState(''); const [confirmation, setConfirmation] = useState(null);
-  const load = useCallback(async () => { setLoading(true); setError(null); try { setUser(await usersApi.get(id)); } catch (reason) { setError(reason); } finally { setLoading(false); } }, [id]); useEffect(() => { void load(); }, [load]);
-  async function saveAssignment() { try { if (dialog === 'role') await usersApi.assignRole(id, value); else await usersApi.assignFaculty(id, value.trim()); toast.success('Đã lưu phân công người dùng.'); setDialog(null); await load(); } catch (reason) { setError(reason); toast.error(reason.message||'Vui lòng thử lại.',{title:'Không thể lưu phân công'}); } }
-  async function confirmAction() { const action = confirmation; setConfirmation(null); try { await usersApi[action](id); toast.success(action==='lock'?'Đã khóa tài khoản.':'Đã mở khóa tài khoản.'); await load(); } catch (reason) { setError(reason); toast.error(reason.message||'Vui lòng thử lại.',{title:'Không thể cập nhật tài khoản'}); } }
-  if (loading || error) return <section><PageHeader title="Chi tiết người dùng" /><div className="surface"><RequestState loading={loading} error={error} onRetry={load} /></div></section>;
-  return <section><PageHeader title={user.fullName || user.lecturerCode} description="Thông tin hồ sơ và thao tác quản trị tài khoản." actions={<Link to={routes.users}><Button variant="secondary">Quay lại</Button></Link>} /><div className="detail-grid"><article className="surface detail-card"><header><div className="profile-avatar">{user.avatar ? <img src={user.avatar} alt="" /> : (user.fullName || user.lecturerCode).slice(0, 2).toUpperCase()}</div><div><h2>{user.fullName || 'Chưa cập nhật họ tên'}</h2><p>{user.lecturerCode}</p></div><StatusBadge status={user.status} /></header><dl><Info label="Email" value={user.email} /><Info label="Điện thoại" value={user.phone} /><Info label="Ngày sinh" value={user.dateOfBirth} /><Info label="Địa chỉ" value={user.address} /><Info label="Khoa" value={user.facultyName||user.faculty?.name||user.facultyId} /><Info label="Vai trò" value={roleLabels[user.role] || user.role} /><Info label="Cập nhật" value={formatDateTime(user.updatedAt)} /></dl></article><aside className="surface admin-actions"><h2>Quản trị tài khoản</h2><p>Các thay đổi vẫn được User Service kiểm tra quyền và business rule.</p><Button variant="secondary" onClick={() => { setValue(assignableUserRoles.includes(user.role) ? user.role : 'USER'); setDialog('role'); }}>Gán vai trò</Button><Button variant="secondary" onClick={() => { setValue(user.facultyId || ''); setDialog('faculty'); }}>Gán hoặc chuyển khoa</Button>{user.status === 'LOCKED' ? <Button onClick={() => setConfirmation('unlock')}>Mở khóa tài khoản</Button> : <Button variant="danger" onClick={() => setConfirmation('lock')}>Khóa tài khoản</Button>}</aside></div><Dialog open={dialog === 'role'} title="Gán vai trò" onClose={() => setDialog(null)} footer={<><Button variant="secondary" onClick={() => setDialog(null)}>Hủy</Button><Button onClick={saveAssignment}>Lưu</Button></>}><Select label="Vai trò" value={value} onChange={event => setValue(event.target.value)} options={assignableUserRoles.map(role => ({ value: role, label: roleLabels[role] || role }))} /><p className="form-note">Endpoint quản trị chỉ cho phép gán USER hoặc SUBJECT_ADMIN; backend quyết định tính hợp lệ cuối cùng.</p></Dialog><Dialog open={dialog === 'faculty'} title="Gán hoặc chuyển khoa" onClose={() => setDialog(null)} footer={<><Button variant="secondary" onClick={() => setDialog(null)}>Hủy</Button><Button disabled={!value.trim()} onClick={saveAssignment}>Lưu</Button></>}><FacultyCombobox value={value} onChange={setValue}/><p className="form-note">Chỉ hiển thị khoa đang hoạt động; hệ thống gửi mã khoa trong trường facultyId theo contract hiện tại.</p></Dialog><ConfirmDialog open={Boolean(confirmation)} danger={confirmation === 'lock'} title={confirmation === 'lock' ? 'Khóa tài khoản?' : 'Mở khóa tài khoản?'} description={confirmation === 'lock' ? `Tài khoản ${user.lecturerCode} sẽ không thể tiếp tục hoạt động.` : `Tài khoản ${user.lecturerCode} sẽ được mở khóa ở góc độ nghiệp vụ.`} confirmLabel={confirmation === 'lock' ? 'Khóa tài khoản' : 'Mở khóa'} onClose={() => setConfirmation(null)} onConfirm={confirmAction} /></section>;
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dialog, setDialog] = useState(null);
+  const [value, setValue] = useState('');
+  const [confirmation, setConfirmation] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setUser(await usersApi.get(id));
+    } catch (reason) {
+      setError(reason);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function saveAssignment() {
+    try {
+      if (dialog === 'role') await usersApi.assignRole(id, value);
+      else await usersApi.assignFaculty(id, value.trim());
+      toast.success('Đã lưu phân công người dùng.');
+      setDialog(null);
+      await load();
+    } catch (reason) {
+      setError(reason);
+      toast.error(reason.message || 'Vui lòng thử lại.', { title: 'Không thể lưu phân công' });
+    }
+  }
+
+  async function confirmAction() {
+    const action = confirmation;
+    setConfirmation(null);
+    try {
+      await usersApi[action](id);
+      if (action === 'remove') {
+        toast.success('Đã xóa tài khoản và ẩn danh hồ sơ.');
+        navigate(routes.users);
+        return;
+      }
+      toast.success(action === 'lock' ? 'Đã khóa tài khoản.' : 'Đã mở khóa tài khoản.');
+      await load();
+    } catch (reason) {
+      setError(reason);
+      toast.error(reason.message || 'Vui lòng thử lại.', { title: 'Không thể cập nhật tài khoản' });
+    }
+  }
+
+  if (loading || error) {
+    return <section><PageHeader title="Chi tiết người dùng" /><div className="surface"><RequestState loading={loading} error={error} onRetry={load} /></div></section>;
+  }
+
+  const confirmCopy = confirmation ? confirmationContent[confirmation] : null;
+
+  return (
+    <section>
+      <PageHeader
+        title={user.fullName || user.lecturerCode}
+        description="Thông tin hồ sơ và thao tác quản trị tài khoản."
+        actions={<Link to={routes.users}><Button variant="secondary">Quay lại</Button></Link>}
+      />
+      <div className="detail-grid">
+        <article className="surface detail-card">
+          <header>
+            <div className="profile-avatar">
+              {user.avatar ? <img src={user.avatar} alt="" /> : (user.fullName || user.lecturerCode).slice(0, 2).toUpperCase()}
+            </div>
+            <div><h2>{user.fullName || 'Chưa cập nhật họ tên'}</h2><p>{user.lecturerCode}</p></div>
+            <StatusBadge status={user.status} />
+          </header>
+          <dl>
+            <Info label="Email" value={user.email} />
+            <Info label="Điện thoại" value={user.phone} />
+            <Info label="Ngày sinh" value={user.dateOfBirth} />
+            <Info label="Địa chỉ" value={user.address} />
+            <Info label="Khoa" value={user.facultyName || user.faculty?.name || user.facultyId} />
+            <Info label="Vai trò" value={roleLabels[user.role] || user.role} />
+            <Info label="Cập nhật" value={formatDateTime(user.updatedAt)} />
+          </dl>
+        </article>
+        <aside className="surface admin-actions">
+          <h2>Quản trị tài khoản</h2>
+          <p>Các thay đổi vẫn được User Service kiểm tra quyền và business rule.</p>
+          <Button variant="secondary" onClick={() => { setValue(assignableUserRoles.includes(user.role) ? user.role : 'USER'); setDialog('role'); }}>Gán vai trò</Button>
+          <Button variant="secondary" onClick={() => { setValue(user.facultyId || ''); setDialog('faculty'); }}>Gán hoặc chuyển khoa</Button>
+          {user.status === 'LOCKED'
+            ? <Button onClick={() => setConfirmation('unlock')}>Mở khóa tài khoản</Button>
+            : <Button variant="danger" onClick={() => setConfirmation('lock')}>Khóa tài khoản</Button>}
+          {user.role !== 'SYSTEM_ADMIN' && <Button variant="danger" onClick={() => setConfirmation('remove')}>Xóa tài khoản</Button>}
+        </aside>
+      </div>
+
+      <Dialog
+        open={dialog === 'role'}
+        title="Gán vai trò"
+        onClose={() => setDialog(null)}
+        footer={<><Button variant="secondary" onClick={() => setDialog(null)}>Hủy</Button><Button onClick={saveAssignment}>Lưu</Button></>}
+      >
+        <Select label="Vai trò" value={value} onChange={event => setValue(event.target.value)} options={assignableUserRoles.map(role => ({ value: role, label: roleLabels[role] || role }))} />
+        <p className="form-note">Endpoint quản trị chỉ cho phép gán USER hoặc SUBJECT_ADMIN; backend quyết định tính hợp lệ cuối cùng.</p>
+      </Dialog>
+      <Dialog
+        open={dialog === 'faculty'}
+        title="Gán hoặc chuyển khoa"
+        onClose={() => setDialog(null)}
+        footer={<><Button variant="secondary" onClick={() => setDialog(null)}>Hủy</Button><Button disabled={!value.trim()} onClick={saveAssignment}>Lưu</Button></>}
+      >
+        <FacultyCombobox value={value} onChange={setValue} />
+        <p className="form-note">Chỉ hiển thị khoa đang hoạt động; hệ thống gửi mã khoa trong trường facultyId theo contract hiện tại.</p>
+      </Dialog>
+      <ConfirmDialog
+        open={Boolean(confirmCopy)}
+        danger={confirmation === 'lock' || confirmation === 'remove'}
+        title={confirmCopy?.title || ''}
+        description={confirmCopy ? confirmCopy.description(user.lecturerCode) : ''}
+        confirmLabel={confirmCopy?.label || ''}
+        onClose={() => setConfirmation(null)}
+        onConfirm={confirmAction}
+      />
+    </section>
+  );
 }
-function Info({ label, value }) { return <div><dt>{label}</dt><dd>{value || '—'}</dd></div>; }
+
+function Info({ label, value }) {
+  return <div><dt>{label}</dt><dd>{value || '—'}</dd></div>;
+}

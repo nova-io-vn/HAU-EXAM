@@ -11,6 +11,7 @@ import com.questionservice.domain.model.Chapter;
 import com.questionservice.domain.model.Role;
 import com.questionservice.domain.model.Subject;
 import com.questionservice.domain.model.Topic;
+import com.questionservice.domain.model.KnowledgeItem;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -87,6 +88,20 @@ public class CatalogService {
         Topic old = id == null ? null : topic(id);
         return repo.saveTopic(new Topic(id == null ? UUID.randomUUID() : id, chapterId, required(code),
                 required(name), old == null ? now : old.createdAt(), now));
+    }
+
+    public KnowledgeItem saveKnowledgeItem(UUID id, UUID topicId, String code, String name, int ordinal,
+                                           int targetEasy, int targetMedium, int targetHard, Actor actor) {
+        Topic topic = topic(topicId);
+        Chapter chapter = chapter(topic.chapterId());
+        manageCanonical(actor, subject(chapter.subjectId()));
+        if (id != null && !knowledgeItem(id).topicId().equals(topicId))
+            throw new IllegalArgumentException("Knowledge item does not belong to topic");
+        Instant now = Instant.now(clock);
+        KnowledgeItem old = id == null ? null : knowledgeItem(id);
+        return repo.saveKnowledgeItem(new KnowledgeItem(id == null ? UUID.randomUUID() : id, topicId,
+                required(code), required(name), ordinal, targetEasy, targetMedium, targetHard,
+                old == null ? now : old.createdAt(), now));
     }
 
     @Transactional(readOnly = true)
@@ -187,6 +202,14 @@ public class CatalogService {
         return repo.findTopics(chapterId);
     }
 
+    @Transactional(readOnly = true)
+    public List<KnowledgeItem> knowledgeItems(UUID topicId, Actor actor) {
+        Topic topic = topic(topicId);
+        Chapter chapter = chapter(topic.chapterId());
+        requireReadScope(actor, subject(chapter.subjectId()));
+        return repo.findKnowledgeItems(topicId);
+    }
+
     public void deleteSubject(UUID id, Actor actor) {
         Subject subject = subject(id);
         manageCanonical(actor, subject);
@@ -206,6 +229,35 @@ public class CatalogService {
         repo.deleteTopic(id);
     }
 
+    public void deleteKnowledgeItem(UUID id, Actor actor) {
+        KnowledgeItem item = knowledgeItem(id);
+        Topic topic = topic(item.topicId());
+        Chapter chapter = chapter(topic.chapterId());
+        manageCanonical(actor, subject(chapter.subjectId()));
+        repo.deleteKnowledgeItem(id);
+    }
+
+    public void importStructure(UUID subjectId, List<StructureChapter> chapters, Actor actor) {
+        Subject target = subject(subjectId); manageCanonical(actor, target);
+        if (chapters == null || chapters.isEmpty()) throw new IllegalArgumentException("At least one chapter is required");
+        int chapterOrdinal = 1;
+        for (StructureChapter chapter : chapters) {
+            Chapter savedChapter = saveChapter(null, subjectId, chapter.code(), chapter.name(), chapterOrdinal++, actor);
+            for (StructureTopic topic : chapter.topics()) {
+                Topic savedTopic = saveTopic(null, savedChapter.id(), topic.code(), topic.name(), actor);
+                int itemOrdinal = 1;
+                for (StructureItem item : topic.items()) {
+                    saveKnowledgeItem(null, savedTopic.id(), item.code(), item.name(), itemOrdinal++,
+                            item.targetEasy(), item.targetMedium(), item.targetHard(), actor);
+                }
+            }
+        }
+    }
+
+    public record StructureChapter(String code,String name,List<StructureTopic> topics){}
+    public record StructureTopic(String code,String name,List<StructureItem> items){}
+    public record StructureItem(String code,String name,int targetEasy,int targetMedium,int targetHard){}
+
     private Subject subject(UUID id) {
         return repo.findSubject(id).orElseThrow(() -> new NotFoundException("SUBJECT_NOT_FOUND", "Subject not found"));
     }
@@ -214,6 +266,9 @@ public class CatalogService {
     }
     private Topic topic(UUID id) {
         return repo.findTopic(id).orElseThrow(() -> new NotFoundException("TOPIC_NOT_FOUND", "Topic not found"));
+    }
+    private KnowledgeItem knowledgeItem(UUID id) {
+        return repo.findKnowledgeItem(id).orElseThrow(() -> new NotFoundException("KNOWLEDGE_ITEM_NOT_FOUND", "Knowledge item not found"));
     }
 
     private void manageCanonical(Actor actor, Subject subject) {

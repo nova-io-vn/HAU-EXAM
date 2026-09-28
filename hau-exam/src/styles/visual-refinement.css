@@ -1,0 +1,129 @@
+/* Shared visual language for the HAU workspace. Keep layout and feature CSS separate. */
+body {
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.button {
+  min-height: 40px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease;
+}
+
+.button.button-primary {
+  background: var(--hau-primary);
+  border-color: var(--hau-primary);
+  color: #fff;
+}
+
+.button.button-primary:not(:disabled):hover,
+.button.button-primary:not(:disabled):active {
+  background: var(--hau-primary-hover);
+  border-color: var(--hau-primary-hover);
+}
+
+.button.button-secondary {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.button.button-secondary:not(:disabled):hover,
+.button.button-ghost:not(:disabled):hover {
+  background: var(--surface-muted);
+  border-color: var(--border-strong);
+}
+
+.button.button-ghost { border-color: transparent; }
+.button.button-danger { background: var(--danger); border-color: var(--danger); }
+.button:focus-visible { box-shadow: var(--focus); }
+
+.page-header h1 {
+  font-size: clamp(28px, 2.2vw, 32px);
+  font-weight: 750;
+  letter-spacing: -.7px;
+}
+
+.page-header p { color: var(--text-muted); }
+
+.surface, .card, .editor-section, .settings-card {
+  border-color: var(--border);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .03);
+}
+
+.field { font-weight: 600; }
+.field input, .field select, .field textarea {
+  border-color: var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+.field input:hover, .field select:hover, .field textarea:hover { border-color: var(--border-strong); }
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--hau-primary);
+  box-shadow: var(--focus);
+  outline: 0;
+}
+
+.table-wrap th {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.table-wrap tbody tr { transition: background-color .16s ease; }
+.table-wrap tbody tr:hover { background: var(--hau-primary-soft); }
+
+.status { border: 1px solid transparent; font-weight: 650; }
+.status-success { border-color: color-mix(in srgb, var(--success) 18%, transparent); }
+.status-warning { border-color: color-mix(in srgb, var(--warning) 18%, transparent); }
+.status-danger { border-color: color-mix(in srgb, var(--danger) 18%, transparent); }
+
+.sidebar nav a.active, .sidebar-bottom a.active {
+  background: var(--hau-primary-soft);
+  color: var(--hau-primary);
+  box-shadow: inset 3px 0 var(--hau-primary);
+}
+.sidebar nav a.active .nav-icon { color: var(--hau-primary) !important; }
+.sidebar nav a:hover, .sidebar-bottom a:hover, .sidebar-bottom button:hover {
+  background: var(--surface-muted);
+}
+.topbar { box-shadow: 0 1px 3px rgba(16, 24, 40, .03); }
+
+.dialog, .drawer {
+  border-color: var(--border);
+  box-shadow: 0 18px 44px rgba(16, 24, 40, .16);
+}
+
+/* Legacy page rules that previously forced light-only surfaces. */
+.topbar,
+.global-search,
+.admin-kpi,
+.onboarding-tour,
+.onboarding-tour button,
+.faculty-detail-head,
+.knowledge-file-field input,
+.knowledge-document,
+.image-picker,
+.option-card,
+.editor-section,
+.question-editor textarea {
+  background: var(--surface);
+}
+
+.breadcrumb li + li::before { color: var(--text-muted); }
+
+html[data-theme='dark'] .global-search input,
+html[data-theme='dark'] .question-editor textarea {
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button, .table-wrap tbody tr { transition: none; }
+}

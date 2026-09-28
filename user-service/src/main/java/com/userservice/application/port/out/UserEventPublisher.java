@@ -8,4 +8,5 @@ public interface UserEventPublisher {
     void roleChanged(UserProfile user, UUID correlationId);
     void facultyChanged(UserProfile user, UUID correlationId);
     void statusChanged(UserProfile user, UUID correlationId);
+    void accountImportRequested(UserProfile user, UUID correlationId);
 }

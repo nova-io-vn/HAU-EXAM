@@ -60,6 +60,10 @@ public final class AuthAccount {
         );
     }
 
+    public static AuthAccount importedPending(UUID id, String lecturerCode, String passwordHash, String securityEmail, String facultyId, Instant now) {
+        return new AuthAccount(id, lecturerCode, passwordHash, AccountStatus.PENDING_APPROVAL, "USER", facultyId, securityEmail, now, now, 0);
+    }
+
     public boolean canAuthenticate() {
         return status == AccountStatus.ACTIVE;
     }

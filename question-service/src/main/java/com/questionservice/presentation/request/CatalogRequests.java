@@ -20,6 +20,11 @@ public final class CatalogRequests {
     public record TopicRequest(@NotNull UUID chapterId, @NotBlank String code, @NotBlank String name) {
     }
 
+    public record KnowledgeItemRequest(@NotNull UUID topicId, @NotBlank String code, @NotBlank String name,
+                                       @Min(0) int ordinal, @Min(0) int targetEasy,
+                                       @Min(0) int targetMedium, @Min(0) int targetHard) {
+    }
+
     public record LecturerAssignmentRequest(@NotNull UUID userId) {
     }
 }

@@ -15,4 +15,8 @@ export const usersApi={
   assignFaculty:(id,facultyId)=>api.put(`${USERS_PATH}/${id}/faculty`,{facultyId}),
   lock:id=>api.post(`${USERS_PATH}/${id}/lock`),
   unlock:id=>api.post(`${USERS_PATH}/${id}/unlock`),
+  remove:id=>api.delete(`${USERS_PATH}/${id}`),
+  importTemplate:()=>api.get(`${USERS_PATH}/import/template`,{responseType:'blob'}),
+  previewImport:file=>{const body=new FormData();body.append('file',file);return api.post(`${USERS_PATH}/import/preview`,body)},
+  confirmImport:file=>{const body=new FormData();body.append('file',file);return api.post(`${USERS_PATH}/import/confirm`,body)},
 }

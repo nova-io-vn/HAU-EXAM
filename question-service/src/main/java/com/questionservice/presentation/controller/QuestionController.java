@@ -62,6 +62,19 @@ public class QuestionController {
         return ApiResponse.ok(QuestionResponse.from(service.getForActor(id, actors.from(jwt))));
     }
 
+    @GetMapping("/approved")
+    @PreAuthorize("hasAnyRole('SUBJECT_ADMIN','USER')")
+    public ApiResponse<PageResult<QuestionResponse>> approved(@AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) UUID subjectId, @RequestParam(required = false) UUID chapterId,
+            @RequestParam(required = false) UUID topicId, @RequestParam(required = false) Difficulty difficulty,
+            @RequestParam(required = false) QuestionSource source, @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+        var p = service.searchApproved(actors.from(jwt), new QuestionCriteria(null, subjectId, chapterId, topicId,
+                difficulty, QuestionStatus.APPROVED, source, null, keyword, page, size, sort));
+        return ApiResponse.ok(new PageResult<>(p.items().stream().map(QuestionResponse::from).toList(), p.page(), p.size(), p.totalElements(), p.totalPages()));
+    }
+
     @GetMapping
     public ApiResponse<PageResult<QuestionResponse>> search(@AuthenticationPrincipal Jwt jwt, @RequestParam(required = false) String facultyId, @RequestParam(required = false) UUID subjectId, @RequestParam(required = false) UUID chapterId, @RequestParam(required = false) UUID topicId, @RequestParam(required = false) Difficulty difficulty, @RequestParam(required = false) QuestionStatus status, @RequestParam(required = false) QuestionSource source, @RequestParam(required = false) UUID createdBy, @RequestParam(required = false) String keyword, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "createdAt,desc") String sort) {
         var p = service.search(actors.from(jwt), new QuestionCriteria(facultyId, subjectId, chapterId, topicId, difficulty, status, source, createdBy, keyword, page, size, sort));
@@ -121,6 +134,6 @@ public class QuestionController {
     }
 
     private static QuestionInput input(QuestionRequest r) {
-        return new QuestionInput(r.facultyId(), r.subjectId(), r.chapterId(), r.topicId(), r.content(), r.imageUrl(), r.storageKey(), r.type(), r.difficulty(), r.options().stream().map(o -> new QuestionOption(null, o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList());
+        return new QuestionInput(r.facultyId(), r.subjectId(), r.chapterId(), r.topicId(), r.knowledgeItemId(), r.assignmentId(), r.content(), r.imageUrl(), r.storageKey(), r.type(), r.difficulty(), r.options().stream().map(o -> new QuestionOption(null, o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList());
     }
 }
