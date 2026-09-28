@@ -37,3 +37,5 @@ openspec/
 .claude/
 .agent/
 .agents/
+
+.m2-work/
