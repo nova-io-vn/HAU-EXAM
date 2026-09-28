@@ -26,6 +26,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.notificationservice.domain.exception.ForbiddenNotificationAccessException;
 
 @ExtendWith(MockitoExtension.class)
 class SupportChatServiceTest {
@@ -125,6 +127,21 @@ class SupportChatServiceTest {
         assertThat(sent.content()).isEqualTo("Xin chào");
         verify(realtime).convertAndSendToUser(org.mockito.ArgumentMatchers.eq(user.toString()), org.mockito.ArgumentMatchers.eq("/queue/support"), any());
         verify(realtime).convertAndSendToUser(org.mockito.ArgumentMatchers.eq(subjectAdmin.toString()), org.mockito.ArgumentMatchers.eq("/queue/support"), any());
+    }
+
+    @Test
+    void senderCanRevokeOwnMessageAndRecipientIsNotified() {
+        UUID user=UUID.randomUUID(),recipient=UUID.randomUUID();var conversation=conversation(user,recipient);var message=new SupportMessageEntity();message.setId(UUID.randomUUID());message.setConversationId(conversation.getId());message.setSenderId(user);message.setSenderRole("USER");message.setContent("Nội dung");message.setCreatedAt(Instant.now());
+        when(messages.findById(message.getId())).thenReturn(Optional.of(message));when(conversations.findById(conversation.getId())).thenReturn(Optional.of(conversation));when(messages.save(message)).thenReturn(message);
+        var result=service.revokeMessage(message.getId(),user,"USER","CNTT");
+        assertThat(result.deleted()).isTrue();assertThat(result.content()).isNull();verify(realtime).convertAndSendToUser(org.mockito.ArgumentMatchers.eq(recipient.toString()),org.mockito.ArgumentMatchers.eq("/queue/support"),any());
+    }
+
+    @Test
+    void anotherParticipantCannotRevokeSendersMessage() {
+        UUID user=UUID.randomUUID(),recipient=UUID.randomUUID();var conversation=conversation(user,recipient);var message=new SupportMessageEntity();message.setId(UUID.randomUUID());message.setConversationId(conversation.getId());message.setSenderId(user);message.setCreatedAt(Instant.now());
+        when(messages.findById(message.getId())).thenReturn(Optional.of(message));when(conversations.findById(conversation.getId())).thenReturn(Optional.of(conversation));
+        assertThrows(ForbiddenNotificationAccessException.class,()->service.revokeMessage(message.getId(),recipient,"SUBJECT_ADMIN","CNTT"));
     }
 
     private static UserContact contact(UUID id, String role, String faculty) {

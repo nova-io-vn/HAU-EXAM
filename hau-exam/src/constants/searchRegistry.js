@@ -7,7 +7,7 @@ const feature=(label,keywords,route,allowedRoles=allRoles,description='')=>({lab
 export const searchableFeatures=[
   feature('Tổng quan',['trang chủ','dashboard'],routes.dashboard),
   feature('Hồ sơ cá nhân',['hồ sơ','tài khoản','profile'],routes.profile),
-  feature('Trợ lý HAU QM',['hỏi đáp','hướng dẫn','trợ lý','hau ai'],routes.systemHelp),
+  feature('Kute',['hỏi đáp','hướng dẫn','trợ lý','hau ai'],routes.systemHelp),
   feature('Thông báo',['notification','tin mới'],routes.notifications),
   feature('Tạo câu hỏi',['câu hỏi','question','tạo mới'],routes.newQuestion,[roles.USER]),
   feature('Câu hỏi của tôi',['câu hỏi','question','bản nháp'],routes.myQuestions,[roles.USER]),

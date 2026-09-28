@@ -111,9 +111,13 @@ public class SystemHelpService {
     private Result simpleAnswer(String message) {
         String normalized = message.trim().toLowerCase(Locale.ROOT).replaceAll("[!?.]+$", "");
         if (Set.of("xin chào", "chào", "hello", "hi").contains(normalized))
-            return plain("Xin chào! Tôi là Trợ lý HAU QM. Tôi có thể hỗ trợ bạn về hệ thống, học liệu hoặc các câu hỏi kiến thức phổ thông an toàn.");
+            return plain("Xin chào, mình là Kute ✨ Mình là trợ lý AI của HAU QM, có thể hỗ trợ bạn sử dụng hệ thống, học liệu và các câu hỏi kiến thức phổ thông an toàn.");
         if (normalized.contains("bạn là ai") || normalized.contains("ban la ai"))
-            return plain("Tôi là HAU QM Assistant, trợ lý hỗ trợ sử dụng hệ thống và giải đáp ngắn gọn các câu hỏi kiến thức phổ thông an toàn.");
+            return plain("Mình là Kute, trợ lý AI của HAU QM. Mình không phải người thật, nhưng mình luôn sẵn sàng hỗ trợ bạn một cách rõ ràng và thân thiện.");
+        if (normalized.contains("người thật") || normalized.contains("nguoi that"))
+            return plain("Không nhé, mình là Kute — một trợ lý AI của HAU QM, không phải người thật. Mình không có cơ thể hay đời sống cá nhân, nhưng có thể hỗ trợ bạn về hệ thống và kiến thức an toàn.");
+        if (normalized.contains("hôm nay mình nên bắt đầu từ đâu") || normalized.contains("hom nay minh nen bat dau tu dau"))
+            return plain("Mình gợi ý bắt đầu bằng một mục tiêu nhỏ: kiểm tra thông báo, chọn việc quan trọng nhất cần hoàn thành, rồi dành 25 phút tập trung cho việc đó. Nếu bạn nói vai trò và mục tiêu hôm nay, mình có thể đề xuất cụ thể hơn.");
         if (normalized.equals("cảm ơn") || normalized.equals("cam on") || normalized.equals("thank you") || normalized.equals("thanks"))
             return plain("Rất vui được hỗ trợ bạn. Nếu cần, bạn cứ hỏi tiếp nhé!");
         if (normalized.matches("1\\s*\\+\\s*1(\\s*bằng\\s*mấy|\\s*=\\s*\\?|\\s*la\\s*may)?"))

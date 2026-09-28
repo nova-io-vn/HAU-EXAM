@@ -36,6 +36,10 @@ public class UserProfilePersistenceAdapter implements UserProfileRepository {
         return repository.findById(id).map(mapper::toDomain);
     }
 
+    public List<UserProfile> findAllById(Iterable<UUID> ids) {
+        return repository.findAllById(ids).stream().map(mapper::toDomain).toList();
+    }
+
     public Optional<UserProfile> findByLecturerCode(String code) {
         return repository.findByLecturerCode(normalize(code)).map(mapper::toDomain);
     }

@@ -4,15 +4,25 @@ import com.questionservice.domain.model.*;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.Set;
+import com.questionservice.application.model.LecturerProfile;
 
 public final class CatalogResponse {
     private CatalogResponse() {
     }
 
-    public record SubjectView(UUID id, String facultyId, String code, String name, Instant createdAt,
+    public record SubjectView(UUID id, String facultyId, String managingFacultyId, Set<String> participatingFacultyIds, String code, String name, Instant createdAt,
                               Instant updatedAt) {
         public static SubjectView from(Subject s) {
-            return new SubjectView(s.id(), s.facultyId(), s.code(), s.name(), s.createdAt(), s.updatedAt());
+            return new SubjectView(s.id(), s.managingFacultyId(), s.managingFacultyId(), s.participatingFacultyIds(), s.code(), s.name(), s.createdAt(), s.updatedAt());
+        }
+    }
+
+    public record LecturerView(UUID userId, String lecturerCode, String fullName, String facultyId,
+                               String academicRank, String academicDegree, String avatarUrl) {
+        public static LecturerView from(LecturerProfile profile) {
+            return new LecturerView(profile.userId(), profile.lecturerCode(), profile.fullName(), profile.facultyId(),
+                    profile.academicRank(), profile.academicDegree(), profile.avatarUrl());
         }
     }
 

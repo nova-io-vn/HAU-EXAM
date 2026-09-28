@@ -16,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     @Bean
     SecurityFilterChain filter(HttpSecurity http) throws Exception {
-        return http.csrf(c -> c.disable()).authorizeHttpRequests(a -> a.requestMatchers("/actuator/health", "/api/v1/internal/subjects/*/assignments/*").permitAll().anyRequest().authenticated()).oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter()))).build();
+        return http.csrf(c -> c.disable()).authorizeHttpRequests(a -> a.requestMatchers("/actuator/health", "/api/v1/internal/subjects/*/assignments/*", "/api/v1/internal/catalog-contexts").permitAll().anyRequest().authenticated()).oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter()))).build();
     }
 
     @Bean

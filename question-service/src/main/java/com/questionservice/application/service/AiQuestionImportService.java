@@ -53,7 +53,7 @@ public class AiQuestionImportService {
     private void validateTaxonomy(UUID subjectId,UUID chapterId,UUID topicId,String facultyId){
         if(catalog==null)return;
         var subject=catalog.findSubject(subjectId).orElseThrow(()->new IllegalArgumentException("AI subject not found"));
-        if(!facultyId.equals(subject.facultyId()))throw new IllegalArgumentException("AI subject is outside faculty scope");
+        if(!subject.isAvailableTo(facultyId))throw new IllegalArgumentException("AI subject is outside faculty scope");
         var chapter=catalog.findChapter(chapterId).orElseThrow(()->new IllegalArgumentException("AI chapter not found"));
         if(!subjectId.equals(chapter.subjectId()))throw new IllegalArgumentException("AI chapter does not belong to subject");
         if(topicId!=null&&catalog.findTopic(topicId).map(topic->chapterId.equals(topic.chapterId())).orElse(false)==false)throw new IllegalArgumentException("AI topic does not belong to chapter");

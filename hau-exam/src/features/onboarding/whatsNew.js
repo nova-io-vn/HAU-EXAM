@@ -9,7 +9,7 @@ export const CURRENT_WHATS_NEW = {
   // TODO: replace with src/assets/whats-new.gif.
   image: whatsNewPlaceholder,
   items: [
-    ['Trợ lý Kute', 'Hướng dẫn sử dụng hệ thống theo từng bước.'],
+    ['Kute', 'Trợ lý AI hướng dẫn sử dụng hệ thống theo từng bước.'],
     ['Tin nhắn', 'Trao đổi trực tiếp với giảng viên và quản trị viên.'],
     ['Ngân hàng câu hỏi', 'Quản lý và phê duyệt câu hỏi theo quy trình chuyên môn.'],
     ['Quản lý đề thi', 'Xây dựng ma trận và tạo đề từ câu hỏi đã được phê duyệt.'],

@@ -45,8 +45,12 @@ public class UserProfileController {
     }
 
     @GetMapping("/chat-contacts")
-    public ApiResponse<List<UserContactQueryService.ChatContact>> chatContacts(@AuthenticationPrincipal Jwt jwt) {
-        return ApiResponse.success(contacts.contacts(userId(jwt), jwt.getClaimAsString("role"), jwt.getClaimAsString("facultyId")));
+    public ApiResponse<List<UserContactQueryService.ChatContact>> chatContacts(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String facultyId,
+            @RequestParam(required = false) String role) {
+        return ApiResponse.success(contacts.contacts(userId(jwt), jwt.getClaimAsString("role"), jwt.getClaimAsString("facultyId"), keyword, facultyId, role));
     }
 
     @GetMapping("/directory")

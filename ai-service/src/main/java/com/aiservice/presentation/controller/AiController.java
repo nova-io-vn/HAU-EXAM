@@ -2,6 +2,7 @@ package com.aiservice.presentation.controller;
 
 import com.aiservice.application.service.AiJobService;
 import com.aiservice.application.service.AiWorkspaceService;
+import com.aiservice.application.service.AiJobQueryService;
 import com.aiservice.application.port.out.UserDirectoryPort;
 import com.aiservice.domain.model.JobType;
 import com.aiservice.presentation.request.AiRequests.*;
@@ -24,9 +25,10 @@ public class AiController {
     private final ObjectMapper mapper;
     private final AiWorkspaceService workspace;
     private final UserDirectoryPort users;
+    private final AiJobQueryService jobQueries;
 
-    public AiController(AiJobService j, ObjectMapper m, AiWorkspaceService workspace, UserDirectoryPort users) {
-        jobs = j; mapper = m; this.workspace = workspace; this.users = users;
+    public AiController(AiJobService j, ObjectMapper m, AiWorkspaceService workspace, UserDirectoryPort users, AiJobQueryService jobQueries) {
+        jobs = j; mapper = m; this.workspace = workspace; this.users = users; this.jobQueries = jobQueries;
     }
 
     @PostMapping("/ai/generate/questions")
@@ -45,16 +47,27 @@ public class AiController {
     }
 
     @GetMapping("/ai/jobs/{id}")
-    public ApiResponse<JobView> get(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
-        return ApiResponse.ok(JobView.from(jobs.get(id, UUID.fromString(jwt.getSubject()))));
+    public ApiResponse<?> get(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.ok(detailView(jobQueries.detail(id, UUID.fromString(jwt.getSubject()), jwt.getClaimAsString("role"), jwt.getClaimAsString("facultyId"))));
     }
 
     @GetMapping("/admin/ai/jobs")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ApiResponse<?> adminJobs(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
-        var result = workspace.allJobs(page, size);
-        return ApiResponse.ok(new com.aiservice.application.model.WorkspacePage<>(result.items().stream().map(job -> JobView.from(job, users.displayName(job.requestedBy()))).toList(), result.page(), result.size(), result.totalElements(), result.totalPages()));
+        return ApiResponse.ok(jobQueries.all(page, size));
     }
+
+    private Object detailView(com.aiservice.application.model.AiJobViews.Detail detail) {
+        String result = detail.resultJson();
+        return new JobDetailView(detail.summary(), detail.sourceType(), detail.document(), detail.description(), detail.generationConfig(),
+                detail.provider(), detail.model(), detail.acceptedCount(), detail.rejectedCount(),
+                result == null ? null : mapper.readTree(result), detail.errorCode(), detail.errorMessage());
+    }
+
+    public record JobDetailView(com.aiservice.application.model.AiJobViews.Summary summary, String sourceType,
+            com.aiservice.application.model.AiJobViews.DocumentContext document, String description, java.util.Map<String,Object> generationConfig,
+            String provider, String model, Integer acceptedCount, Integer rejectedCount, tools.jackson.databind.JsonNode result,
+            String errorCode, String errorMessage) { }
 
     private JobView create(Jwt jwt, UUID doc, JobType type, Object body, UUID c) {
         return JobView.from(jobs.create(UUID.fromString(jwt.getSubject()), doc, type, mapper.writeValueAsString(body), c));

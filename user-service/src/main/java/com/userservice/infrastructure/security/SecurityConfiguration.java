@@ -32,6 +32,8 @@ public class SecurityConfiguration {
                         "/actuator/health",
                         "/api/v1/internal/users/audience",
                         "/api/v1/internal/users/*/contact",
+                        "/api/v1/internal/users/lecturers",
+                        "/api/v1/internal/users/contacts",
                         "/api/v1/public/faculties",
                         "/api/v1/public/system-branding"
                 ).permitAll().anyRequest().authenticated())

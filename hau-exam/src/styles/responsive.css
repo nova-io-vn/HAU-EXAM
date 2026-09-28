@@ -5,12 +5,16 @@ body{min-width:320px}
 img,svg,video,canvas{max-width:100%}
 button,input,select,textarea{max-width:100%}
 input,select,textarea{font-size:16px}
-p,h1,h2,h3,h4,h5,h6,td,th,span,strong,b,a{overflow-wrap:anywhere}
+p,h1,h2,h3,h4,h5,h6{overflow-wrap:break-word;word-break:normal}
 .app-shell,.app-frame,.app-content,.surface,.card,.editor-section,.admin-panel,.settings-card,.question-editor,.ai-stack,.chat-layout{min-width:0}
 .app-content{width:100%;max-width:1600px}
 .table-wrap{max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .table-wrap table{min-width:640px}
-.table-wrap th,.table-wrap td{white-space:normal;overflow-wrap:anywhere}
+.table-wrap th,.table-wrap td{white-space:normal;overflow-wrap:normal;word-break:normal;vertical-align:middle}
+.table-wrap .cell-nowrap,.table-wrap .status,.table-wrap .row-actions,.table-wrap time,.table-wrap .mono{white-space:nowrap}
+.table-wrap .cell-natural{min-width:150px;white-space:normal;overflow-wrap:normal;word-break:normal}
+.table-wrap .cell-person{min-width:190px}.table-wrap .cell-subject{min-width:180px}.table-wrap .cell-index{width:56px;min-width:56px}
+.table-wrap .question-cell,.table-wrap .review-author,.table-wrap td>span{overflow-wrap:normal;word-break:normal}.table-wrap .question-cell{display:-webkit-box;min-width:240px;max-width:440px;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:3}.table-wrap .row-actions{display:flex;align-items:center;gap:8px;min-width:max-content}.table-wrap th{white-space:nowrap}.table-wrap td{padding-block:10px}
 .page-actions,.editor-actions,.matrix-toolbar,.version-tabs,.form-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .page-actions .button,.editor-actions .button{max-width:100%}
 .field,.field input,.field select,.field textarea,.settings-form,.form-grid,.editor-grid{min-width:0;max-width:100%}
@@ -24,8 +28,8 @@ p,h1,h2,h3,h4,h5,h6,td,th,span,strong,b,a{overflow-wrap:anywhere}
 .notification-copy,.notification-meta{min-width:0}
 .notification-copy>b,.notification-copy>span{overflow-wrap:anywhere}
 .chat-layout,.chat-main,.chat-sidebar{min-width:0}
-.chat-message{overflow-wrap:anywhere;word-break:break-word}
-.chat-message p,.ai-output pre,.ai-message,.system-help-message p{overflow-wrap:anywhere;word-break:break-word}
+.chat-message{overflow-wrap:normal;word-break:normal}
+.chat-message p,.ai-message,.system-help-message p{overflow-wrap:normal;word-break:normal}.ai-output pre{overflow-x:auto;overflow-wrap:normal;word-break:normal}
 .chat-composer>div{min-width:0}
 .chat-composer textarea{min-width:0;max-width:100%}
 .matrix-table{max-width:100%;overflow-x:auto}
@@ -126,3 +130,8 @@ p,h1,h2,h3,h4,h5,h6,td,th,span,strong,b,a{overflow-wrap:anywhere}
 }
 
 @media (prefers-reduced-motion:reduce){.sidebar,.drawer,.global-search-popover{transition:none}}
+
+.table-wrap th,.table-wrap td{word-break:normal;overflow-wrap:normal;vertical-align:middle}
+.table-wrap .cell-natural,.table-wrap .question-cell,.table-wrap .review-author{white-space:normal;word-break:normal;overflow-wrap:normal}
+.table-wrap .cell-nowrap,.table-wrap .status,.table-wrap .row-actions,.table-wrap time,.table-wrap .mono{white-space:nowrap;word-break:normal;overflow-wrap:normal}
+.job-detail-grid dd,.job-detail-body .is-wide dd{overflow-wrap:normal;word-break:normal}

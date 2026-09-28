@@ -218,7 +218,8 @@ public class QuestionService {
     private void validateTaxonomy(UUID subjectId, UUID chapterId, UUID topicId, String facultyId) {
         if (catalog == null) return;
         var subject = catalog.findSubject(subjectId).orElseThrow(() -> new NotFoundException("Subject not found"));
-        if (!Objects.equals(subject.facultyId(), facultyId)) throw new ForbiddenException("Subject is outside faculty scope");
+        if (!subject.isAvailableTo(facultyId))
+            throw new ForbiddenException("SUBJECT_ACCESS_DENIED", "Subject is outside faculty scope");
         var chapter = catalog.findChapter(chapterId).orElseThrow(() -> new NotFoundException("Chapter not found"));
         if (!Objects.equals(chapter.subjectId(), subjectId)) throw new IllegalArgumentException("Chapter does not belong to subject");
         if (topicId != null) {
@@ -229,6 +230,6 @@ public class QuestionService {
 
     private void requireAssignment(UUID subjectId, Actor actor) {
         if (actor.role() == Role.USER && assignments != null && !assignments.existsActive(subjectId, actor.userId()))
-            throw new ForbiddenException("SUBJECT_NOT_ASSIGNED");
+            throw new ForbiddenException("SUBJECT_NOT_ASSIGNED", "User is not actively assigned to this subject");
     }
 }

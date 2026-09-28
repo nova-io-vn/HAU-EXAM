@@ -47,8 +47,16 @@ public class CatalogController {
     }
 
     @GetMapping("/subjects/{id}/lecturers")
-    public ApiResponse<List<UUID>> lecturers(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
-        return ApiResponse.ok(service.lecturers(id, actors.from(j)));
+    public ApiResponse<List<LecturerView>> lecturers(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
+        return ApiResponse.ok(service.lecturers(id, actors.from(j)).stream().map(LecturerView::from).toList());
+    }
+
+    @GetMapping("/subjects/{id}/eligible-lecturers")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
+    public ApiResponse<List<LecturerView>> eligibleLecturers(@PathVariable UUID id,
+                                                              @RequestParam(required = false) String keyword,
+                                                              @AuthenticationPrincipal Jwt j) {
+        return ApiResponse.ok(service.eligibleLecturers(id, keyword, actors.from(j)).stream().map(LecturerView::from).toList());
     }
 
     @GetMapping("/internal/subjects/{subjectId}/assignments/{userId}")
@@ -57,20 +65,31 @@ public class CatalogController {
         return service.isAssigned(subjectId, userId);
     }
 
+    @PostMapping("/internal/catalog-contexts")
+    public List<CatalogService.CatalogContext> catalogContexts(
+            @RequestHeader(value = "X-Internal-Service-Token", required = false) String token,
+            @RequestBody List<CatalogContextLookup> lookups) {
+        if (!internalTokens.matches(token)) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid service token");
+        if (lookups == null || lookups.size() > 100) throw new IllegalArgumentException("Invalid catalog context batch");
+        return lookups.stream().map(value -> service.context(value.subjectId(), value.chapterId(), value.topicId())).toList();
+    }
+
+    public record CatalogContextLookup(UUID subjectId, UUID chapterId, UUID topicId) { }
+
     @PostMapping("/subjects")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<SubjectView> createSubject(@AuthenticationPrincipal Jwt j, @Valid @RequestBody SubjectRequest r) {
-        return ApiResponse.ok(SubjectView.from(service.saveSubject(null, r.code(), r.name(), actors.from(j))));
+        return ApiResponse.ok(SubjectView.from(service.saveSubject(null, r.code(), r.name(), r.managingFacultyId(), r.participatingFacultyIds(), actors.from(j))));
     }
 
     @PutMapping("/subjects/{id}")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<SubjectView> updateSubject(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody SubjectRequest r) {
-        return ApiResponse.ok(SubjectView.from(service.saveSubject(id, r.code(), r.name(), actors.from(j))));
+        return ApiResponse.ok(SubjectView.from(service.saveSubject(id, r.code(), r.name(), r.managingFacultyId(), r.participatingFacultyIds(), actors.from(j))));
     }
 
     @DeleteMapping("/subjects/{id}")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<Void> deleteSubject(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
         service.deleteSubject(id, actors.from(j));
         return ApiResponse.ok(null);
@@ -82,19 +101,19 @@ public class CatalogController {
     }
 
     @PostMapping("/chapters")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<ChapterView> createChapter(@AuthenticationPrincipal Jwt j, @Valid @RequestBody ChapterRequest r) {
         return ApiResponse.ok(ChapterView.from(service.saveChapter(null, r.subjectId(), r.code(), r.name(), r.ordinal(), actors.from(j))));
     }
 
     @PutMapping("/chapters/{id}")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<ChapterView> updateChapter(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody ChapterRequest r) {
         return ApiResponse.ok(ChapterView.from(service.saveChapter(id, r.subjectId(), r.code(), r.name(), r.ordinal(), actors.from(j))));
     }
 
     @DeleteMapping("/chapters/{id}")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<Void> deleteChapter(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
         service.deleteChapter(id, actors.from(j));
         return ApiResponse.ok(null);
@@ -106,19 +125,19 @@ public class CatalogController {
     }
 
     @PostMapping("/topics")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<TopicView> createTopic(@AuthenticationPrincipal Jwt j, @Valid @RequestBody TopicRequest r) {
         return ApiResponse.ok(TopicView.from(service.saveTopic(null, r.chapterId(), r.code(), r.name(), actors.from(j))));
     }
 
     @PutMapping("/topics/{id}")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<TopicView> updateTopic(@PathVariable UUID id, @AuthenticationPrincipal Jwt j, @Valid @RequestBody TopicRequest r) {
         return ApiResponse.ok(TopicView.from(service.saveTopic(id, r.chapterId(), r.code(), r.name(), actors.from(j))));
     }
 
     @DeleteMapping("/topics/{id}")
-    @PreAuthorize("hasRole('SUBJECT_ADMIN')")
+    @PreAuthorize("hasAnyRole('SYSTEM_ADMIN','SUBJECT_ADMIN')")
     public ApiResponse<Void> deleteTopic(@PathVariable UUID id, @AuthenticationPrincipal Jwt j) {
         service.deleteTopic(id, actors.from(j));
         return ApiResponse.ok(null);

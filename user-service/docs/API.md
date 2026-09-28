@@ -30,6 +30,16 @@ Endpoint admin phải được bảo vệ bằng role và business rule.
 
 ```http
 PATCH /api/v1/faculties/{facultyId}/subject-admin
+
+Internal service-authenticated lecturer directory endpoints:
+
+- `GET /api/v1/internal/users/{id}/contact`
+- `GET /api/v1/internal/users/lecturers?facultyId=...&keyword=...`
+
+The lecturer directory returns only active `USER` profiles and supports
+multiple repeated `facultyId` parameters. It exposes display metadata needed
+by Question Service, including academic rank/degree, without exposing
+credentials.
 Authorization: Bearer <SYSTEM_ADMIN JWT>
 Content-Type: application/json
 

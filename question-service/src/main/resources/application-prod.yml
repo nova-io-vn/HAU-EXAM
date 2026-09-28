@@ -23,6 +23,10 @@ ai:
   internal:
     result-token: ${INTERNAL_SERVICE_TOKEN}
 
+user:
+  service:
+    url: ${USER_SERVICE_URL}
+
 eureka:
   client:
     service-url:

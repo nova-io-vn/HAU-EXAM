@@ -79,8 +79,8 @@ export const onboardingTours = {
       "kute",
       routes.dashboard,
       '[data-tour="kute-assistant"]',
-      "Trợ lý Kute",
-      "Mở Trợ lý Kute khi bạn cần hướng dẫn từng bước hoặc muốn tìm hiểu chức năng HAU Exam.",
+      "Kute",
+      "Mở Kute khi bạn cần hướng dẫn từng bước hoặc muốn tìm hiểu chức năng HAU QM.",
     ),
     step(
       "profile",
@@ -216,8 +216,8 @@ export const onboardingTours = {
       "ai-knowledge",
       routes.settings,
       '[data-tour="ai-knowledge"]',
-      "Kho tri thức Trợ lý Kute",
-      "Quản lý tài liệu, nội dung trích xuất và các chunk mà Trợ lý Kute sử dụng.",
+      "Kho tri thức Kute",
+      "Quản lý tài liệu, nội dung trích xuất và các chunk mà Kute sử dụng.",
     ),
     step(
       "messages",

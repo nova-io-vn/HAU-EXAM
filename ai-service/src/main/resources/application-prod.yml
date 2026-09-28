@@ -31,6 +31,13 @@ ai:
     api-key: ${AI_API_KEY}
     url: ${AI_API_URL}
 
+user:
+  service:
+    url: ${USER_SERVICE_URL}
+question:
+  service:
+    url: ${QUESTION_SERVICE_URL}
+
 eureka:
   client:
     service-url:

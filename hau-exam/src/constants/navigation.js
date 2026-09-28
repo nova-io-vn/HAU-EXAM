@@ -17,6 +17,8 @@ export const navigationByRole = {
     {
       section: "QUẢN TRỊ",
       items: [
+        item("Môn học", routes.subjects, "book"),
+        item("Cấu trúc kiến thức", routes.knowledge, "network"),
         item("Theo dõi AI jobs", routes.adminAiJobs, "chart"),
         item("Quản lý Khoa", routes.faculties, "building", {
           tour: "faculty-menu",

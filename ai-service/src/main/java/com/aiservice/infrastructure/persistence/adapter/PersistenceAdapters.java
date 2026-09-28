@@ -91,6 +91,11 @@ public final class PersistenceAdapters {
         public Optional<String> findByJobId(UUID id) {
             return r.findByJobId(id).map(e -> e.resultJson);
         }
+
+        public Map<UUID, String> findByJobIds(Set<UUID> ids) {
+            if (ids == null || ids.isEmpty()) return Map.of();
+            return r.findByJobIdIn(ids).stream().collect(java.util.stream.Collectors.toMap(e -> e.jobId, e -> e.resultJson));
+        }
     }
 
     @Component

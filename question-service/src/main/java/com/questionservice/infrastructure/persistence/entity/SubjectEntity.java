@@ -10,8 +10,8 @@ import java.util.UUID;
 public class SubjectEntity {
     @Id
     public UUID id;
-    @Column(name = "faculty_id", nullable = false)
-    public String facultyId;
+    @Column(name = "managing_faculty_id", nullable = false)
+    public String managingFacultyId;
     @Column(nullable = false)
     public String code;
     @Column(nullable = false)

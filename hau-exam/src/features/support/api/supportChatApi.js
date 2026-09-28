@@ -14,4 +14,5 @@ export const supportChatApi = {
   status: (id, status) => api.patch(`/api/v1/admin/support/conversations/${id}/status`, { status }),
   attachments: id => api.get(`${base}/${id}/attachments`),
   remove: id => api.delete(`${base}/${id}`),
+  revokeMessage: messageId => api.delete(`/api/v1/support/messages/${messageId}`),
 };

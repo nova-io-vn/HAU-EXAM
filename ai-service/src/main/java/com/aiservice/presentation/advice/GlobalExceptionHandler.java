@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    ApiResponse<Void> forbidden(ForbiddenException e) { return err("SUBJECT_NOT_ASSIGNED", e.getMessage()); }
+    ApiResponse<Void> forbidden(ForbiddenException e) { return err(e.code(), e.getMessage()); }
 
     @ExceptionHandler({UnsupportedDocumentException.class, InvalidAiOutputException.class, IllegalArgumentException.class, MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)

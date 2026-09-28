@@ -23,6 +23,10 @@ ai:
   internal:
     result-token: ${INTERNAL_SERVICE_TOKEN:dev-internal-token}
 
+user:
+  service:
+    url: ${USER_SERVICE_URL:http://localhost:8082}
+
 eureka:
   client:
     service-url:

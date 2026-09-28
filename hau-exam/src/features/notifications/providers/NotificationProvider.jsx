@@ -7,7 +7,10 @@ export function NotificationProvider({ children }) {
   useEffect(() => {
     const syncTask = setTimeout(() => notificationStore.sync(), 0);
     const disconnect = connectNotificationSocket({
-      onMessage: (message) => notificationStore.receive(message),
+      onMessage: (message) => {
+        notificationStore.receive(message);
+        window.dispatchEvent(new CustomEvent("hau:realtime", { detail: message }));
+      },
       onConnect: () => notificationStore.sync(),
       onStatus: (status) => notificationStore.setConnectionStatus(status),
     });

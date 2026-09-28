@@ -3,12 +3,14 @@ package com.questionservice.presentation.request;
 import jakarta.validation.constraints.*;
 
 import java.util.UUID;
+import java.util.Set;
 
 public final class CatalogRequests {
     private CatalogRequests() {
     }
 
-    public record SubjectRequest(@NotBlank String code, @NotBlank String name) {
+    public record SubjectRequest(@NotBlank String code, @NotBlank String name, String managingFacultyId,
+                                 Set<@NotBlank String> participatingFacultyIds) {
     }
 
     public record ChapterRequest(@NotNull UUID subjectId, @NotBlank String code, @NotBlank String name,

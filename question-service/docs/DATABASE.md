@@ -18,3 +18,10 @@ question.
 
 Index cần cân nhắc theo filter: faculty, subject, status, difficulty,
 creator, createdAt.
+
+`V4__support_shared_subject_faculty_scopes.sql` renames the legacy
+`subjects.faculty_id` column to `managing_faculty_id`, creates
+`subject_faculty_scopes(subject_id, faculty_id, active)`, and backfills one
+active scope from every existing Subject owner. Lecturer assignments remain
+external User Service UUID references and intentionally have no cross-service
+foreign key.

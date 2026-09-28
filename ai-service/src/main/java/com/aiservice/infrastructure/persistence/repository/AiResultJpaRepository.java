@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AiResultJpaRepository extends JpaRepository<AiResultEntity, UUID> {
     Optional<AiResultEntity> findByJobId(UUID jobId);
+    List<AiResultEntity> findByJobIdIn(Set<UUID> jobIds);
 }

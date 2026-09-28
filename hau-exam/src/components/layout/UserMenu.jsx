@@ -82,8 +82,8 @@ export function UserMenu({ compact = false }) {
             </div>}
 
             <div className="user-menu-kute-row">
-              <span>Trợ lý Kute</span>
-              <button type="button" className="user-menu-switch" role="switch" aria-label="Hiển thị Trợ lý Kute" aria-checked={preferences?.kuteVisible !== false} onClick={() => preferences?.setKuteVisible(!(preferences?.kuteVisible !== false))}><span /></button>
+              <span>Kute</span>
+              <button type="button" className="user-menu-switch" role="switch" aria-label="Hiển thị Kute" aria-checked={preferences?.kuteVisible !== false} onClick={() => preferences?.setKuteVisible(!(preferences?.kuteVisible !== false))}><span /></button>
             </div>
           </div>
 

@@ -11,12 +11,13 @@ export function useAiJob(id) {
     let timer
     async function poll() {
       try {
-        const job=await aiApi.job(id)
+        const detail=await aiApi.job(id)
+        const job=detail?.summary?{...detail.summary,...detail}:detail
         if(!active)return
         setState({job})
         if(isActiveJob(job))timer=setTimeout(poll,3000)
         else if(job.status==='COMPLETED') {
-          const result=await aiApi.result(id)
+          const result=detail?.result??await aiApi.result(id)
           if(active)setState({job,result})
         }
       } catch(error) {if(active)setState(previous=>({...previous,loading:false,error}))}

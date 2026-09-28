@@ -12,6 +12,8 @@ public interface UserProfileRepository {
 
     Optional<UserProfile> findById(UUID id);
 
+    List<UserProfile> findAllById(Iterable<UUID> ids);
+
     Optional<UserProfile> findByLecturerCode(String lecturerCode);
 
     boolean existsById(UUID id);

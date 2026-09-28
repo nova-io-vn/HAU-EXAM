@@ -10,6 +10,7 @@ import com.userservice.domain.model.UserStatus;
 import com.userservice.domain.repository.UserProfileRepository;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,14 @@ class UserContactQueryServiceTest {
 
         assertEquals(List.of("Nguyễn Văn An", "Trần Thu Hà"),
                 contacts.stream().map(UserContactQueryService.ChatContact::displayName).toList());
+    }
+
+    @Test
+    void systemAdminDirectoryFiltersByNameFacultyAndRole() {
+        var matching=profile("Nguyễn Văn An",Role.USER);var other=profile("Trần Thu Hà",Role.SUBJECT_ADMIN);
+        when(users.findActiveAudience(Role.USER,null)).thenReturn(List.of(matching));when(users.findActiveAudience(Role.SUBJECT_ADMIN,null)).thenReturn(List.of(other));
+        var contacts=service.contacts(UUID.randomUUID(),"SYSTEM_ADMIN",null,"Nguyễn","CNTT","USER");
+        assertEquals(List.of("Nguyễn Văn An"),contacts.stream().map(UserContactQueryService.ChatContact::displayName).toList());
     }
 
     @Test
@@ -52,6 +61,18 @@ class UserContactQueryServiceTest {
 
         assertEquals(List.of(Role.USER.name(), Role.SYSTEM_ADMIN.name()),
                 contacts.stream().map(UserContactQueryService.ChatContact::role).toList());
+    }
+
+    @Test
+    void lecturerDirectorySearchesAcrossRequestedParticipatingFaculties() {
+        when(users.findActiveAudience(Role.USER, "CNTT"))
+                .thenReturn(List.of(profile("Nguyễn Văn An", Role.USER)));
+        when(users.findActiveAudience(Role.USER, "KT"))
+                .thenReturn(List.of(profile("Trần Thu Hà", Role.USER)));
+
+        var result = service.findActiveLecturers(Set.of("CNTT", "KT"), "Trần");
+
+        assertEquals(List.of("Trần Thu Hà"), result.stream().map(contact -> contact.fullName()).toList());
     }
 
     private UserProfile profile(String name, Role role) {

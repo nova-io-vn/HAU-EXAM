@@ -1,21 +1,41 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Button, DataTable, Loading, StatusBadge } from "../../../components/ui";
-import { PageHeader } from "../../../components/shared/PageHeader";
-import { aiApi } from "../api/aiApi";
-import { jobTypeLabels } from "../model/aiModel";
+import {useCallback,useEffect,useState} from 'react'
+import {Button,DataTable,Loading,StatusBadge} from '../../../components/ui'
+import {PageHeader} from '../../../components/shared/PageHeader'
+import {aiApi} from '../api/aiApi'
+import {jobTypeLabels} from '../model/aiModel'
+import {AiResult} from '../components/AiShared'
 
-export function AdminAiJobsPage() {
-  const [page, setPage] = useState(0); const [state, setState] = useState({ loading: true });
-  const load = useCallback(async () => {
-    try { setState({ data: await aiApi.adminJobs(page) }); }
-    catch (error) { setState({ error }); }
-  }, [page]);
-  useEffect(() => { let active = true; aiApi.adminJobs(page).then(data => { if (active) setState({ data }); }).catch(error => { if (active) setState({ error }); }); return () => { active = false; }; }, [page]);
-  useEffect(() => { const refresh = (event) => { const type = event.detail?.type || event.detail?.eventType || ""; if (type.includes("AI") || event.detail?.referenceType === "AI_JOB") load(); }; window.addEventListener("hau:realtime", refresh); return () => window.removeEventListener("hau:realtime", refresh); }, [load]);
-  function changePage(next) { setState({ loading: true }); setPage(next); }
-  if (state.loading) return <section className="surface ai-list"><Loading label="Đang tải AI jobs" /></section>;
-  if (state.error) return <section className="surface ai-list"><p className="ai-error">{state.error.message}</p><Button onClick={load}>Thử lại</Button></section>;
-  const data = state.data || { items: [] };
-  return <section><PageHeader title="Theo dõi AI jobs" description="Theo dõi toàn bộ tác vụ AI đang chạy, hoàn tất hoặc thất bại trong hệ thống." actions={<Button variant="secondary" onClick={load}>Làm mới</Button>} /><div className="surface ai-list"><DataTable rows={data.items || []} rowKey="jobId" emptyTitle="Chưa có AI job" columns={[{ key: "jobId", header: "Mã job", render: job => <Link to={`/ai/jobs/${job.jobId}`}>{job.jobId}</Link> }, { key: "type", header: "Loại", render: job => jobTypeLabels[job.type] || job.type }, { key: "status", header: "Trạng thái", render: job => <StatusBadge status={job.status} /> }, { key: "requestedBy", header: "Người tạo", render: job => job.creatorName || "—" }, { key: "facultyId", header: "Khoa", render: job => job.facultyId || "—" }, { key: "createdAt", header: "Tạo lúc", render: job => job.createdAt || "—" }, { key: "updatedAt", header: "Cập nhật", render: job => job.updatedAt || "—" }]} /><footer className="ai-inline ai-pagination"><Button variant="secondary" disabled={page === 0} onClick={() => changePage(page - 1)}>Trước</Button><span>Trang {page + 1} · {data.totalElements || 0} job</span><Button variant="secondary" disabled={page + 1 >= (data.totalPages || 1)} onClick={() => changePage(page + 1)}>Sau</Button></footer></div></section>;
+const date=value=>value?new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(value)):'—'
+const name=person=>person?.fullName||'Không xác định'
+const academic=person=>[person?.academicRank,person?.academicDegree].filter(value=>value&&value!=='NONE').join(' · ')
+const typeLabel=value=>jobTypeLabels[value]||value||'Không xác định'
+
+function Creator({person,compact=false}){return <span className={`job-creator ${compact?'is-compact':''}`}><span className="job-avatar">{person?.avatarUrl?<img src={person.avatarUrl} alt=""/>:name(person).slice(0,1).toUpperCase()}</span><span><b title={name(person)}>{academic(person)?`${academic(person)} · `:''}{name(person)}</b>{!compact&&<small>{person?.lecturerCode||'Không xác định'} · {person?.facultyId||'Không xác định'}</small>}</span></span>}
+function Pair({label,children,wide=false}){return <div className={wide?'is-wide':''}><dt>{label}</dt><dd>{children??'—'}</dd></div>}
+
+function JobDrawer({detail,loading,error,onClose,onReload}){
+ if(!detail&&!loading&&!error)return null
+ const job=detail?.summary,context=job?.context,config=detail?.generationConfig||{},questions=Array.isArray(detail?.result)?detail.result:detail?.result?.questions
+ return <><button type="button" className="job-drawer-backdrop" aria-label="Đóng chi tiết" onClick={onClose}/><aside className="job-detail-drawer" role="dialog" aria-modal="true" aria-label="Chi tiết tác vụ AI"><header><div><span className="eyebrow">AI JOB DETAIL</span><h2>{job?.jobCode||'Chi tiết tác vụ'}</h2></div><button type="button" onClick={onClose} aria-label="Đóng">×</button></header>{loading?<Loading label="Đang tải chi tiết tác vụ"/>:error?<div className="ai-error"><p>{error.message}</p><Button variant="secondary" onClick={onReload}>Thử lại</Button></div>:<div className="job-detail-body">
+  <section><h3>THÔNG TIN TÁC VỤ</h3><dl className="job-detail-grid"><Pair label="Mã tác vụ">{job.jobCode}</Pair><Pair label="Job ID"><span className="mono job-uuid" title={job.jobId}>{job.jobId}</span></Pair><Pair label="Trạng thái"><StatusBadge status={job.status}/></Pair><Pair label="Tiến độ">{job.progress}%</Pair><Pair label="Loại">{typeLabel(job.type)}</Pair><Pair label="Tạo lúc">{date(job.createdAt)}</Pair><Pair label="Bắt đầu">{date(job.startedAt)}</Pair><Pair label={job.status==='FAILED'?'Thất bại lúc':'Hoàn tất'}>{date(job.completedAt)}</Pair></dl></section>
+  <section><h3>NGƯỜI TẠO</h3><Creator person={job.creator}/></section>
+  <section><h3>NGỮ CẢNH</h3><dl className="job-detail-grid"><Pair label="Môn học">{context?`${context.subjectCode} · ${context.subjectName}`:'Không xác định'}</Pair><Pair label="Chương">{context?.chapterName||'Không xác định'}</Pair><Pair label="Chủ đề">{context?.topicName||'Không xác định'}</Pair><Pair label="Nguồn">{detail.sourceType==='DOCUMENT'?'Tài liệu':detail.sourceType==='DESCRIPTION'?'Mô tả':'Trực tiếp'}</Pair></dl>{detail.document&&<dl className="job-detail-grid document-context"><Pair label="Tên tệp">{detail.document.originalFilename}</Pair><Pair label="Loại tệp">{detail.document.contentType}</Pair><Pair label="Dung lượng">{Math.ceil(detail.document.size/1024)} KB</Pair><Pair label="Trích xuất">{detail.document.extractedStatus}</Pair></dl>}{detail.description&&<Pair label="Mô tả gốc" wide><p className="job-description">{detail.description}</p></Pair>}</section>
+  <section><h3>CẤU HÌNH SINH</h3><dl className="job-detail-grid"><Pair label="Số câu yêu cầu">{config.count??'—'}</Pair><Pair label="Phân bố độ khó">{config.difficulty||'—'}</Pair><Pair label="Provider">{detail.provider||'Không xác định'}</Pair><Pair label="Model">{detail.model||'Không xác định'}</Pair><Pair label="Ngôn ngữ">{config.language||'VI'}</Pair><Pair label="Ảnh minh họa">{config.includeImages?'Có':'Không'}</Pair></dl></section>
+  <section><h3>KẾT QUẢ</h3><dl className="job-detail-grid"><Pair label="Đã sinh">{job.generatedCount??0} câu</Pair><Pair label="Đã lưu">{detail.acceptedCount??'Chưa có dữ liệu'}</Pair><Pair label="Không hợp lệ">{detail.rejectedCount??'Chưa có dữ liệu'}</Pair></dl>{job.status==='COMPLETED'&&questions&&<div className="job-result-preview"><AiResult type={job.type} result={detail.result}/></div>}{job.status==='FAILED'&&<div className="job-failure" role="alert"><strong>{detail.errorCode||'AI_JOB_FAILED'}</strong><p>{detail.errorMessage||'Tác vụ AI không thể hoàn tất.'}</p><time>{date(job.completedAt)}</time></div>}</section>
+ </div>}</aside></>
+}
+
+export function AdminAiJobsPage(){
+ const[page,setPage]=useState(0),[state,setState]=useState({loading:true}),[selected,setSelected]=useState(null),[detail,setDetail]=useState({})
+ const load=useCallback(async()=>{try{setState({data:await aiApi.adminJobs(page)})}catch(error){setState({error})}},[page])
+ const loadDetail=useCallback(async id=>{setDetail({loading:true,id});try{setDetail({data:await aiApi.job(id),id})}catch(error){setDetail({error,id})}},[])
+ useEffect(()=>{let active=true;aiApi.adminJobs(page).then(data=>{if(active)setState({data})}).catch(error=>{if(active)setState({error})});return()=>{active=false}},[page])
+ useEffect(()=>{const refresh=event=>{const type=event.detail?.type||event.detail?.eventType||'';if(type.includes('AI')||event.detail?.referenceType==='AI_JOB'){void load();if(selected)void loadDetail(selected)}};window.addEventListener('hau:realtime',refresh);return()=>window.removeEventListener('hau:realtime',refresh)},[load,loadDetail,selected])
+ function open(job){setSelected(job.jobId);void loadDetail(job.jobId)}
+ function changePage(next){setState({loading:true});setPage(next)}
+ if(state.loading)return <section className="surface ai-list"><Loading label="Đang tải tác vụ AI"/></section>
+ if(state.error)return <section className="surface ai-list"><p className="ai-error">{state.error.message}</p><Button onClick={load}>Thử lại</Button></section>
+ const data=state.data||{items:[]}
+ const columns=[{key:'index',header:'STT',className:'cell-nowrap cell-index',render:(_,index)=>String(page*20+index+1).padStart(2,'0')},{key:'jobCode',header:'Job',className:'cell-nowrap',render:job=><button className="job-code" type="button" onClick={()=>open(job)}>{job.jobCode}</button>},{key:'creator',header:'Người tạo',className:'cell-person',render:job=><Creator person={job.creator} compact/>},{key:'subject',header:'Môn học',className:'cell-natural cell-subject',render:job=><span title={job.context?.subjectName||'Không xác định'}>{job.context?.subjectName||'Không xác định'}</span>},{key:'type',header:'Loại',className:'cell-natural',render:job=>typeLabel(job.type)},{key:'status',header:'Trạng thái',className:'cell-nowrap',render:job=><StatusBadge status={job.status}/>},{key:'progress',header:'Tiến độ',className:'cell-nowrap',render:job=>`${job.progress}%`},{key:'result',header:'Kết quả',className:'cell-nowrap',render:job=>job.generatedCount==null?'—':`${job.generatedCount} câu`},{key:'createdAt',header:'Thời gian tạo',className:'cell-nowrap',render:job=>date(job.createdAt)},{key:'actions',header:'Thao tác',className:'cell-nowrap',render:job=><Button variant="ghost" onClick={()=>open(job)}>Xem</Button>}]
+ return <section><PageHeader title="Theo dõi tác vụ AI" description="Theo dõi và kiểm tra chi tiết các tác vụ AI trong hệ thống." actions={<Button variant="secondary" onClick={load}>Làm mới</Button>}/><div className="surface ai-list ai-job-monitor"><DataTable rows={data.items||[]} rowKey="jobId" emptyTitle="Chưa có tác vụ AI" columns={columns}/><footer className="ai-inline ai-pagination"><Button variant="secondary" disabled={page===0} onClick={()=>changePage(page-1)}>Trước</Button><span>Trang {page+1} · {data.totalElements||0} tác vụ</span><Button variant="secondary" disabled={page+1>=(data.totalPages||1)} onClick={()=>changePage(page+1)}>Sau</Button></footer></div><JobDrawer detail={detail.data} loading={detail.loading} error={detail.error} onClose={()=>{setSelected(null);setDetail({})}} onReload={()=>loadDetail(selected)}/></section>
 }
