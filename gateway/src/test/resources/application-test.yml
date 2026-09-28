@@ -17,6 +17,7 @@ spring:
     gateway:
       server:
         webflux:
+          default-filters: []
           globalcors:
             cors-configurations:
               '[/**]':
