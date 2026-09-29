@@ -139,8 +139,17 @@ public class EmailSettingsService {
 
     JavaMailSenderImpl createSender(MailConfig c) {
         JavaMailSenderImpl sender = new JavaMailSenderImpl(); sender.setHost(c.host()); sender.setPort(c.port()); sender.setUsername(c.username()); sender.setPassword(c.password());
-        Properties p = sender.getJavaMailProperties(); p.put("mail.smtp.auth", Boolean.toString(c.auth())); p.put("mail.smtp.starttls.enable", Boolean.toString(c.security() == EmailSecurity.STARTTLS)); p.put("mail.smtp.starttls.required", Boolean.toString(c.security() == EmailSecurity.STARTTLS)); p.put("mail.smtp.ssl.enable", Boolean.toString(c.security() == EmailSecurity.SSL_TLS));
-        p.put("mail.smtp.connectiontimeout", "7000"); p.put("mail.smtp.timeout", "10000"); p.put("mail.smtp.writetimeout", "10000"); return sender;
+        Properties p = sender.getJavaMailProperties();
+        p.put("mail.smtp.auth", Boolean.toString(c.auth()));
+        p.put("mail.smtp.starttls.enable", Boolean.toString(c.security() == EmailSecurity.STARTTLS));
+        p.put("mail.smtp.starttls.required", Boolean.toString(c.security() == EmailSecurity.STARTTLS));
+        p.put("mail.smtp.ssl.enable", Boolean.toString(c.security() == EmailSecurity.SSL_TLS));
+        p.put("mail.smtp.ssl.checkserveridentity", "true");
+        p.put("mail.smtp.ssl.trust", c.host());
+        p.put("mail.smtp.connectiontimeout", "15000");
+        p.put("mail.smtp.timeout", "15000");
+        p.put("mail.smtp.writetimeout", "15000");
+        return sender;
     }
 
     private MailConfig activeConfig() {
@@ -195,7 +204,12 @@ public class EmailSettingsService {
             code = "SMTP_AUTHENTICATION_FAILED";
         } else if (hasCause(ex, SSLException.class) || containsAny(ex, "starttls", "could not convert socket to tls", "handshake_failure")) {
             code = "SMTP_TLS_FAILED";
-        } else if (hasCause(ex, ConnectException.class) || hasCause(ex, SocketTimeoutException.class) || containsAny(ex, "couldn't connect", "could not connect", "connection timed out")) {
+        } else if (hasCause(ex, ConnectException.class) || hasCause(ex, SocketTimeoutException.class)
+                || hasCause(ex, java.net.UnknownHostException.class)
+                || hasCause(ex, java.net.NoRouteToHostException.class)
+                || hasCause(ex, java.net.SocketException.class)
+                || containsAny(ex, "couldn't connect", "could not connect", "connection timed out",
+                "connection refused", "unknownhost", "no route to host", "failed to connect")) {
             code = "SMTP_CONNECTION_FAILED";
         } else {
             code = "EMAIL_SEND_FAILED";

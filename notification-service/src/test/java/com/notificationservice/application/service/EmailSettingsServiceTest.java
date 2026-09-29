@@ -67,6 +67,9 @@ class EmailSettingsServiceTest {
                 .containsEntry("mail.smtp.starttls.enable", "false")
                 .containsEntry("mail.smtp.starttls.required", "false")
                 .containsEntry("mail.smtp.ssl.enable", "true");
+        assertThat(sender.getJavaMailProperties())
+                .containsEntry("mail.smtp.ssl.checkserveridentity", "true")
+                .containsEntry("mail.smtp.ssl.trust", "smtp.gmail.com");
     }
 
     @Test
@@ -110,6 +113,8 @@ class EmailSettingsServiceTest {
         assertThat(service.deliveryException(new MailAuthenticationException("535 rejected")).getCode())
                 .isEqualTo("SMTP_AUTHENTICATION_FAILED");
         assertThat(service.deliveryException(new MailSendException("timeout", new SocketTimeoutException())).getCode())
+                .isEqualTo("SMTP_CONNECTION_FAILED");
+        assertThat(service.deliveryException(new MailSendException("connection refused", new java.net.SocketException("Connection refused"))).getCode())
                 .isEqualTo("SMTP_CONNECTION_FAILED");
         assertThat(service.deliveryException(new MailSendException("tls", new SSLHandshakeException("failed"))).getCode())
                 .isEqualTo("SMTP_TLS_FAILED");
