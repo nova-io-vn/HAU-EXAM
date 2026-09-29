@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 @Service
 public class PresenceService {
@@ -34,5 +35,11 @@ public class PresenceService {
         double now = clock.instant().getEpochSecond();
         return redis.opsForZSet().removeRangeByScore(KEY, Range.closed(0.0, now))
                 .then(redis.opsForZSet().count(KEY, Range.unbounded()));
+    }
+
+    public Flux<String> onlineUserIds() {
+        double now = clock.instant().getEpochSecond();
+        return redis.opsForZSet().removeRangeByScore(KEY, Range.closed(0.0, now))
+                .thenMany(redis.opsForZSet().range(KEY, Range.unbounded()));
     }
 }

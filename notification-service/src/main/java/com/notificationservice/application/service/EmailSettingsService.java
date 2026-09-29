@@ -118,7 +118,7 @@ public class EmailSettingsService {
     }
 
     private void sendInternal(String recipient, String subject, String content, String operation) {
-        MailConfig config = activeConfig();
+        MailConfig config = resolveActiveConfig();
         validateProviderConfiguration(config.host(), config.port(), config.security());
         if (!config.enabled()) throw new EmailDeliveryException("EMAIL_DELIVERY_DISABLED", "Gửi email hiện đang bị tắt.");
         if (config.security() != EmailSecurity.NONE && (config.username().isBlank() || config.password().isBlank()))
@@ -127,7 +127,9 @@ public class EmailSettingsService {
         try {
             var message = sender.createMimeMessage();
             var helper = new org.springframework.mail.javamail.MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(new InternetAddress(effectiveFrom(config), config.fromName(), "UTF-8")); helper.setTo(recipient); helper.setSubject(subject); boolean html=content!=null&&content.trim().startsWith("<!doctype html>"); helper.setText(html?content.replaceAll("<[^>]+>"," ").replaceAll("\\s+"," ").trim():content, html?content:null);
+            helper.setFrom(new InternetAddress(effectiveFrom(config), config.fromName(), "UTF-8")); helper.setTo(recipient); helper.setSubject(subject); boolean html=content!=null&&content.trim().startsWith("<!doctype html>");
+            if (html) helper.setText(content.replaceAll("<[^>]+>", " ").replaceAll("\\s+", " ").trim(), true);
+            else helper.setText(content == null ? "" : content);
             sender.send(message);
             log.info("SMTP delivery completed; operation={} result=SMTP_ACCEPTED recipientDomain={} smtpHost={} smtpPort={} security={} correlationId={}",
                     operation, emailDomain(recipient), config.host(), config.port(), config.security(), correlationId());
@@ -137,6 +139,8 @@ public class EmailSettingsService {
             log.warn("SMTP delivery failed; operation={} smtpHost={} smtpPort={} security={} recipientDomain={} correlationId={} exception={} rootException={} result={}",
                     operation, config.host(), config.port(), config.security(), emailDomain(recipient), correlationId(),
                     ex.getClass().getSimpleName(), root.getClass().getSimpleName(), classified.getCode());
+            log.warn("SMTP delivery root detail; operation={} rootType={} rootMessage={}", operation,
+                    root.getClass().getSimpleName(), safeExceptionMessage(root));
             throw classified;
         }
     }
@@ -158,7 +162,7 @@ public class EmailSettingsService {
         return sender;
     }
 
-    private MailConfig activeConfig() {
+    MailConfig resolveActiveConfig() {
         var stored = repository.findAll().stream().findFirst();
         if (stored.isEmpty()) return new MailConfig(trim(envHost), envPort, trim(envUsername), trim(envPassword), trim(envFrom), trim(envFromName), envStartTls || envStartTlsRequired ? EmailSecurity.STARTTLS : EmailSecurity.NONE, envEnabled && configuredEnv(), envAuth);
         var e = stored.get();
@@ -201,6 +205,10 @@ public class EmailSettingsService {
         return PASSWORD_PLACEHOLDERS.contains(normalized) ? "" : normalized;
     }
     private String correlationId() { String value = MDC.get("correlationId"); return value == null || value.isBlank() ? "-" : value; }
+    private String safeExceptionMessage(Throwable error) {
+        String message = error == null || error.getMessage() == null ? "" : error.getMessage().replaceAll("[\\r\\n\\t]+", " ");
+        return message.length() <= 240 ? message : message.substring(0, 240);
+    }
     EmailDeliveryException deliveryException(Exception ex) {
         String code;
         if (hasCause(ex, MailAuthenticationException.class) || hasCause(ex, AuthenticationFailedException.class) || containsAny(ex, "535", "authentication failed", "authentication unsuccessful")) {

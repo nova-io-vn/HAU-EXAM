@@ -151,6 +151,23 @@ class EmailSettingsServiceTest {
                 .isEqualTo("EMAIL_DELIVERY_DISABLED");
     }
 
+    @Test
+    void persistedDatabaseSettingsOverrideEnvironmentFallbackWithoutExposingPassword() {
+        EmailSettingsEntity entity = storedSettings();
+        entity.setSmtpPasswordEncrypted(protector.encrypt("db-password"));
+        when(repository.findAll()).thenReturn(List.of(entity));
+
+        var config = service.resolveActiveConfig();
+
+        assertThat(config.host()).isEqualTo("smtp.gmail.com");
+        assertThat(config.port()).isEqualTo(587);
+        assertThat(config.security()).isEqualTo(EmailSecurity.STARTTLS);
+        assertThat(config.username()).isEqualTo("sender@example.com");
+        assertThat(config.password()).isEqualTo("db-password");
+        assertThat(config.fromEmail()).isEqualTo("sender@example.com");
+        assertThat(config.auth()).isTrue();
+    }
+
     private SmtpSettingsRequest request(String password) {
         return new SmtpSettingsRequest("smtp.gmail.com", 587, "sender@example.com", password,
                 "sender@example.com", "HAU QM", EmailSecurity.STARTTLS, true);

@@ -7,6 +7,7 @@ export const usersApi={
   list:params=>api.get(`${USERS_PATH}${queryString(params)}`),
   get:id=>api.get(`${USERS_PATH}/${id}`),
   getMe:()=>api.get(`${USERS_PATH}/me`),
+  directory:ids=>ids?.length?api.get(`${USERS_PATH}/me/directory?${ids.map(id=>`ids=${encodeURIComponent(id)}`).join('&')}`):Promise.resolve([]),
   updateMe:profile=>api.put(`${USERS_PATH}/me`,profile),
   uploadAvatar:file=>{const body=new FormData();body.append('file',file);return api.put(`${USERS_PATH}/me/avatar`,body)},
   approve:(id,approval)=>api.post(`${USERS_PATH}/${id}/approve`,approval),

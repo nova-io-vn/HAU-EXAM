@@ -18,6 +18,7 @@ public final class Question {
     private QuestionType type;
     private Difficulty difficulty;
     private QuestionStatus status;
+    private QuestionStatus archivedFromStatus;
     private final QuestionSource source;
     private final String aiSourceId;
     private final UUID createdBy;
@@ -32,7 +33,7 @@ public final class Question {
                     Instant createdAt, Instant updatedAt, List<QuestionOption> options,
                     List<QuestionReviewHistory> reviewHistory) {
         this(id, facultyId, subjectId, chapterId, topicId, null, null, content, imageUrl, storageKey, type,
-                difficulty, status, source, aiSourceId, createdBy, createdAt, updatedAt, options, reviewHistory);
+                difficulty, status, source, aiSourceId, createdBy, createdAt, updatedAt, options, reviewHistory, null);
     }
 
     public Question(UUID id, String facultyId, UUID subjectId, UUID chapterId, UUID topicId,
@@ -41,12 +42,23 @@ public final class Question {
                     QuestionStatus status, QuestionSource source, String aiSourceId, UUID createdBy,
                     Instant createdAt, Instant updatedAt, List<QuestionOption> options,
                     List<QuestionReviewHistory> reviewHistory) {
+        this(id, facultyId, subjectId, chapterId, topicId, knowledgeItemId, assignmentId, content, imageUrl, storageKey,
+                type, difficulty, status, source, aiSourceId, createdBy, createdAt, updatedAt, options, reviewHistory, null);
+    }
+
+    public Question(UUID id, String facultyId, UUID subjectId, UUID chapterId, UUID topicId,
+                    UUID knowledgeItemId, UUID assignmentId, String content,
+                    String imageUrl, String storageKey, QuestionType type, Difficulty difficulty,
+                    QuestionStatus status, QuestionSource source, String aiSourceId, UUID createdBy,
+                    Instant createdAt, Instant updatedAt, List<QuestionOption> options,
+                    List<QuestionReviewHistory> reviewHistory, QuestionStatus archivedFromStatus) {
         this.id = Objects.requireNonNull(id); this.facultyId = required(facultyId, "facultyId");
         this.subjectId = Objects.requireNonNull(subjectId); this.chapterId = Objects.requireNonNull(chapterId);
         this.topicId = topicId; this.knowledgeItemId = knowledgeItemId; this.assignmentId = assignmentId;
         this.content = required(content, "content"); this.imageUrl = imageUrl;
         this.storageKey = storageKey; this.type = Objects.requireNonNull(type);
         this.difficulty = Objects.requireNonNull(difficulty); this.status = Objects.requireNonNull(status);
+        this.archivedFromStatus = archivedFromStatus;
         this.source = Objects.requireNonNull(source); this.aiSourceId = aiSourceId;
         this.createdBy = Objects.requireNonNull(createdBy); this.createdAt = Objects.requireNonNull(createdAt);
         this.updatedAt = Objects.requireNonNull(updatedAt); this.options = List.copyOf(options);
@@ -81,10 +93,28 @@ public final class Question {
         this.status = QuestionStatus.DRAFT; this.updatedAt = now;
     }
     public void submit(Instant now) { requireStatus(QuestionStatus.DRAFT); status = QuestionStatus.PENDING_REVIEW; updatedAt = now; }
+    public void submit(UUID actorId, Instant now) {
+        requireStatus(QuestionStatus.DRAFT);
+        ReviewAction action = reviewHistory.isEmpty() ? ReviewAction.SUBMITTED : ReviewAction.RESUBMITTED;
+        status = QuestionStatus.PENDING_REVIEW; updatedAt = now;
+        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), action, null, now));
+    }
     public void approve(UUID reviewerId, String comment, Instant now) { review(QuestionStatus.APPROVED, ReviewAction.APPROVED, reviewerId, comment, now); }
     public void reject(UUID reviewerId, String reason, Instant now) { required(reason, "reason"); review(QuestionStatus.REJECTED, ReviewAction.REJECTED, reviewerId, reason, now); }
     public void requestRevision(UUID reviewerId, String reason, Instant now) { required(reason, "reason"); review(QuestionStatus.NEED_REVISION, ReviewAction.REVISION_REQUESTED, reviewerId, reason, now); }
     public void archive(Instant now) { if (status == QuestionStatus.PENDING_REVIEW) throw new InvalidTransitionException("Pending question cannot be archived"); status = QuestionStatus.ARCHIVED; updatedAt = now; }
+    public void archive(UUID actorId, Instant now) {
+        if (status == QuestionStatus.PENDING_REVIEW) throw new InvalidTransitionException("Pending question cannot be archived");
+        archivedFromStatus = status;
+        status = QuestionStatus.ARCHIVED; updatedAt = now;
+        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), ReviewAction.ARCHIVED, null, now));
+    }
+    public void restore(UUID actorId, Instant now) {
+        requireStatus(QuestionStatus.ARCHIVED);
+        status = archivedFromStatus == null ? QuestionStatus.DRAFT : archivedFromStatus;
+        archivedFromStatus = null; updatedAt = now;
+        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), ReviewAction.RESTORED, null, now));
+    }
     private void review(QuestionStatus target, ReviewAction action, UUID reviewer, String comment, Instant now) {
         requireStatus(QuestionStatus.PENDING_REVIEW); status = target; updatedAt = now;
         reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), reviewer, action, comment, now));
@@ -104,5 +134,5 @@ public final class Question {
     public String imageUrl(){return imageUrl;} public String storageKey(){return storageKey;} public QuestionType type(){return type;}
     public Difficulty difficulty(){return difficulty;} public QuestionStatus status(){return status;} public QuestionSource source(){return source;}
     public String aiSourceId(){return aiSourceId;} public UUID createdBy(){return createdBy;} public Instant createdAt(){return createdAt;}
-    public Instant updatedAt(){return updatedAt;} public List<QuestionOption> options(){return options;} public List<QuestionReviewHistory> reviewHistory(){return List.copyOf(reviewHistory);}
+    public Instant updatedAt(){return updatedAt;} public QuestionStatus archivedFromStatus(){return archivedFromStatus;} public List<QuestionOption> options(){return options;} public List<QuestionReviewHistory> reviewHistory(){return List.copyOf(reviewHistory);}
 }

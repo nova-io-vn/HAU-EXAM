@@ -12,10 +12,10 @@ import { routes } from "../../../constants/routes";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { facultiesApi } from "../api/facultiesApi";
 import { usersApi } from "../api/usersApi";
-import { questionsApi } from "../../questions/api/questionsApi";
 import { platformSettingsApi } from "../api/platformSettingsApi";
 import { presenceApi } from "../api/presenceApi";
 import { normalizePage, formatDateTime } from "../model/userModel";
+import { Avatar } from "../../../components/shared/Avatar";
 export function AdminDashboardPage() {
   const { role } = useAuth();
   const [data, setData] = useState(null);
@@ -23,6 +23,8 @@ export function AdminDashboardPage() {
   const [traffic, setTraffic] = useState(null);
   const [trafficError, setTrafficError] = useState("");
   const [onlineCount, setOnlineCount] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [onlineOpen, setOnlineOpen] = useState(false);
   const load = useCallback(async () => {
     setError(null);
     setTrafficError("");
@@ -31,17 +33,15 @@ export function AdminDashboardPage() {
         facultiesApi.list({ page: 0, size: 1 }),
         usersApi.list({ page: 0, size: 1 }),
         usersApi.list({ status: "PENDING_APPROVAL", page: 0, size: 5 }),
-        questionsApi.list({ page: 0, size: 1 }),
       ]),
       platformSettingsApi.webTraffic(),
     ]);
     if (coreResult.status === "fulfilled") {
-      const [faculties, users, pending, questions] = coreResult.value;
+      const [faculties, users, pending] = coreResult.value;
       setData({
         faculties: normalizePage(faculties),
         users: normalizePage(users),
         pending: normalizePage(pending),
-        questions: normalizePage(questions),
       });
     } else {
       setError(coreResult.reason);
@@ -56,7 +56,10 @@ export function AdminDashboardPage() {
   useEffect(() => {
     if (role !== "SYSTEM_ADMIN") return;
     const timer = setTimeout(load, 0);
-    const refreshPresence = () => presenceApi.onlineCount().then(value => setOnlineCount(Number(value?.count ?? 0))).catch(() => setOnlineCount(null));
+    const refreshPresence = () => Promise.all([presenceApi.onlineCount(), presenceApi.onlineUsers()]).then(async ([count, ids]) => {
+      setOnlineCount(Number(count?.count ?? 0));
+      setOnlineUsers(await usersApi.directory(ids?.userIds || []));
+    }).catch(() => { setOnlineCount(null); setOnlineUsers([]); });
     refreshPresence();
     const presenceTimer = setInterval(refreshPresence, 15000);
     return () => { clearTimeout(timer); clearInterval(presenceTimer); };
@@ -95,7 +98,6 @@ export function AdminDashboardPage() {
     ["Tổng giảng viên", data.users.totalElements, "users"],
     ["Tổng số Khoa", data.faculties.totalElements, "faculties"],
     ["Chờ phê duyệt", data.pending.totalElements, "registrations"],
-    ["Tổng số câu hỏi", data.questions.totalElements, "questions"],
   ];
   return (
     <section className="admin-dashboard">
@@ -114,12 +116,12 @@ export function AdminDashboardPage() {
         }
       />
       <div className="admin-kpi-grid">
-        <article className="admin-kpi" aria-live="polite">
+        <button type="button" className="admin-kpi admin-kpi-button" aria-live="polite" onClick={() => setOnlineOpen(true)}>
           <span className="kpi-accent kpi-0" />
           <small>Đang trực tuyến</small>
           <strong>{onlineCount == null ? "—" : onlineCount.toLocaleString("vi-VN")}</strong>
-          <span>Người dùng hoạt động trong 90 giây gần nhất</span>
-        </article>
+          <span>Xem chi tiết →</span>
+        </button>
         {stats.map(([label, value, to], index) => (
           <Link className="admin-kpi" to={routes[to]} key={label}>
             <span className={"kpi-accent kpi-" + index} />
@@ -129,6 +131,7 @@ export function AdminDashboardPage() {
           </Link>
         ))}
       </div>
+      {onlineOpen && <div className="admin-modal-backdrop" role="presentation" onClick={() => setOnlineOpen(false)}><section className="surface admin-online-modal" role="dialog" aria-modal="true" aria-label="Người đang trực tuyến" onClick={event => event.stopPropagation()}><header><div><span className="eyebrow">PRESENCE</span><h2>Người đang trực tuyến</h2></div><button type="button" onClick={() => setOnlineOpen(false)} aria-label="Đóng">×</button></header>{onlineUsers.length ? <div className="admin-online-list">{onlineUsers.map(user => <div className="admin-online-user" key={user.userId}><Avatar user={user} size="sm"/><div><strong>{user.fullName || "Không xác định"}</strong><small>{user.lecturerCode || ""} · {user.role === "SUBJECT_ADMIN" ? "Quản trị viên chuyên môn" : user.role === "SYSTEM_ADMIN" ? "Quản trị viên hệ thống" : "Giảng viên"}</small><small>{user.facultyId || "Chưa phân khoa"} <span className="online-dot">● Đang trực tuyến</span></small></div></div>)}</div> : <p className="admin-online-empty">Không có người dùng đang trực tuyến.</p>}</section></div>}
       <section className="surface admin-panel traffic-overview">
         <header>
           <div>

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button, DataTable, StatusBadge } from "../../../components/ui";
-import { formatDateTime, canEdit, canArchive } from "../model/questionModel";
+import { formatDateTime, canEdit, canArchive, canRestore } from "../model/questionModel";
 import { sourceLabels } from "../../../utils/enumLabels";
 import { Avatar } from "../../../components/shared/Avatar";
 
@@ -18,7 +18,7 @@ export function QuestionTable({ questions, auth, onPreview, onAction, page = 0, 
     { key: "source", header: "Nguồn", render: (item) => <span>{sourceLabels[item.source] || sourceLabels.MANUAL}</span> },
     { key: "creator", header: "Người tạo", render: (item) => { const person = creatorMap[item.createdBy] || { fullName: item.createdByName, lecturerCode: item.lecturerCode, avatarUrl: item.creatorAvatar }; return <span className="identity-inline"><Avatar user={person} size="sm"/><span className="identity-inline-name">{item.createdByName || person?.fullName || person?.displayName || person?.lecturerCode || "Không xác định"}{(person?.lecturerCode || item.lecturerCode) && <small>{person?.lecturerCode || item.lecturerCode}</small>}</span></span>; } },
     { key: "updatedAt", header: "Cập nhật", render: (item) => formatDateTime(item.updatedAt) },
-    { key: "actions", header: "Thao tác", render: (item) => <div className="row-actions"><Button variant="ghost" onClick={() => onPreview(item)}>Xem trước</Button><Link to={`/questions/${item.id}`}>Chi tiết</Link>{canEdit(item, auth) && <><Link to={`/questions/${item.id}/edit`}>Sửa</Link><Button onClick={() => onAction("submit", item)}>Gửi duyệt</Button></>}{canArchive(item, auth) && <Button variant="ghost" onClick={() => onAction("archive", item)}>Lưu trữ</Button>}</div> },
+    { key: "actions", header: "Thao tác", render: (item) => <div className="row-actions"><Button variant="ghost" onClick={() => onPreview(item)}>Xem trước</Button><Link to={`/questions/${item.id}`}>Chi tiết</Link>{canEdit(item, auth) && <><Link to={`/questions/${item.id}/edit`}>Sửa</Link><Button onClick={() => onAction("submit", item)}>Gửi duyệt</Button></>}{canArchive(item, auth) && <Button variant="ghost" onClick={() => onAction("archive", item)}>Lưu trữ</Button>}{canRestore(item, auth) && <Button variant="ghost" onClick={() => onAction("restore", item)}>Khôi phục</Button>}</div> },
   ];
   return <DataTable columns={columns} rows={questions} emptyTitle="Không tìm thấy câu hỏi" />;
 }

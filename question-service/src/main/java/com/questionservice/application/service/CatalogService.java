@@ -70,10 +70,17 @@ public class CatalogService {
             Chapter existing = chapter(id);
             if (!existing.subjectId().equals(subjectId)) throw new IllegalArgumentException("Chapter does not belong to subject");
         }
+        var siblings = repo.findChapters(subjectId);
+        int normalizedOrdinal = ordinal;
+        if (id == null && normalizedOrdinal <= 0) normalizedOrdinal = siblings.stream().mapToInt(Chapter::ordinal).max().orElse(0) + 1;
+        if (normalizedOrdinal <= 0) throw new IllegalArgumentException("Chapter order must be positive");
+        final int order = normalizedOrdinal;
+        boolean duplicate = siblings.stream().anyMatch(chapter -> !chapter.id().equals(id) && chapter.ordinal() == order);
+        if (duplicate) throw new IllegalArgumentException("Chapter order must be unique within a subject");
         Instant now = Instant.now(clock);
         Chapter old = id == null ? null : chapter(id);
         return repo.saveChapter(new Chapter(id == null ? UUID.randomUUID() : id, subjectId, required(code),
-                required(name), ordinal, old == null ? now : old.createdAt(), now));
+                required(name), order, old == null ? now : old.createdAt(), now));
     }
 
     public Topic saveTopic(UUID id, UUID chapterId, String code, String name, Actor actor) {
@@ -218,8 +225,17 @@ public class CatalogService {
 
     public void deleteChapter(UUID id, Actor actor) {
         Chapter chapter = chapter(id);
-        manageCanonical(actor, subject(chapter.subjectId()));
+        Subject target = subject(chapter.subjectId());
+        manageCanonical(actor, target);
         repo.deleteChapter(id);
+        int next = 1;
+        for (Chapter sibling : repo.findChapters(chapter.subjectId())) {
+            if (sibling.ordinal() != next) {
+                repo.saveChapter(new Chapter(sibling.id(), sibling.subjectId(), sibling.code(), sibling.name(), next,
+                        sibling.createdAt(), Instant.now(clock)));
+            }
+            next++;
+        }
     }
 
     public void deleteTopic(UUID id, Actor actor) {

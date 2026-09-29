@@ -1,2 +1,2 @@
 package com.questionservice.domain.model;
-public enum ReviewAction { APPROVED, REJECTED, REVISION_REQUESTED }
+public enum ReviewAction { SUBMITTED, RESUBMITTED, APPROVED, REJECTED, REVISION_REQUESTED, ARCHIVED, RESTORED }

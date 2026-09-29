@@ -29,6 +29,11 @@ spring:
         jwt:
           jwk-set-uri: ${JWT_JWK_SET_URI}
 
+management:
+  health:
+    mail:
+      enabled: false
+
 notification:
   mail-from: ${SMTP_FROM}
   websocket:

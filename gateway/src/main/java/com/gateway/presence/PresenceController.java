@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import reactor.core.publisher.Mono;
+import java.util.List;
 
 @RestController
 @ConditionalOnBean(PresenceService.class)
@@ -30,6 +31,14 @@ public class PresenceController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "SYSTEM_ADMIN role is required");
         }
         return presence.onlineCount().map(count -> success(Map.of("count", count)));
+    }
+
+    @GetMapping("/online-users")
+    public Mono<Map<String, Object>> onlineUsers(@AuthenticationPrincipal Jwt jwt) {
+        if (!"SYSTEM_ADMIN".equals(jwt.getClaimAsString("role"))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "SYSTEM_ADMIN role is required");
+        }
+        return presence.onlineUserIds().collectList().map(ids -> success(Map.of("userIds", ids)));
     }
 
     private Map<String, Object> success(Object data) {

@@ -34,8 +34,8 @@ function SystemStatusOverview() {
     ]).then(results => {
       const [ai, email, telegram, storage, branding] = results.map(result => result.status === 'fulfilled' ? result.value : null);
       setItems([
-        { name: 'AI', detail: ai?.provider || 'Provider', status: ai?.status || 'NOT_CONFIGURED', checkedAt: ai?.lastCheckedAt },
-        { name: 'Email', detail: 'SMTP', status: email?.smtpHost && email?.passwordConfigured && email?.enabled ? 'CONFIGURED_BUT_UNVERIFIED' : 'NOT_CONFIGURED' },
+        { name: 'AI', detail: ai ? `${ai.provider || 'Provider'} · ${ai.model || 'Model chưa chọn'}` : 'Chưa cấu hình', status: ai?.status || 'NOT_CONFIGURED', checkedAt: ai?.lastCheckedAt },
+        { name: 'Email', detail: email?.smtpHost ? `${email.smtpHost} · ${email.fromEmail || email.smtpUsername || 'Chưa có email gửi'}` : 'Chưa cấu hình', status: email?.smtpHost && email?.passwordConfigured && email?.enabled ? 'CONFIGURED_BUT_UNVERIFIED' : 'NOT_CONFIGURED' },
         { name: 'Telegram', detail: telegram?.botUsername ? `@${telegram.botUsername}` : '', status: telegram?.configured ? (telegram.lastCheckedAt ? 'WORKING' : 'CONFIGURED_BUT_UNVERIFIED') : 'NOT_CONFIGURED', checkedAt: telegram?.lastCheckedAt },
         { name: 'Lưu trữ ảnh', detail: 'Cloudinary', status: storage?.configured ? 'CONFIGURED_BUT_UNVERIFIED' : 'NOT_CONFIGURED' },
         { name: 'Branding', detail: branding?.systemName || 'HAU QM', status: branding ? 'CONFIGURED_BUT_UNVERIFIED' : 'NOT_CONFIGURED' },

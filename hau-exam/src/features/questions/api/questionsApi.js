@@ -38,6 +38,7 @@ export const questionsApi = {
   update: (id, question) => api.put(`/api/v1/questions/${id}`, question),
   submit: (id) => api.post(`/api/v1/questions/${id}/submit`),
   archive: (id) => api.post(`/api/v1/questions/${id}/archive`),
+  restore: (id) => api.post(`/api/v1/questions/${id}/restore`),
   approve: (id, reason) =>
     api.post(`/api/v1/questions/${id}/approve`, { reason: reason || null }),
   reject: (id, reason) =>
@@ -57,10 +58,13 @@ export const questionsApi = {
 // Display names are resolved from catalog endpoints, not assumed response fields.
 async function catalogNames(items = []) {
   if (!items.length) return items;
-  const creatorIds = [...new Set(items.map((q) => q.createdBy).filter(Boolean))];
+  const creatorIds = [...new Set([
+    ...items.map((q) => q.createdBy),
+    ...items.flatMap((q) => (q.reviewHistory || []).map((h) => h.reviewerId)),
+  ].filter(Boolean))];
   const results = await Promise.allSettled([
     questionsApi.subjects(),
-    api.get(`/api/v1/users/directory?ids=${creatorIds.map((id) => encodeURIComponent(id)).join(",")}`),
+    api.get(`/api/v1/users/me/directory?${creatorIds.map((id) => `ids=${encodeURIComponent(id)}`).join("&")}`),
     ...[...new Set(items.map((q) => q.subjectId))].map((id) =>
       questionsApi.chapters(id),
     ),
@@ -84,5 +88,10 @@ async function catalogNames(items = []) {
     createdByName: people.get(q.createdBy)?.fullName || people.get(q.createdBy)?.displayName,
     lecturerCode: people.get(q.createdBy)?.lecturerCode,
     creatorAvatar: people.get(q.createdBy)?.avatarUrl,
+    reviewHistory: (q.reviewHistory || []).map((history) => ({
+      ...history,
+      reviewerName: people.get(history.reviewerId)?.fullName || people.get(history.reviewerId)?.displayName || "Không xác định",
+      reviewerAvatar: people.get(history.reviewerId)?.avatarUrl,
+    })),
   }));
 }

@@ -77,7 +77,7 @@ public class QuestionService {
     public Question submit(UUID id, Actor actor, UUID correlationId) {
         var q = get(id);
         owner(q, actor);
-        q.submit(Instant.now(clock));
+        q.submit(actor.userId(), Instant.now(clock));
         q = repository.save(q);
         publisher.publish("question.submitted", "QUESTION_SUBMITTED", q, correlationId);
         return q;
@@ -114,7 +114,7 @@ public class QuestionService {
             try {
                 Question q = get(id);
                 if ("submit".equals(action)) {
-                    owner(q, actor); q.submit(Instant.now(clock)); q = repository.save(q);
+                    owner(q, actor); q.submit(actor.userId(), Instant.now(clock)); q = repository.save(q);
                 } else {
                     facultyReviewer(q, actor);
                     if ("approve".equals(action)) q.approve(actor.userId(), reason, Instant.now(clock));
@@ -154,7 +154,15 @@ public class QuestionService {
         var q = get(id);
         if (actor.role() == Role.USER) owner(q, actor);
         else facultyReviewer(q, actor);
-        q.archive(Instant.now(clock));
+        q.archive(actor.userId(), Instant.now(clock));
+        return repository.save(q);
+    }
+
+    public Question restore(UUID id, Actor actor) {
+        var q = get(id);
+        if (actor.role() == Role.USER) owner(q, actor);
+        else facultyReviewer(q, actor);
+        q.restore(actor.userId(), Instant.now(clock));
         return repository.save(q);
     }
 

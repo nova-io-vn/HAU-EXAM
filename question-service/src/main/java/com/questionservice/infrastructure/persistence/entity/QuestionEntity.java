@@ -39,6 +39,9 @@ public class QuestionEntity {
     @Column(nullable = false)
     public QuestionStatus status;
     @Enumerated(EnumType.STRING)
+    @Column(name = "archived_from_status")
+    public QuestionStatus archivedFromStatus;
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     public QuestionSource source;
     @Column(name = "ai_source_id", unique = true)

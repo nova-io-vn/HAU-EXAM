@@ -116,6 +116,12 @@ public class QuestionController {
         return ApiResponse.ok(QuestionResponse.from(service.archive(id, actors.from(jwt))));
     }
 
+    @PostMapping("/{id}/restore")
+    @PreAuthorize("hasAnyRole('USER','SUBJECT_ADMIN')")
+    public ApiResponse<QuestionResponse> restore(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.ok(QuestionResponse.from(service.restore(id, actors.from(jwt))));
+    }
+
     @PostMapping("/bulk/{action}")
     @PreAuthorize("hasAnyRole('USER','SUBJECT_ADMIN')")
     public ApiResponse<java.util.Map<String, Object>> bulk(@PathVariable String action, @AuthenticationPrincipal Jwt jwt, @RequestBody BulkRequest request, @RequestHeader(value = "X-Correlation-Id", required = false) UUID correlationId) {
