@@ -1,29 +1,31 @@
 ---
 colors:
-  accent: "#0033A0"
-  accent-hover: "#002878"
-  accent-soft: "#EDF2FC"
+  accent: "#134D8B"
+  accent-hover: "#0F4177"
+  accent-soft: "#EDF5FC"
   border: rgba(0, 0, 0, 0.10)
   border-strong: rgba(0, 0, 0, 0.16)
   danger: "#D70015"
   danger-soft: "#FFF0F0"
   divider: rgba(60, 60, 67, 0.12)
-  info: "#0033A0"
-  info-soft: "#EDF2FC"
+  info: "#134D8B"
+  info-soft: "#EDF5FC"
   muted: "#F0F2F5"
   muted-hover: "#E8E8ED"
   neutral-bg: "#F5F6F8"
   neutral-fg: "#000000"
-  primary: "#0033A0"
+  primary: "#134D8B"
   primary-foreground: "#FFFFFF"
-  primary-hover: "#002878"
-  secondary-fg: "#34383F"
-  success: "#248A3D"
-  success-soft: "#EAF7ED"
+  primary-hover: "#0F4177"
+  primary-active: "#0B3768"
+  secondary-fg: "#172033"
+  success: "#16835D"
+  success-soft: "#EAF8F2"
   surface: "#FFFFFF"
   tertiary-fg: "#8E8E93"
-  warning: "#B15C00"
-  warning-soft: "#FFF4E5"
+  warning: "#D97706"
+  warning-soft: "#FFF7E8"
+  border-light: "#E8EEF4"
 components:
   badge:
     padding: 4px 8px
@@ -64,6 +66,25 @@ components:
     backgroundColor: "{colors.surface}"
     borderColor: "{colors.divider}"
     rounded: "{rounded.md}"
+typography:
+  family: "Be Vietnam Pro"
+  fallback: "Inter, Segoe UI, sans-serif"
+iconSystem:
+  source: "src/components/ui/Icon.jsx"
+  treatment: "Semantic colored outline icons with soft backgrounds where appropriate"
+kute:
+  launcher: "Floating circular launcher, bottom-right by default, draggable, persistent visibility toggle"
+  visibilityPreference: "kuteVisible in the existing UI preference store"
+statusColors:
+  success: "green"
+  pending: "amber"
+  danger: "red"
+  info: "blue"
+  ai: "purple/blue"
+designDecision:
+  currentPrimary: "#134D8B"
+  supersedes: "The historical burgundy primary decision (#8B1538)"
+  note: "Red is semantic danger/reject/error, not the primary brand color."
 description: A modern, Apple-inspired academic workspace for question
   bank management, AI-assisted content generation, exam matrix
   management, and administrative workflows.

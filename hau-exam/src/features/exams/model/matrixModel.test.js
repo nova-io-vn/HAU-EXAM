@@ -9,7 +9,7 @@ test('inline totals and payload follow backend distribution contract',()=>{
   const payload=matrixPayload(input)
   assert.equal(payload.name,'Ma trận mẫu')
   assert.equal(payload.rules.length,3)
-  assert.deepEqual(payload.rules[0],{chapterId:'chapter',topicId:null,difficulty:'EASY',questionCount:1})
+  assert.deepEqual(payload.rules[0],{chapterId:'chapter',topicId:null,knowledgeItemId:null,difficulty:'EASY',questionCount:1})
   assert.equal(matrixTotal(matrixRows(payload.rules)),6)
 })
 test('negative, fractional, blank and oversized counts are rejected',()=>{
@@ -23,6 +23,12 @@ test('duplicate chapter/topic rows are invalid; different topics are allowed',()
   const input=form();input.rows.push({...input.rows[0],key:'b'});input.totalQuestions=12
   assert.throws(()=>matrixPayload(input))
   input.rows[1].topicId='topic';assert.equal(matrixPayload(input).rules.length,6)
+})
+test('knowledge item creates an independent matrix bucket under the same topic',()=>{
+  const input=form();input.rows[0].topicId='topic';input.rows[0].knowledgeItemId='k1';input.rows.push({...input.rows[0],key:'b',knowledgeItemId:'k2'});input.totalQuestions=12
+  const payload=matrixPayload(input)
+  assert.equal(payload.rules.length,6)
+  assert.deepEqual(new Set(payload.rules.map(rule=>rule.knowledgeItemId)),new Set(['k1','k2']))
 })
 test('zero cells do not create unnecessary selection rules',()=>{
   const input=form();input.rows[0].EASY=0;input.totalQuestions=5

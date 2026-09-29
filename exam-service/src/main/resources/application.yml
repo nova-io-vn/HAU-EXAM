@@ -23,3 +23,7 @@ logging:
     com.examservice: ${EXAM_LOG_LEVEL:INFO}
   pattern:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=%-5level service=${spring.application.name} thread=%thread correlationId=%X{correlationId:-} logger=%logger{36} message=%msg%n"
+
+exam:
+  generation:
+    max-version-count: ${EXAM_MAX_VERSION_COUNT:20}

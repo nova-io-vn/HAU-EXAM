@@ -33,6 +33,8 @@ class GatewayConfigurationTest {
         assertThat(byId.keySet()).contains("auth-service", "user-service", "question-service", "exam-service",
                 "ai-service", "notification-service", "notification-websocket");
         assertThat(byId.get("question-service").getUri().toString()).isEqualTo("lb://QUESTION-SERVICE");
+        assertThat(byId.get("question-service").getPredicates().getFirst().getArgs().values())
+                .anyMatch(value -> value.toString().contains("/api/v1/knowledge-items/**"));
         assertThat(byId.get("notification-websocket").getUri().toString()).isEqualTo("lb:ws://NOTIFICATION-SERVICE");
     }
 

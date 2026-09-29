@@ -34,8 +34,14 @@ public class TelegramController {
     public ApiResponse<String> webhook(@RequestHeader(value = "X-Telegram-Bot-Api-Secret-Token", required = false) String secret, @RequestBody JsonNode update) {
         if (webhookSecret.isBlank() || secret == null || !MessageDigest.isEqual(secret.getBytes(StandardCharsets.UTF_8), webhookSecret.getBytes(StandardCharsets.UTF_8))) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         JsonNode message = update.path("message"), chat = message.path("chat"), from = message.path("from");
-        String text = message.path("text").asText("");
-        if (text.startsWith("/start ")) service.handleStart(text.substring(7).trim(), chat.path("id").asText(), from.path("username").asText(null));
+        String text = message.path("text").asText("").trim();
+        String command = text;
+        String payload = "";
+        int separator = text.indexOf(' ');
+        if (separator >= 0) { command = text.substring(0, separator); payload = text.substring(separator + 1).trim(); }
+        int mention = command.indexOf('@');
+        if (mention >= 0) command = command.substring(0, mention);
+        if ("/start".equalsIgnoreCase(command)) service.handleStart(payload, chat.path("id").asText(), from.path("username").asText(null));
         return ApiResponse.success("OK");
     }
     private UUID user(Jwt jwt) { return UUID.fromString(jwt.getSubject()); }

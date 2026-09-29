@@ -50,6 +50,8 @@ export const questionsApi = {
   chapters: (subjectId) =>
     api.get(`/api/v1/chapters${queryString({ subjectId })}`),
   topics: (chapterId) => api.get(`/api/v1/topics${queryString({ chapterId })}`),
+  knowledgeItems: (topicId) =>
+    api.get(`/api/v1/knowledge-items${queryString({ topicId })}`),
 };
 
 // Display names are resolved from catalog endpoints, not assumed response fields.
@@ -78,7 +80,8 @@ async function catalogNames(items = []) {
     subjectName: names.get(q.subjectId),
     chapterName: names.get(q.chapterId),
     topicName: names.get(q.topicId),
-    createdByName: people.get(q.createdBy)?.displayName || people.get(q.createdBy)?.fullName,
+    authorName: people.get(q.createdBy)?.fullName || people.get(q.createdBy)?.displayName,
+    createdByName: people.get(q.createdBy)?.fullName || people.get(q.createdBy)?.displayName,
     lecturerCode: people.get(q.createdBy)?.lecturerCode,
     creatorAvatar: people.get(q.createdBy)?.avatarUrl,
   }));

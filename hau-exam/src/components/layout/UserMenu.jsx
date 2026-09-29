@@ -15,17 +15,17 @@ import {
 } from "../../features/users/model/academic";
 
 const themes = [
-  { value: "light", label: "Sáng", symbol: "☀" },
-  { value: "dark", label: "Tối", symbol: "☾" },
-  { value: "system", label: "Tự động", symbol: "◐" },
+  { value: "light", label: "Sáng", icon: "sun" },
+  { value: "dark", label: "Tối", icon: "moon" },
+  { value: "system", label: "Tự động", icon: "settings" },
 ];
 
 const cursorEffects = [
-  { value: "none", label: "Tắt" },
-  { value: "glow", label: "Ánh sáng" },
-  { value: "stars", label: "Sao nhỏ" },
-  { value: "particles", label: "Hạt" },
-  { value: "trail", label: "Vệt mềm" },
+  { value: "none", label: "Tắt", icon: "minus" },
+  { value: "glow", label: "Ánh sáng", icon: "sparkles" },
+  { value: "stars", label: "Sao nhỏ", icon: "sparkles" },
+  { value: "particles", label: "Hạt", icon: "grid" },
+  { value: "trail", label: "Vệt mềm", icon: "network" },
 ];
 
 export function UserMenu({ compact = false }) {
@@ -62,34 +62,34 @@ export function UserMenu({ compact = false }) {
             <span>{formatRoleFaculty(auth.currentUser || {}, auth.facultyId)}</span>
           </div>
 
-          <Link to={routes.profile}>Hồ sơ cá nhân</Link>
-          <button type="button" className="user-menu-action" onClick={() => setPasswordOpen(true)}>Đổi mật khẩu</button>
+          <Link to={routes.profile}><Icon name="user" variant="primary" size={16} />Hồ sơ cá nhân</Link>
+          <button type="button" className="user-menu-action" onClick={() => setPasswordOpen(true)}><Icon name="settings" variant="info" size={16} />Đổi mật khẩu</button>
 
           <div className="user-menu-section">
             <button type="button" className="user-menu-submenu-trigger" aria-expanded={submenu === "theme"} onClick={() => toggleSubmenu("theme")}>
-              <span>Cài đặt giao diện</span><Icon name="chevron" size={14} />
+              <span><Icon name="sun" variant="primary" size={16} />Cài đặt giao diện</span><Icon name="chevron" size={14} />
             </button>
             {submenu === "theme" && <div className="user-menu-options" role="radiogroup" aria-label="Chế độ giao diện">
               <small>Chế độ giao diện</small>
-              {themes.map(option => <button type="button" role="radio" aria-checked={preferences?.preference === option.value} className={preferences?.preference === option.value ? "is-selected" : ""} key={option.value} onClick={() => preferences?.setPreference(option.value)}><span aria-hidden="true">{option.symbol}</span>{option.label}<Icon name="check" size={14} /></button>)}
+              {themes.map(option => <button type="button" role="radio" aria-checked={preferences?.preference === option.value} className={preferences?.preference === option.value ? "is-selected" : ""} key={option.value} onClick={() => preferences?.setPreference(option.value)}><Icon name={option.icon} variant="primary" size={15} />{option.label}<Icon name="check" variant="success" size={14} /></button>)}
             </div>}
 
             <button type="button" className="user-menu-submenu-trigger" aria-expanded={submenu === "cursor"} onClick={() => toggleSubmenu("cursor")}>
-              <span>Hiệu ứng con trỏ</span><Icon name="chevron" size={14} />
+              <span><Icon name="sparkles" variant="info" size={16} />Hiệu ứng con trỏ</span><Icon name="chevron" size={14} />
             </button>
             {submenu === "cursor" && <div className="user-menu-options" role="radiogroup" aria-label="Hiệu ứng con trỏ">
-              {cursorEffects.map(option => <button type="button" role="radio" aria-checked={preferences?.cursorEffect === option.value} className={preferences?.cursorEffect === option.value ? "is-selected" : ""} key={option.value} onClick={() => preferences?.setCursorEffect(option.value)}>{option.label}<Icon name="check" size={14} /></button>)}
+              {cursorEffects.map(option => <button type="button" role="radio" aria-checked={preferences?.cursorEffect === option.value} className={preferences?.cursorEffect === option.value ? "is-selected" : ""} key={option.value} onClick={() => preferences?.setCursorEffect(option.value)}><Icon name={option.icon} variant="info" size={15} />{option.label}<Icon name="check" variant="success" size={14} /></button>)}
             </div>}
 
             <div className="user-menu-kute-row">
-              <span>Kute</span>
+              <span><Icon name="sparkles" variant="purple" size={16} />Trợ lý Kute</span>
               <button type="button" className="user-menu-switch" role="switch" aria-label="Hiển thị Kute" aria-checked={preferences?.kuteVisible !== false} onClick={() => preferences?.setKuteVisible(!(preferences?.kuteVisible !== false))}><span /></button>
             </div>
           </div>
 
           <div className="user-menu-section user-menu-links">
-            {(auth.role === roles.SYSTEM_ADMIN || auth.role === roles.SUBJECT_ADMIN) && <Link to={routes.telegram}>Thông báo Telegram</Link>}
-            {auth.role === roles.SYSTEM_ADMIN && <Link to={routes.settings}>Cài đặt hệ thống</Link>}
+            {(auth.role === roles.SYSTEM_ADMIN || auth.role === roles.SUBJECT_ADMIN) && <Link to={routes.telegram}><Icon name="bell" variant="info" size={16} />Thông báo Telegram</Link>}
+            {auth.role === roles.SYSTEM_ADMIN && <Link to={routes.settings}><Icon name="settings" variant="muted" size={16} />Cài đặt hệ thống</Link>}
           </div>
 
           <button type="button" className="user-menu-logout" onClick={() => void logout()}><Icon name="logout" size={16} />Đăng xuất</button>

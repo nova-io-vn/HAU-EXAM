@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import workflowPlaceholder from '../../assets/404.gif'
+import workflowPlaceholder from '../../assets/Kute.gif'
 
 // TODO: replace with dedicated workflow animation assets (step1.gif ... step4.gif).
 const workflowSteps = [

@@ -29,7 +29,7 @@ public class SecurityConfiguration {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/health", "/api/v1/public/contact", "/api/v1/public/telegram/webhook", "/ws/**").permitAll()
+                        .requestMatchers("/actuator/health", "/api/v1/public/contact", "/api/v1/public/telegram/webhook", "/api/v1/integrations/telegram/webhook", "/ws/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .build();

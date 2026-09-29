@@ -43,6 +43,10 @@ public class QuestionPersistenceAdapter implements QuestionRepository {
         return repo.approvedCoverage(subjectId).stream().map(row -> new CoverageCount((UUID) row[0], (Difficulty) row[1], ((Number) row[2]).longValue())).toList();
     }
 
+    public long countWithoutKnowledgeItem(UUID subjectId) {
+        return repo.countBySubjectIdAndKnowledgeItemIdIsNull(subjectId);
+    }
+
     public PageResult<Question> search(QuestionCriteria c) {
         Specification<QuestionEntity> spec=(root,q,cb)->{List<Predicate> p=new ArrayList<>();add(cb,p,root.get("facultyId"),c.facultyId());add(cb,p,root.get("subjectId"),c.subjectId());add(cb,p,root.get("chapterId"),c.chapterId());add(cb,p,root.get("topicId"),c.topicId());add(cb,p,root.get("difficulty"),c.difficulty());add(cb,p,root.get("status"),c.status());add(cb,p,root.get("source"),c.source());add(cb,p,root.get("createdBy"),c.createdBy());String keyword=c.keyword()==null?null:c.keyword().trim();if(keyword!=null&&!keyword.isBlank())p.add(cb.like(cb.lower(root.<String>get("content")),"%"+keyword.toLowerCase(Locale.ROOT)+"%"));return cb.and(p.toArray(Predicate[]::new));};
         String[] s=(c.sort()==null?"createdAt,desc":c.sort()).split(",");

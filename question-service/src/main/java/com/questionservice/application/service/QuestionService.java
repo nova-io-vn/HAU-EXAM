@@ -44,7 +44,7 @@ public class QuestionService {
         require(actor.userId() != null, "Authenticated user is required");
         if (actor.facultyId() == null || actor.facultyId().isBlank())
             throw new ForbiddenException("Question creator must have a faculty assignment");
-        validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), actor.facultyId());
+        validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), in.knowledgeItemId(), actor.facultyId());
         requireAssignment(in.subjectId(), actor);
         validateQuestionAssignment(in.assignmentId(), in.subjectId(), in.chapterId(), in.topicId(), in.knowledgeItemId(), actor);
         var q = Question.create(UUID.randomUUID(), actor.facultyId(), in.subjectId(), in.chapterId(), in.topicId(), in.knowledgeItemId(), in.assignmentId(), in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), QuestionSource.MANUAL, null, actor.userId(), withIds(in.options()), Instant.now(clock));
@@ -56,7 +56,7 @@ public class QuestionService {
         owner(q, actor);
         String oldImage = q.storageKey();
         var oldOptionImages = q.options().stream().map(QuestionOption::storageKey).filter(Objects::nonNull).toList();
-        validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), actor.facultyId());
+        validateTaxonomy(in.subjectId(), in.chapterId(), in.topicId(), in.knowledgeItemId(), actor.facultyId());
         requireAssignment(in.subjectId(), actor);
         q.edit(in.content(), in.imageUrl(), in.storageKey(), in.type(), in.difficulty(), withIds(in.options()), Instant.now(clock));
         var saved = repository.save(q);
@@ -220,7 +220,7 @@ public class QuestionService {
 
     private void deleteImage(String publicId) { if (imageStorage != null) imageStorage.delete(publicId); }
 
-    private void validateTaxonomy(UUID subjectId, UUID chapterId, UUID topicId, String facultyId) {
+    private void validateTaxonomy(UUID subjectId, UUID chapterId, UUID topicId, UUID knowledgeItemId, String facultyId) {
         if (catalog == null) return;
         var subject = catalog.findSubject(subjectId).orElseThrow(() -> new NotFoundException("Subject not found"));
         if (!subject.isAvailableTo(facultyId))
@@ -230,6 +230,12 @@ public class QuestionService {
         if (topicId != null) {
             var topic = catalog.findTopic(topicId).orElseThrow(() -> new NotFoundException("Topic not found"));
             if (!Objects.equals(topic.chapterId(), chapterId)) throw new IllegalArgumentException("Topic does not belong to chapter");
+        }
+        if (knowledgeItemId != null) {
+            var item = catalog.findKnowledgeItem(knowledgeItemId)
+                    .orElseThrow(() -> new NotFoundException("KNOWLEDGE_ITEM_NOT_FOUND", "Knowledge item not found"));
+            if (topicId == null || !Objects.equals(item.topicId(), topicId))
+                throw new IllegalArgumentException("Knowledge item does not belong to topic");
         }
     }
 

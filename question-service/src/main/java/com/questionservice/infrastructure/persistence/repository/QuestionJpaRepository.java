@@ -28,4 +28,6 @@ public interface QuestionJpaRepository extends JpaRepository<QuestionEntity, UUI
 
     @Query("select q.knowledgeItemId, q.difficulty, count(q) from QuestionEntity q where q.subjectId = :subjectId and q.status = com.questionservice.domain.model.QuestionStatus.APPROVED and q.knowledgeItemId is not null group by q.knowledgeItemId, q.difficulty")
     java.util.List<Object[]> approvedCoverage(@Param("subjectId") UUID subjectId);
+
+    long countBySubjectIdAndKnowledgeItemIdIsNull(UUID subjectId);
 }

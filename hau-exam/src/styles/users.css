@@ -1,5 +1,7 @@
 .filter-bar{display:grid;grid-template-columns:minmax(220px,2fr) repeat(3,minmax(140px,1fr)) auto;align-items:end;gap:12px;margin-bottom:16px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md)}
 .user-table-surface{min-height:360px;overflow:hidden}
+.identity-inline{display:flex;align-items:center;gap:8px;min-width:0}.identity-inline-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faculty-combobox-trigger .identity-inline,.faculty-combobox-popover [role="option"]{display:flex;align-items:center;gap:8px;min-width:0}.faculty-combobox-trigger .identity-inline>span:last-child,.faculty-combobox-popover [role="option"]>span{display:grid;min-width:0;text-align:left}.faculty-combobox-popover [role="option"]{width:100%}
 .user-table-surface .empty-state{min-height:300px}
 .row-actions{display:flex;align-items:center;gap:8px;white-space:nowrap}
 .row-actions .button{min-height:32px;padding-inline:10px;font-size:12px}

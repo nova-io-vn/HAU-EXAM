@@ -30,7 +30,7 @@ Registration and important administrative events target SYSTEM_ADMIN. Submitted 
 
 ## Webhook
 
-Expose `POST /api/v1/integrations/telegram/webhook` through the HTTPS gateway and configure Telegram to send the `X-Telegram-Bot-Api-Secret-Token` header. Requests without the configured secret are rejected before processing. The endpoint accepts `/start <one-time-token>` only and does not require a normal user JWT.
+Expose `POST /api/v1/integrations/telegram/webhook` through the HTTPS gateway and configure Telegram to send the `X-Telegram-Bot-Api-Secret-Token` header. Requests without the configured secret are rejected before processing. The endpoint handles both plain `/start` help and `/start <one-time-token>` (including `/start@bot`), and does not require a normal user JWT.
 
 Successful login is intentionally audit-only and does not fan out to SYSTEM_ADMIN. Security-relevant login alerts should be introduced only when a reliable failed-login/lockout event contract is available. The optional `loginEvents` preference remains disabled by default.
 

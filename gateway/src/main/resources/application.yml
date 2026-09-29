@@ -57,7 +57,7 @@ spring:
             - id: question-service
               uri: lb://QUESTION-SERVICE
               predicates:
-                - Path=/api/v1/questions/**,/api/v1/subjects/**,/api/v1/chapters/**,/api/v1/topics/**
+                - Path=/api/v1/questions/**,/api/v1/subjects/**,/api/v1/chapters/**,/api/v1/topics/**,/api/v1/knowledge-items/**
             - id: exam-service
               uri: lb://EXAM-SERVICE
               predicates:
@@ -73,7 +73,7 @@ spring:
             - id: notification-service
               uri: lb://NOTIFICATION-SERVICE
               predicates:
-                 - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**,/api/v1/public/contact,/api/v1/public/telegram/webhook,/api/v1/admin/contact/**,/api/v1/admin/email-settings/**,/api/v1/support/**,/api/v1/admin/support/**,/api/v1/telegram/**,/api/v1/admin/telegram/**
+                 - Path=/api/v1/notifications/**,/api/v1/scheduled-notifications/**,/api/v1/public/contact,/api/v1/public/telegram/webhook,/api/v1/integrations/telegram/webhook,/api/v1/admin/contact/**,/api/v1/admin/email-settings/**,/api/v1/support/**,/api/v1/admin/support/**,/api/v1/telegram/**,/api/v1/admin/telegram/**
               filters:
                 - name: RequestRateLimiter
                   args:

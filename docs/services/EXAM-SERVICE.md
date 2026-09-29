@@ -10,7 +10,7 @@ Package `com.examservice`, database `exam_db`, migration V1/V2. Matrix chứa na
 
 ## 3. API chính
 
-`POST/PUT/GET /api/v1/exam-matrices`, `POST /api/v1/exam-matrices/{id}/validate`, `POST/GET /api/v1/exam-templates`, `POST /api/v1/exams/generate`, `GET /api/v1/exams`, `GET /api/v1/exams/{id}`, `POST /api/v1/exams/{id}/versions`.
+`POST/PUT/GET /api/v1/exam-matrices`, `POST /api/v1/exam-matrices/{id}/validate`, `GET /api/v1/exam-matrices/{id}/capacity`, `POST/GET /api/v1/exam-templates`, `POST /api/v1/exams/generate`, `GET /api/v1/exams`, `GET /api/v1/exams/{id}`, `POST /api/v1/exams/{id}/versions`, and persisted-version PDF/ZIP exports under `/api/v1/exams/{id}/pdf`.
 
 ## 4. Integration/security
 

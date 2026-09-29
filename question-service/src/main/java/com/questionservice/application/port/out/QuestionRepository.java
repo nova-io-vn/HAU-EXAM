@@ -20,4 +20,5 @@ public interface QuestionRepository {
 
     AssignmentProgress assignmentProgress(UUID assignmentId);
     List<CoverageCount> approvedCoverage(UUID subjectId);
+    long countWithoutKnowledgeItem(UUID subjectId);
 }

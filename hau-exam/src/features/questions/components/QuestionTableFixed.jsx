@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button, DataTable, StatusBadge } from "../../../components/ui";
 import { formatDateTime, canEdit, canArchive } from "../model/questionModel";
 import { sourceLabels } from "../../../utils/enumLabels";
+import { Avatar } from "../../../components/shared/Avatar";
 
 const plain = (value) => String(value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
@@ -15,7 +16,7 @@ export function QuestionTable({ questions, auth, onPreview, onAction, page = 0, 
     { key: "difficulty", header: "Độ khó", render: (item) => <StatusBadge status={item.difficulty} /> },
     { key: "status", header: "Trạng thái", render: (item) => <StatusBadge status={item.status} /> },
     { key: "source", header: "Nguồn", render: (item) => <span>{sourceLabels[item.source] || sourceLabels.MANUAL}</span> },
-    { key: "creator", header: "Người tạo", render: (item) => { const person = creatorMap[item.createdBy]; return <span>{item.createdByName || person?.fullName || person?.displayName || person?.lecturerCode || "Không xác định"}{(person?.lecturerCode || item.lecturerCode) && <small>{person?.lecturerCode || item.lecturerCode}</small>}</span>; } },
+    { key: "creator", header: "Người tạo", render: (item) => { const person = creatorMap[item.createdBy] || { fullName: item.createdByName, lecturerCode: item.lecturerCode, avatarUrl: item.creatorAvatar }; return <span className="identity-inline"><Avatar user={person} size="sm"/><span className="identity-inline-name">{item.createdByName || person?.fullName || person?.displayName || person?.lecturerCode || "Không xác định"}{(person?.lecturerCode || item.lecturerCode) && <small>{person?.lecturerCode || item.lecturerCode}</small>}</span></span>; } },
     { key: "updatedAt", header: "Cập nhật", render: (item) => formatDateTime(item.updatedAt) },
     { key: "actions", header: "Thao tác", render: (item) => <div className="row-actions"><Button variant="ghost" onClick={() => onPreview(item)}>Xem trước</Button><Link to={`/questions/${item.id}`}>Chi tiết</Link>{canEdit(item, auth) && <><Link to={`/questions/${item.id}/edit`}>Sửa</Link><Button onClick={() => onAction("submit", item)}>Gửi duyệt</Button></>}{canArchive(item, auth) && <Button variant="ghost" onClick={() => onAction("archive", item)}>Lưu trữ</Button>}</div> },
   ];
