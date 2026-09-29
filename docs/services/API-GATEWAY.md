@@ -14,9 +14,9 @@ Route qua Eureka, JWT validation, CORS, correlation ID, request logging cơ bả
 |---|---|
 | `/api/v1/auth/**` | `lb://AUTH-SERVICE` |
 | `/api/v1/users/**`, `/api/v1/faculties/**` | `lb://USER-SERVICE` |
-| `/api/v1/questions/**`, `/api/v1/subjects/**`, `/api/v1/chapters/**`, `/api/v1/topics/**`, `/api/v1/knowledge-items/**` | `lb://QUESTION-SERVICE` |
+| `/api/v1/questions/**`, `/api/v1/subjects/**`, `/api/v1/chapters/**`, `/api/v1/topics/**`, `/api/v1/knowledge-items/**`, `/api/v1/coverage/**`, `/api/v1/question-assignments/**` | `lb://QUESTION-SERVICE` |
 | `/api/v1/exams/**`, `/api/v1/exam-matrices/**`, `/api/v1/exam-templates/**` | `lb://EXAM-SERVICE` |
-| `/api/v1/ai/**`, `/api/v1/documents/**`, `/api/v1/chat/**` | `lb://AI-SERVICE` |
+| `/api/v1/ai/**`, `/api/v1/documents/**`, `/api/v1/chat/**`, `/api/v1/textbook-structures/**` | `lb://AI-SERVICE` |
 | `/api/v1/notifications/**`, `/api/v1/scheduled-notifications/**` | `lb://NOTIFICATION-SERVICE` |
 | `/ws/**` | `lb:ws://NOTIFICATION-SERVICE` |
 

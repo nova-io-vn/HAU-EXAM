@@ -36,7 +36,10 @@ class SecurityBoundaryTest {
     }
 
     @Test void protectedRouteRequiresJwt() {
-        client.get().uri("/protected").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/protected").header("Origin", "http://localhost:5173")
+                .exchange().expectStatus().isUnauthorized()
+                .expectHeader().valueEquals("Access-Control-Allow-Origin", "http://localhost:5173")
+                .expectHeader().valueEquals("Access-Control-Allow-Credentials", "true");
     }
 
     @Test void malformedJwtIsRejected() {
@@ -47,8 +50,20 @@ class SecurityBoundaryTest {
 
     @Test void expiredJwtIsRejected() {
         when(decoder.decode("expired")).thenReturn(Mono.error(invalid("token expired")));
-        client.get().uri("/protected").headers(h -> h.setBearerAuth("expired"))
-                .exchange().expectStatus().isUnauthorized();
+        client.get().uri("/protected").header("Origin", "http://localhost:5173")
+                .headers(h -> h.setBearerAuth("expired"))
+                .exchange().expectStatus().isUnauthorized()
+                .expectHeader().valueEquals("Access-Control-Allow-Origin", "http://localhost:5173");
+    }
+
+    @Test void protectedEndpointPreflightAllowsConfiguredFrontendOrigin() {
+        client.options().uri("/protected")
+                .header("Origin", "http://localhost:5173")
+                .header("Access-Control-Request-Method", "GET")
+                .header("Access-Control-Request-Headers", "authorization")
+                .exchange().expectStatus().isOk()
+                .expectHeader().valueEquals("Access-Control-Allow-Origin", "http://localhost:5173")
+                .expectHeader().valueEquals("Access-Control-Allow-Credentials", "true");
     }
 
     @Test void validJwtCanReachProtectedRoute() {

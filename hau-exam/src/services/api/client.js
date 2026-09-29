@@ -37,7 +37,7 @@ export async function apiRequest(path,{body,headers={},skipRefresh=false,respons
   const token=authStore.getAccessToken()
   let response
   try{
-    response=await fetchWithTimeout(`${API_BASE_URL}${path.startsWith('/')?path:`/${path}`}`,{...options,credentials:'include',body:body instanceof FormData?body:body===undefined?undefined:JSON.stringify(body),headers:{Accept:'application/json',...(body!==undefined&&!(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{}) ,...headers}})
+    response=await fetchWithTimeout(`${API_BASE_URL}${path.startsWith('/')?path:`/${path}`}`,{...options,credentials:'include',body:body instanceof FormData?body:body===undefined?undefined:JSON.stringify(body),headers:{Accept:'application/json',...(body!==undefined&&!(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...headers,...(token?{Authorization:`Bearer ${token}`}:{})}})
   }catch(error){if(error instanceof ApiError)throw error;throw new ApiError({message:'Không thể kết nối đến máy chủ'})}
 
   if(response.status===401&&!skipRefresh&&authStore.getRefreshToken()){

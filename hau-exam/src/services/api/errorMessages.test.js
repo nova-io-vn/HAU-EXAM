@@ -18,3 +18,10 @@ test("maps every SMTP backend error to a specific Vietnamese message", () => {
     assert.equal(getErrorMessage({ code }), message);
   }
 });
+
+test("maps the gateway UNAUTHORIZED code to the session-expired message", () => {
+  assert.equal(
+    getErrorMessage({ code: "UNAUTHORIZED" }),
+    "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+  );
+});
