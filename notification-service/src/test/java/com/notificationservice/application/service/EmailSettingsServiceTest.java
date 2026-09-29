@@ -69,7 +69,7 @@ class EmailSettingsServiceTest {
                 .containsEntry("mail.smtp.ssl.enable", "true");
         assertThat(sender.getJavaMailProperties())
                 .containsEntry("mail.smtp.ssl.checkserveridentity", "true")
-                .containsEntry("mail.smtp.ssl.trust", "smtp.gmail.com");
+                .doesNotContainKey("mail.smtp.ssl.trust");
     }
 
     @Test
@@ -93,6 +93,9 @@ class EmailSettingsServiceTest {
         assertThat(entity.getSmtpPasswordEncrypted()).isEqualTo(encryptedPassword);
 
         service.update(request("••••••••"));
+        assertThat(entity.getSmtpPasswordEncrypted()).isEqualTo(encryptedPassword);
+
+        service.update(request("********"));
         assertThat(entity.getSmtpPasswordEncrypted()).isEqualTo(encryptedPassword);
     }
 

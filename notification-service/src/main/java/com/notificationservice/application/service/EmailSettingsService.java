@@ -30,7 +30,11 @@ import org.slf4j.MDC;
 @Service
 public class EmailSettingsService {
     private static final Logger log = LoggerFactory.getLogger(EmailSettingsService.class);
-    private static final List<String> PASSWORD_PLACEHOLDERS = List.of("••••••••", "••••••••••••");
+    private static final List<String> PASSWORD_PLACEHOLDERS = List.of(
+            "••••••••",
+            "••••••••••••",
+            "********"
+    );
     private final JpaEmailSettingsRepository repository;
     private final SecretProtector protector;
     private final String envHost, envUsername, envPassword, envFrom, envFromName;
@@ -144,8 +148,10 @@ public class EmailSettingsService {
         p.put("mail.smtp.starttls.enable", Boolean.toString(c.security() == EmailSecurity.STARTTLS));
         p.put("mail.smtp.starttls.required", Boolean.toString(c.security() == EmailSecurity.STARTTLS));
         p.put("mail.smtp.ssl.enable", Boolean.toString(c.security() == EmailSecurity.SSL_TLS));
+        // Keep the JVM trust store and hostname verification in force. Do not
+        // add mail.smtp.ssl.trust here: that would bypass normal certificate
+        // trust validation for the SMTP host.
         p.put("mail.smtp.ssl.checkserveridentity", "true");
-        p.put("mail.smtp.ssl.trust", c.host());
         p.put("mail.smtp.connectiontimeout", "15000");
         p.put("mail.smtp.timeout", "15000");
         p.put("mail.smtp.writetimeout", "15000");
@@ -173,10 +179,7 @@ public class EmailSettingsService {
     private String trim(String value) { return value == null ? "" : value.trim(); }
     private boolean isEmail(String value) { try { new InternetAddress(value).validate(); return true; } catch (Exception e) { return false; } }
     private String emailDomain(String value) { int at = value == null ? -1 : value.lastIndexOf('@'); return at >= 0 && at + 1 < value.length() ? value.substring(at + 1) : "invalid"; }
-    private String effectiveFrom(MailConfig config) {
-        if (isGmail(config.host()) && isEmail(config.username())) return config.username();
-        return config.fromEmail();
-    }
+    private String effectiveFrom(MailConfig config) { return config.fromEmail(); }
 
     void validateProviderConfiguration(String host, int port, EmailSecurity security) {
         if (host == null || host.isBlank() || port < 1 || port > 65535 || security == null)
