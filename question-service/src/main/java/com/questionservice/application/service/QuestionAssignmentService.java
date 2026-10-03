@@ -16,11 +16,12 @@ public class QuestionAssignmentService {
     private final QuestionRepository questions;
     private final CatalogRepository catalog;
     private final UserDirectoryPort users;
+    private final QuestionEventPublisher events;
     private final Clock clock;
 
     public QuestionAssignmentService(QuestionAssignmentRepository assignments, QuestionRepository questions,
-                                     CatalogRepository catalog, UserDirectoryPort users, Clock clock) {
-        this.assignments=assignments;this.questions=questions;this.catalog=catalog;this.users=users;this.clock=clock;
+                                     CatalogRepository catalog, UserDirectoryPort users, QuestionEventPublisher events, Clock clock) {
+        this.assignments=assignments;this.questions=questions;this.catalog=catalog;this.users=users;this.events=events;this.clock=clock;
     }
 
     public QuestionAssignmentView create(Actor actor, Command command) {
@@ -30,7 +31,9 @@ public class QuestionAssignmentService {
         var assignment=new QuestionAssignment(UUID.randomUUID(),actor.facultyId(),command.subjectId(),command.chapterId(),
                 command.topicId(),command.knowledgeItemId(),command.lecturerId(),actor.userId(),command.requiredQuestionCount(),
                 command.requiredEasy(),command.requiredMedium(),command.requiredHard(),command.deadline(),trim(command.note()),now,now);
-        return view(assignments.save(assignment));
+        var saved = assignments.save(assignment);
+        events.publishAssignmentCreated(saved, catalog.findSubject(saved.subjectId()).orElseThrow(), UUID.randomUUID());
+        return view(saved);
     }
 
     public QuestionAssignmentView update(UUID id, Actor actor, Command command) {

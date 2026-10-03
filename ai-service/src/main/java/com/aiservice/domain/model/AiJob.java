@@ -73,6 +73,24 @@ public final class AiJob {
         updatedAt = now;
     }
 
+    public void cancel(Instant now) {
+        require(JobStatus.PENDING);
+        status = JobStatus.CANCELLED;
+        completedAt = now;
+        updatedAt = now;
+    }
+
+    public void markRetried(Instant now) {
+        require(JobStatus.FAILED);
+        status = JobStatus.RETRIED;
+        updatedAt = now;
+    }
+
+    public boolean terminal() {
+        return status == JobStatus.COMPLETED || status == JobStatus.FAILED
+                || status == JobStatus.CANCELLED || status == JobStatus.RETRIED;
+    }
+
     private void require(JobStatus s) {
         if (status != s) throw new InvalidJobTransitionException("Expected " + s + " but was " + status);
     }

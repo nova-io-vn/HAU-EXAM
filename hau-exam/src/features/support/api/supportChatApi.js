@@ -15,4 +15,6 @@ export const supportChatApi = {
   attachments: id => api.get(`${base}/${id}/attachments`),
   remove: id => api.delete(`${base}/${id}`),
   revokeMessage: messageId => api.delete(`/api/v1/support/messages/${messageId}`),
+  broadcastCount: group => api.get(`/api/v1/support/broadcast/count?group=${encodeURIComponent(group)}`),
+  broadcast: (group, content, file) => { const form = new FormData(); form.append('group', group); if (content?.trim()) form.append('content', content.trim()); if (file) form.append('file', file, file.name || 'broadcast-image'); return api.post('/api/v1/support/broadcast', form); },
 };

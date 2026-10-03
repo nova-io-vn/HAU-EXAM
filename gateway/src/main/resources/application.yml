@@ -8,6 +8,10 @@ spring:
     gateway:
       server:
         webflux:
+          # Route-specific limiters can wrap the default limiter. Suppress optional
+          # headers so an outer limiter never mutates an already committed 429.
+          redis-rate-limiter:
+            include-headers: false
           default-filters:
             - name: RequestRateLimiter
               args:

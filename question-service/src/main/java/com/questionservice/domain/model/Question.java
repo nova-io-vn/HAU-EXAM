@@ -96,8 +96,9 @@ public final class Question {
     public void submit(UUID actorId, Instant now) {
         requireStatus(QuestionStatus.DRAFT);
         ReviewAction action = reviewHistory.isEmpty() ? ReviewAction.SUBMITTED : ReviewAction.RESUBMITTED;
+        QuestionStatus from = status;
         status = QuestionStatus.PENDING_REVIEW; updatedAt = now;
-        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), action, null, now));
+        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), action, from, status, null, now));
     }
     public void approve(UUID reviewerId, String comment, Instant now) { review(QuestionStatus.APPROVED, ReviewAction.APPROVED, reviewerId, comment, now); }
     public void reject(UUID reviewerId, String reason, Instant now) { required(reason, "reason"); review(QuestionStatus.REJECTED, ReviewAction.REJECTED, reviewerId, reason, now); }
@@ -105,19 +106,21 @@ public final class Question {
     public void archive(Instant now) { if (status == QuestionStatus.PENDING_REVIEW) throw new InvalidTransitionException("Pending question cannot be archived"); status = QuestionStatus.ARCHIVED; updatedAt = now; }
     public void archive(UUID actorId, Instant now) {
         if (status == QuestionStatus.PENDING_REVIEW) throw new InvalidTransitionException("Pending question cannot be archived");
+        QuestionStatus from = status;
         archivedFromStatus = status;
         status = QuestionStatus.ARCHIVED; updatedAt = now;
-        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), ReviewAction.ARCHIVED, null, now));
+        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), ReviewAction.ARCHIVED, from, status, null, now));
     }
     public void restore(UUID actorId, Instant now) {
         requireStatus(QuestionStatus.ARCHIVED);
+        QuestionStatus from = status;
         status = archivedFromStatus == null ? QuestionStatus.DRAFT : archivedFromStatus;
         archivedFromStatus = null; updatedAt = now;
-        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), ReviewAction.RESTORED, null, now));
+        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), Objects.requireNonNull(actorId), ReviewAction.RESTORED, from, status, null, now));
     }
     private void review(QuestionStatus target, ReviewAction action, UUID reviewer, String comment, Instant now) {
-        requireStatus(QuestionStatus.PENDING_REVIEW); status = target; updatedAt = now;
-        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), reviewer, action, comment, now));
+        requireStatus(QuestionStatus.PENDING_REVIEW); QuestionStatus from = status; status = target; updatedAt = now;
+        reviewHistory.add(new QuestionReviewHistory(UUID.randomUUID(), reviewer, action, from, status, comment, now));
     }
     private void requireStatus(QuestionStatus expected) { if (status != expected) throw new InvalidTransitionException("Expected " + expected + " but was " + status); }
     private static String required(String value, String field) { if (value == null || value.isBlank()) throw new IllegalArgumentException(field + " is required"); return value.trim(); }

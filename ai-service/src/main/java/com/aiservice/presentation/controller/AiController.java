@@ -57,6 +57,19 @@ public class AiController {
         return ApiResponse.ok(jobQueries.all(page, size));
     }
 
+    @PostMapping("/admin/ai/jobs/{id}/cancel")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    public ApiResponse<JobView> cancel(@PathVariable UUID id) {
+        return ApiResponse.ok(JobView.from(jobs.cancel(id)));
+    }
+
+    @PostMapping("/admin/ai/jobs/{id}/retry")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<ApiResponse<JobView>> retry(@PathVariable UUID id,
+            @RequestHeader(value = "X-Correlation-Id", required = false) UUID correlationId) {
+        return accepted(JobView.from(jobs.retry(id, correlationId)));
+    }
+
     private Object detailView(com.aiservice.application.model.AiJobViews.Detail detail) {
         String result = detail.resultJson();
         return new JobDetailView(detail.summary(), detail.sourceType(), detail.document(), detail.description(), detail.generationConfig(),

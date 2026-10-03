@@ -131,6 +131,7 @@ public class EventNotificationService implements EventNotificationUseCase {
         String field = switch (t) {
             case USER_APPROVED, USER_REJECTED, USER_ROLE_CHANGED, USER_FACULTY_CHANGED, USER_STATUS_CHANGED -> "recipientUserId";
             case QUESTION_APPROVED, QUESTION_REJECTED, QUESTION_REVISION_REQUESTED -> p.containsKey("authorUserId") ? "authorUserId" : "createdBy";
+            case QUESTION_ASSIGNMENT_CREATED -> "recipientUserId";
             case AI_GENERATION_COMPLETED, AI_GENERATION_FAILED -> "requestedBy";
             case EXAM_GENERATED -> p.containsKey("requestedBy") ? "requestedBy" : "createdBy";
             default -> throw new IllegalArgumentException("No recipient contract");
@@ -150,6 +151,7 @@ public class EventNotificationService implements EventNotificationUseCase {
         case "QUESTION_APPROVED", "QUESTIONS_BULK_APPROVED" -> NotificationType.QUESTION_APPROVED;
         case "QUESTION_REJECTED", "QUESTIONS_BULK_REJECTED" -> NotificationType.QUESTION_REJECTED;
         case "QUESTION_REVISION_REQUESTED", "QUESTIONS_BULK_NEED_REVISION" -> NotificationType.QUESTION_REVISION_REQUESTED;
+        case "QUESTION_ASSIGNMENT_CREATED" -> NotificationType.QUESTION_ASSIGNMENT_CREATED;
         case "AI_GENERATION_COMPLETED" -> NotificationType.AI_GENERATION_COMPLETED;
         case "AI_GENERATION_FAILED" -> NotificationType.AI_GENERATION_FAILED;
         case "AI_JOB_CREATED" -> NotificationType.AI_JOB_CREATED;
@@ -170,6 +172,7 @@ public class EventNotificationService implements EventNotificationUseCase {
         case QUESTION_APPROVED -> "[HAU QM] Câu hỏi của bạn đã được phê duyệt";
         case QUESTION_REJECTED -> "[HAU QM] Câu hỏi của bạn đã bị từ chối";
         case QUESTION_REVISION_REQUESTED -> "[HAU QM] Câu hỏi cần chỉnh sửa";
+        case QUESTION_ASSIGNMENT_CREATED -> "Công việc biên soạn mới";
         case AI_JOB_CREATED -> "Tiến trình AI mới";
         case AI_JOB_PROCESSING -> "Tiến trình AI đang xử lý";
         case AI_GENERATION_COMPLETED -> "Tiến trình AI đã hoàn tất";
@@ -180,6 +183,10 @@ public class EventNotificationService implements EventNotificationUseCase {
     private String content(NotificationType t, Map<String,Object> p) { String name=displayName(p), code=string(p,"lecturerCode"); return switch(t) {
         case NEW_USER_REGISTERED -> (name==null?"Người dùng":name)+" ("+code+") đã đăng ký tài khoản và đang chờ phê duyệt.";
         case QUESTION_SUBMITTED -> (name==null?"Người dùng":name)+" vừa gửi "+(p.get("questionCount") == null ? "một câu hỏi" : string(p,"questionCount")+" câu hỏi")+" chờ phê duyệt.";
+        case QUESTION_ASSIGNMENT_CREATED -> "Bạn được giao biên soạn "+string(p,"requiredQuestionCount")+" câu hỏi môn "+string(p,"subjectName")+".";
+        case QUESTION_APPROVED -> "Câu hỏi “"+safePreview(p)+"” đã được phê duyệt.";
+        case QUESTION_REJECTED -> "Câu hỏi “"+safePreview(p)+"” đã bị từ chối."+reviewReason(p);
+        case QUESTION_REVISION_REQUESTED -> "Câu hỏi “"+safePreview(p)+"” cần chỉnh sửa."+reviewReason(p);
         case AI_JOB_CREATED -> "Một tiến trình AI mới đã được tạo.";
         case AI_JOB_PROCESSING -> "Tiến trình AI đang được xử lý.";
         case AI_GENERATION_COMPLETED -> "Tiến trình AI đã hoàn tất.";
@@ -190,10 +197,12 @@ public class EventNotificationService implements EventNotificationUseCase {
     };}
     private String telegramBody(NotificationType t, Map<String,Object> p) { return "HAU QM\n━━━━━━━━━━━━\n\n"+content(t,p)+"\n\nXem tại:\n"+website(); }
     private String otpBody(Map<String,Object> p) { return "Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản HAU QM của bạn.\n\nMã xác thực:  "+required(p,"otp")+"\n\nMã có hiệu lực trong 5 phút. Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email."; }
-    private String questionBody(NotificationType t, Map<String,Object> p, UserContact c) { return "Câu hỏi "+string(p,"questionId")+" của bạn đã được cập nhật trạng thái. Vui lòng mở HAU QM để xem chi tiết."; }
+    private String questionBody(NotificationType t, Map<String,Object> p, UserContact c) { return content(t,p)+" Vui lòng mở HAU QM để xem chi tiết."; }
+    private String safePreview(Map<String,Object> p) { String value=string(p,"questionPreview"); return value==null||value.isBlank()?"Nội dung câu hỏi":value; }
+    private String reviewReason(Map<String,Object> p) { String reason=string(p,"reviewComment"); return reason==null||reason.isBlank()?"":" Lý do: "+reason; }
     private boolean isQuestionEmail(NotificationType t) { return t==NotificationType.QUESTION_APPROVED || t==NotificationType.QUESTION_REJECTED || t==NotificationType.QUESTION_REVISION_REQUESTED; }
-    private String referenceId(NotificationType t, Map<String,Object> p) { if (t==NotificationType.NEW_USER_REGISTERED) return null; if (t==NotificationType.AI_JOB_CREATED || t==NotificationType.AI_JOB_PROCESSING || t==NotificationType.AI_GENERATION_COMPLETED || t==NotificationType.AI_GENERATION_FAILED) return string(p,"jobId"); return string(p,"questionId"); }
-    private String referenceType(NotificationType t, Map<String,Object> p) { if (t==NotificationType.NEW_USER_REGISTERED) return "PENDING_USERS"; if (t==NotificationType.AI_JOB_CREATED || t==NotificationType.AI_JOB_PROCESSING || t==NotificationType.AI_GENERATION_COMPLETED || t==NotificationType.AI_GENERATION_FAILED) return "AI_JOB"; return t==NotificationType.QUESTION_SUBMITTED || isQuestionEmail(t) ? "QUESTION" : null; }
+    private String referenceId(NotificationType t, Map<String,Object> p) { if (t==NotificationType.NEW_USER_REGISTERED) return null; if (t==NotificationType.QUESTION_ASSIGNMENT_CREATED) return string(p,"assignmentId"); if (t==NotificationType.AI_JOB_CREATED || t==NotificationType.AI_JOB_PROCESSING || t==NotificationType.AI_GENERATION_COMPLETED || t==NotificationType.AI_GENERATION_FAILED) return string(p,"jobId"); return string(p,"questionId"); }
+    private String referenceType(NotificationType t, Map<String,Object> p) { if (t==NotificationType.NEW_USER_REGISTERED) return "PENDING_USERS"; if (t==NotificationType.QUESTION_ASSIGNMENT_CREATED) return "QUESTION_ASSIGNMENT"; if (t==NotificationType.AI_JOB_CREATED || t==NotificationType.AI_JOB_PROCESSING || t==NotificationType.AI_GENERATION_COMPLETED || t==NotificationType.AI_GENERATION_FAILED) return "AI_JOB"; return t==NotificationType.QUESTION_SUBMITTED || isQuestionEmail(t) ? "QUESTION" : null; }
     private String website() { return "https://exam.nova.io.vn"; }
     private String displayName(Map<String,Object> p) {
         String name = string(p, "fullName");

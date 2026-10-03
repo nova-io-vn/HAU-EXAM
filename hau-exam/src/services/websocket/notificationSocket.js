@@ -33,8 +33,13 @@ export function connectNotificationSocket({ onMessage = () => {}, onSupport, onC
   client.onStompError = () => onStatus("error");
   onStatus("connecting");
   client.activate();
-  return () => {
+  const disconnect = () => {
     client.deactivate();
     onStatus("disconnected");
   };
+  disconnect.sendTyping = (conversationId, typing) => {
+    if (!client.connected || !conversationId) return;
+    client.publish({ destination: "/app/support/typing", body: JSON.stringify({ conversationId, typing: Boolean(typing) }) });
+  };
+  return disconnect;
 }

@@ -1,0 +1,12 @@
+.ai-job-monitor .table-wrap table {
+  min-width: 1280px;
+}
+
+.job-stuck {
+  color: var(--warning);
+  display: block;
+  font-size: 11px;
+  font-weight: 750;
+  margin-top: 5px;
+  white-space: nowrap;
+}

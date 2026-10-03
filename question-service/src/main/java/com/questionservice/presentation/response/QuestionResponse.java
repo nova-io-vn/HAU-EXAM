@@ -13,10 +13,11 @@ public record QuestionResponse(UUID id, String facultyId, UUID subjectId, UUID c
                                  boolean correct, int sortOrder) {
     }
 
-    public record ReviewResponse(UUID id, UUID reviewerId, ReviewAction action, String comment, Instant timestamp) {
+    public record ReviewResponse(UUID id, UUID reviewerId, ReviewAction action, QuestionStatus fromStatus,
+                                 QuestionStatus toStatus, String comment, Instant timestamp) {
     }
 
     public static QuestionResponse from(Question q) {
-        return new QuestionResponse(q.id(), q.facultyId(), q.subjectId(), q.chapterId(), q.topicId(), q.knowledgeItemId(), q.assignmentId(), q.content(), q.imageUrl(), q.storageKey(), q.type(), q.difficulty(), q.status(), q.source(), q.createdBy(), q.createdAt(), q.updatedAt(), q.options().stream().map(o -> new OptionResponse(o.id(), o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList(), q.reviewHistory().stream().map(h -> new ReviewResponse(h.id(), h.reviewerId(), h.action(), h.comment(), h.createdAt())).toList());
+        return new QuestionResponse(q.id(), q.facultyId(), q.subjectId(), q.chapterId(), q.topicId(), q.knowledgeItemId(), q.assignmentId(), q.content(), q.imageUrl(), q.storageKey(), q.type(), q.difficulty(), q.status(), q.source(), q.createdBy(), q.createdAt(), q.updatedAt(), q.options().stream().map(o -> new OptionResponse(o.id(), o.label(), o.content(), o.imageUrl(), o.storageKey(), o.correct(), o.sortOrder())).toList(), q.reviewHistory().stream().map(h -> new ReviewResponse(h.id(), h.reviewerId(), h.action(), h.fromStatus(), h.toStatus(), h.comment(), h.createdAt())).toList());
     }
 }

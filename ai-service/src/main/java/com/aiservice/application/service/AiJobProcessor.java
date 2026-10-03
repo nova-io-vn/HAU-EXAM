@@ -42,7 +42,7 @@ public class AiJobProcessor {
         if (inbox.exists(eventId)) { log.debug("Skipping duplicate AI event; eventId={} jobId={} correlationId={}", eventId, jobId, correlation); return; }
         log.info("AI job processing started; jobId={} eventId={} correlationId={}", jobId, eventId, correlation);
         var job = jobs.findById(jobId).orElseThrow(() -> new NotFoundException("AI job not found"));
-        if (job.status() == JobStatus.COMPLETED || job.status() == JobStatus.FAILED) {
+        if (job.terminal()) {
             inbox.record(eventId, "AI_GENERATION_REQUESTED");
             return;
         }
@@ -93,7 +93,7 @@ public class AiJobProcessor {
     public void failAfterRetries(UUID eventId, UUID jobId, UUID correlation, String message) {
         if (inbox.exists(eventId)) return;
         var j = jobs.findById(jobId).orElseThrow(() -> new NotFoundException("AI job not found"));
-        if (j.status() != JobStatus.COMPLETED && j.status() != JobStatus.FAILED)
+        if (!j.terminal())
             fail(j, "PROVIDER_RETRY_EXHAUSTED", message, correlation);
         inbox.record(eventId, "AI_GENERATION_REQUESTED");
         log.error("AI job retries exhausted; jobId={} eventId={} correlationId={}", jobId, eventId, correlation);

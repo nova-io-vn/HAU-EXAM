@@ -11,7 +11,8 @@ public final class AiJobViews {
                           String academicRank, String academicDegree, String avatarUrl) { }
     public record Summary(UUID jobId, String jobCode, JobType type, JobStatus status, int progress,
                           Creator creator, CatalogContext context, Integer generatedCount,
-                          Instant createdAt, Instant startedAt, Instant completedAt, Instant updatedAt) { }
+                          Instant createdAt, Instant startedAt, Instant completedAt, Instant updatedAt,
+                          Long durationSeconds, boolean possiblyStuck) { }
     public record DocumentContext(UUID id, String originalFilename, String contentType, long size, String extractedStatus) { }
     public record Detail(Summary summary, String sourceType, DocumentContext document, String description,
                          Map<String,Object> generationConfig, String provider, String model,

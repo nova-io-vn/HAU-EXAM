@@ -36,6 +36,23 @@ class RuntimeAiProviderResolverTest {
     }
 
     @Test
+    void savedModelUsesEnvironmentCredentialWhenAdminKeepsExistingKey() {
+        AiSettingsRepository settings = mock(AiSettingsRepository.class);
+        AiSecretProtector protector = mock(AiSecretProtector.class);
+        GeminiAdapter gemini = mock(GeminiAdapter.class);
+        AiSettingsEntity configured = new AiSettingsEntity();
+        configured.provider = "GEMINI";
+        configured.model = "gemini-selected";
+        when(settings.findAll()).thenReturn(List.of(configured));
+        when(gemini.generateQuestions("source", "request", "environment-key", "gemini-selected")).thenReturn("[]");
+        var environment = new MockEnvironment().withProperty("ai.provider.api-key", "environment-key");
+        var resolver = new RuntimeAiProviderResolver(settings, protector, gemini, RestClient.builder(), new ObjectMapper(), environment);
+
+        assertEquals("[]", resolver.generateQuestions("source", "request"));
+        verify(gemini).generateQuestions("source", "request", "environment-key", "gemini-selected");
+    }
+
+    @Test
     void savedPersonaIsAppliedToTheNextKuteRequest() {
         AiSettingsRepository settings = mock(AiSettingsRepository.class);
         AiSecretProtector protector = mock(AiSecretProtector.class);

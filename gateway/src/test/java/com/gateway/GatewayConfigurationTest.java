@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
+import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GatewayConfigurationTest {
     @Autowired RouteDefinitionLocator routes;
     @Autowired GlobalCorsProperties cors;
+    @Autowired RedisRateLimiter redisRateLimiter;
 
     @Test void configuresAllLoadBalancedRoutesAndWebSocket() {
         var definitions = routes.getRouteDefinitions().collectList().block();
@@ -54,6 +56,10 @@ class GatewayConfigurationTest {
                 .containsEntry("redis-rate-limiter.burstCapacity", "5");
         assertThat(read).containsEntry("redis-rate-limiter.replenishRate", "20")
                 .containsEntry("redis-rate-limiter.burstCapacity", "40");
+    }
+
+    @Test void stackedRateLimitersDoNotMutateCommittedResponses() {
+        assertThat(redisRateLimiter.isIncludeHeaders()).isFalse();
     }
 
     @Test void corsAllowsOnlyConfiguredFrontendOrigin() {

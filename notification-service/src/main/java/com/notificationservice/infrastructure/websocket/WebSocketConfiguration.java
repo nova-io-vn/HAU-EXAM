@@ -35,7 +35,7 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
     }
 
     @Override public void registerStompEndpoints(StompEndpointRegistry registry) { registry.addEndpoint("/ws").setAllowedOriginPatterns(origins); }
-    @Override public void configureMessageBroker(MessageBrokerRegistry registry) { registry.enableSimpleBroker("/queue", "/topic"); registry.setUserDestinationPrefix("/user"); }
+    @Override public void configureMessageBroker(MessageBrokerRegistry registry) { registry.enableSimpleBroker("/queue", "/topic"); registry.setApplicationDestinationPrefixes("/app"); registry.setUserDestinationPrefix("/user"); }
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
@@ -52,6 +52,8 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
                             || ("/topic/support/admin".equals(destination) && accessor.getUser() instanceof Authentication auth && auth.getAuthorities().stream().anyMatch(a -> "ROLE_SYSTEM_ADMIN".equals(a.getAuthority())));
                     if (!safe) throw new BadCredentialsException("Unsupported STOMP destination");
                 }
+                if (StompCommand.SEND.equals(accessor.getCommand()) && !"/app/support/typing".equals(accessor.getDestination()))
+                    throw new BadCredentialsException("Unsupported STOMP destination");
                 return message;
             }
         });

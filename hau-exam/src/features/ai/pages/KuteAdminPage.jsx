@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { PageHeader } from '../../../components/shared/PageHeader'
-import { Button, Input, Select } from '../../../components/ui'
+import { Button, Select } from '../../../components/ui'
 import { PasswordInput } from '../../auth/components/PasswordInput'
 import { api } from '../../../services/api/client'
 import { toast } from '../../notifications/store/notificationStore'
@@ -11,10 +11,12 @@ const initial = { provider: 'GEMINI', model: 'gemini-2.5-flash', apiKey: '', per
 export function KuteAdminPage() {
   const [form, setForm] = useState(initial)
   const [meta, setMeta] = useState({ status: 'NOT_CONFIGURED', apiKeyConfigured: false })
+  const [providerOptions, setProviderOptions] = useState([])
   const [busy, setBusy] = useState('load')
   const [error, setError] = useState('')
   const load = useCallback(async () => {
-    const value = await api.get('/api/v1/admin/ai-settings')
+    const [value, options] = await Promise.all([api.get('/api/v1/admin/ai-settings'), api.get('/api/v1/admin/ai-settings/options')])
+    setProviderOptions(options || [])
     setMeta(value)
     setForm(current => ({ ...current, provider: value.provider || current.provider, model: value.model || current.model, persona: value.persona || 'FRIENDLY', personaInstructions: value.personaInstructions || '', apiKey: '' }))
   }, [])
@@ -43,8 +45,8 @@ export function KuteAdminPage() {
         <span className="eyebrow">MODEL</span><h2>Provider và model runtime</h2>
         <p>Trạng thái: <strong>{meta.status}</strong>{meta.lastErrorCode ? ` · ${meta.lastErrorCode}` : ''}</p>
         <div className="settings-form">
-          <Select label="Nhà cung cấp" value={form.provider} options={[{ value: 'GEMINI', label: 'Google Gemini' }, { value: 'OPENAI', label: 'OpenAI' }, { value: 'MISTRAL', label: 'Mistral' }]} onChange={event => setForm({ ...form, provider: event.target.value })} />
-          <Input label="Model" value={form.model} onChange={event => setForm({ ...form, model: event.target.value })} />
+          <Select label="Nhà cung cấp" value={form.provider} options={providerOptions.map(item => ({ value: item.provider, label: item.provider === 'GEMINI' ? 'Google Gemini' : item.provider === 'OPENAI' ? 'OpenAI' : 'Mistral' }))} onChange={event => { const provider = event.target.value; const models = providerOptions.find(item => item.provider === provider)?.models || []; setForm({ ...form, provider, model: models[0] || '' }); }} />
+          <Select label="Model" value={form.model} options={(providerOptions.find(item => item.provider === form.provider)?.models || [form.model]).filter(Boolean).map(model => ({ value: model, label: model }))} onChange={event => setForm({ ...form, model: event.target.value })} />
           <PasswordInput label="API key" value={form.apiKey} onChange={event => setForm({ ...form, apiKey: event.target.value })} placeholder={meta.apiKeyConfigured ? '•••••••••••• · nhập mới để thay đổi' : 'Nhập API key'} />
           <small>Secret chỉ được gửi để lưu mã hóa và không được trả lại frontend.</small>
           <div className="settings-actions"><Button variant="secondary" loading={busy === 'test'} disabled={Boolean(busy)} onClick={test}>Kiểm tra</Button><Button loading={busy === 'model'} disabled={Boolean(busy)} onClick={() => save('model')}>Lưu model</Button></div>

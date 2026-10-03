@@ -60,4 +60,23 @@ public class AiJobService {
         if (!j.requestedBy().equals(user)) throw new NotFoundException("AI job not found");
         return j;
     }
+
+    @Transactional
+    public AiJob cancel(UUID id) {
+        var job = jobs.findById(id).orElseThrow(() -> new NotFoundException("AI job not found"));
+        job.cancel(Instant.now(clock));
+        return jobs.save(job);
+    }
+
+    @Transactional
+    public AiJob retry(UUID id, UUID correlation) {
+        var previous = jobs.findById(id).orElseThrow(() -> new NotFoundException("AI job not found"));
+        previous.markRetried(Instant.now(clock));
+        jobs.save(previous);
+        var retried = jobs.save(AiJob.pending(UUID.randomUUID(), previous.requestedBy(), previous.documentId(),
+                previous.facultyId(), previous.subjectId(), previous.chapterId(), previous.topicId(),
+                previous.type(), previous.requestJson(), Instant.now(clock)));
+        events.requested(retried, correlation);
+        return retried;
+    }
 }

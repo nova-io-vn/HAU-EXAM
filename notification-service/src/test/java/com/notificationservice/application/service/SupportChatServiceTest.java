@@ -3,6 +3,9 @@ package com.notificationservice.application.service;
 import com.notificationservice.application.dto.UserContact;
 import com.notificationservice.application.port.out.SupportImageStorage;
 import com.notificationservice.application.port.out.UserContactResolver;
+import com.notificationservice.application.port.out.AudienceResolver;
+import com.notificationservice.application.dto.Recipient;
+import com.notificationservice.domain.model.BroadcastGroup;
 import com.notificationservice.domain.model.SupportStatus;
 import com.notificationservice.infrastructure.persistence.entity.SupportConversationEntity;
 import com.notificationservice.infrastructure.persistence.entity.SupportMessageEntity;
@@ -25,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.notificationservice.domain.exception.ForbiddenNotificationAccessException;
@@ -38,12 +42,13 @@ class SupportChatServiceTest {
     @Mock SimpMessagingTemplate realtime;
     @Mock UserContactResolver contacts;
     @Mock DirectConversationWriter writer;
+    @Mock AudienceResolver audience;
 
     private SupportChatService service;
 
     @BeforeEach
     void setUp() {
-        service = new SupportChatService(conversations, messages, attachments, storage, realtime, contacts, writer);
+        service = new SupportChatService(conversations, messages, attachments, storage, realtime, contacts, writer, audience);
     }
 
     @Test
@@ -142,6 +147,64 @@ class SupportChatServiceTest {
         UUID user=UUID.randomUUID(),recipient=UUID.randomUUID();var conversation=conversation(user,recipient);var message=new SupportMessageEntity();message.setId(UUID.randomUUID());message.setConversationId(conversation.getId());message.setSenderId(user);message.setCreatedAt(Instant.now());
         when(messages.findById(message.getId())).thenReturn(Optional.of(message));when(conversations.findById(conversation.getId())).thenReturn(Optional.of(conversation));
         assertThrows(ForbiddenNotificationAccessException.class,()->service.revokeMessage(message.getId(),recipient,"SUBJECT_ADMIN","CNTT"));
+    }
+
+    @Test
+    void typingIsTransientAndTargetsOnlyTheOtherParticipant() {
+        UUID user=UUID.randomUUID(),recipient=UUID.randomUUID();var conversation=conversation(user,recipient);
+        when(conversations.findById(conversation.getId())).thenReturn(Optional.of(conversation));
+
+        service.typing(conversation.getId(),user,"USER","CNTT",true);
+
+        verify(realtime).convertAndSendToUser(org.mockito.ArgumentMatchers.eq(recipient.toString()),org.mockito.ArgumentMatchers.eq("/queue/support"),any());
+        verify(messages,never()).save(any());
+    }
+
+    @Test
+    void nonParticipantCannotSpoofTypingEvenWithSystemAdminRole() {
+        UUID user=UUID.randomUUID(),recipient=UUID.randomUUID(),outsider=UUID.randomUUID();var conversation=conversation(user,recipient);
+        when(conversations.findById(conversation.getId())).thenReturn(Optional.of(conversation));
+
+        assertThrows(ForbiddenNotificationAccessException.class,()->service.typing(conversation.getId(),outsider,"SYSTEM_ADMIN",null,true));
+        verify(realtime,never()).convertAndSendToUser(any(),any(),any());
+    }
+
+    @Test
+    void subjectAdminBroadcastCountIsResolvedFromOwnFacultyOnly() {
+        UUID admin=UUID.randomUUID(),ownUser=UUID.randomUUID();
+        when(audience.resolve("USER","CNTT")).thenReturn(java.util.List.of(new Recipient(ownUser,"u@example.test")));
+
+        assertThat(service.broadcastCount(admin,"SUBJECT_ADMIN","CNTT",BroadcastGroup.FACULTY_USERS)).isEqualTo(1);
+        verify(audience).resolve("USER","CNTT");
+        assertThrows(ForbiddenNotificationAccessException.class,()->service.broadcastCount(admin,"SUBJECT_ADMIN","CNTT",BroadcastGroup.ALL));
+    }
+
+    @Test
+    void userCannotBroadcastAndSystemAdminGroupsAreServerResolved() {
+        UUID admin=UUID.randomUUID(),user=UUID.randomUUID(),subjectAdmin=UUID.randomUUID();
+        when(audience.resolve("USER",null)).thenReturn(java.util.List.of(new Recipient(user,"u@example.test")));
+        when(audience.resolve("SUBJECT_ADMIN",null)).thenReturn(java.util.List.of(new Recipient(subjectAdmin,"a@example.test")));
+        when(audience.resolve("SYSTEM_ADMIN",null)).thenReturn(java.util.List.of(new Recipient(admin,"admin@example.test")));
+
+        assertThat(service.broadcastCount(admin,"SYSTEM_ADMIN",null,BroadcastGroup.ALL)).isEqualTo(2);
+        assertThrows(ForbiddenNotificationAccessException.class,()->service.broadcastCount(user,"USER","CNTT",BroadcastGroup.USER));
+    }
+
+    @Test
+    void facultyBroadcastPersistsExactlyOneMessageForEachServerResolvedRecipient() {
+        UUID admin=UUID.randomUUID(),first=UUID.randomUUID(),second=UUID.randomUUID();
+        when(audience.resolve("USER","CNTT")).thenReturn(java.util.List.of(new Recipient(first,"1@example.test"),new Recipient(second,"2@example.test")));
+        when(contacts.resolve(any())).thenAnswer(invocation->contact(invocation.getArgument(0),"USER","CNTT"));
+        when(conversations.findByDirectParticipantKey(any())).thenReturn(Optional.empty());
+        var inserted=new java.util.HashMap<UUID,SupportConversationEntity>();
+        when(writer.insert(any())).thenAnswer(invocation->{SupportConversationEntity value=invocation.getArgument(0);inserted.put(value.getId(),value);return value;});
+        when(conversations.findById(any())).thenAnswer(invocation->Optional.ofNullable(inserted.get(invocation.getArgument(0))));
+        when(messages.save(any())).thenAnswer(invocation->invocation.getArgument(0));
+        when(conversations.save(any())).thenAnswer(invocation->invocation.getArgument(0));
+        when(attachments.findByMessageId(any())).thenReturn(java.util.List.of());
+
+        assertThat(service.broadcast(admin,"SUBJECT_ADMIN","CNTT",BroadcastGroup.FACULTY_USERS,"Thông báo",null)).isEqualTo(2);
+        verify(messages,times(2)).save(any());
     }
 
     private static UserContact contact(UUID id, String role, String faculty) {

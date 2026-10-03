@@ -1,5 +1,5 @@
 package com.aiservice.domain.model;
 
 public enum JobStatus {
-    PENDING, PROCESSING, COMPLETED, FAILED
+    PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED, RETRIED
 }

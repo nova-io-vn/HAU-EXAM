@@ -19,6 +19,12 @@ public class ReviewHistoryEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     public ReviewAction action;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "from_status")
+    public com.questionservice.domain.model.QuestionStatus fromStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "to_status")
+    public com.questionservice.domain.model.QuestionStatus toStatus;
     @Column(columnDefinition = "text")
     public String comment;
     @Column(name = "created_at", nullable = false)

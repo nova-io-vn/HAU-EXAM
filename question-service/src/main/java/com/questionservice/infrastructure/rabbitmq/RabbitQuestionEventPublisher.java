@@ -3,6 +3,8 @@ package com.questionservice.infrastructure.rabbitmq;
 import com.questionservice.application.port.out.QuestionEventPublisher;
 import com.questionservice.domain.model.Actor;
 import com.questionservice.domain.model.Question;
+import com.questionservice.domain.model.QuestionAssignment;
+import com.questionservice.domain.model.Subject;
 
 import java.time.*;
 import java.util.*;
@@ -28,6 +30,8 @@ public class RabbitQuestionEventPublisher implements QuestionEventPublisher {
         payload.put("chapterId", q.chapterId());
         payload.put("topicId", q.topicId());
         payload.put("status", q.status().name());
+        String preview = q.content().replaceAll("\\s+", " ").trim();
+        payload.put("questionPreview", preview.length() > 140 ? preview.substring(0, 137) + "..." : preview);
         if (!q.reviewHistory().isEmpty())
             payload.put("reviewComment", q.reviewHistory().get(q.reviewHistory().size() - 1).comment());
         rabbit.convertAndSend(RabbitTopology.QUESTION_EXCHANGE, key, new OutboundEnvelope(UUID.randomUUID(), type, correlation == null ? UUID.randomUUID() : correlation, OffsetDateTime.now(ZoneOffset.UTC), 1, payload));
@@ -45,6 +49,27 @@ public class RabbitQuestionEventPublisher implements QuestionEventPublisher {
         rabbit.convertAndSend(RabbitTopology.QUESTION_EXCHANGE, key,
                 new OutboundEnvelope(UUID.randomUUID(), type, correlation == null ? UUID.randomUUID() : correlation,
                         OffsetDateTime.now(ZoneOffset.UTC), 1, payload));
+    }
+
+    @Override
+    public void publishAssignmentCreated(QuestionAssignment assignment, Subject subject, UUID correlation) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("assignmentId", assignment.id());
+        payload.put("recipientUserId", assignment.lecturerId());
+        payload.put("lecturerId", assignment.lecturerId());
+        payload.put("assignedBy", assignment.assignedBy());
+        payload.put("facultyId", assignment.facultyId());
+        payload.put("subjectId", assignment.subjectId());
+        payload.put("subjectCode", subject.code());
+        payload.put("subjectName", subject.name());
+        payload.put("requiredQuestionCount", assignment.requiredQuestionCount());
+        payload.put("requiredEasy", assignment.requiredEasy());
+        payload.put("requiredMedium", assignment.requiredMedium());
+        payload.put("requiredHard", assignment.requiredHard());
+        payload.put("deadline", assignment.deadline().toString());
+        rabbit.convertAndSend(RabbitTopology.QUESTION_EXCHANGE, "question.assignment.created",
+                new OutboundEnvelope(UUID.randomUUID(), "QUESTION_ASSIGNMENT_CREATED",
+                        correlation == null ? UUID.randomUUID() : correlation, OffsetDateTime.now(ZoneOffset.UTC), 1, payload));
     }
 
     public record OutboundEnvelope(UUID eventId, String eventType, UUID correlationId, OffsetDateTime occurredAt,

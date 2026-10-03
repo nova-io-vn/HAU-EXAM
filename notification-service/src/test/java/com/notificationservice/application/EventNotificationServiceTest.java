@@ -54,4 +54,22 @@ class EventNotificationServiceTest {
         assertThat(saved.getAllValues()).extracting(com.notificationservice.domain.model.Notification::getUserId)
                 .containsExactly(aiUser, applicant);
     }
+
+    @Test void assignmentCreatedPersistsHumanReadableNotificationForAssignee() {
+        var repository = mock(NotificationRepository.class); var tokens = mock(DeviceTokenRepository.class); var inbox = mock(ProcessedEventStore.class); var ws = mock(RealtimeNotifier.class); var push = mock(PushProvider.class); var mail = mock(EmailSender.class); var contacts = mock(UserContactResolver.class);
+        when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0)); when(tokens.findActiveByUser(any())).thenReturn(List.of());
+        var service = new EventNotificationService(repository, tokens, inbox, ws, push, mail, Clock.systemUTC(), contacts);
+        UUID recipient = UUID.randomUUID(), assignment = UUID.randomUUID();
+
+        assertThat(service.handle(new IncomingEvent(UUID.randomUUID(), "QUESTION_ASSIGNMENT_CREATED", UUID.randomUUID(), Map.of(
+                "recipientUserId", recipient.toString(), "assignmentId", assignment.toString(),
+                "requiredQuestionCount", 10, "subjectName", "Trí tuệ nhân tạo")))).isTrue();
+
+        var saved = org.mockito.ArgumentCaptor.forClass(com.notificationservice.domain.model.Notification.class);
+        verify(repository).save(saved.capture());
+        assertThat(saved.getValue().getUserId()).isEqualTo(recipient);
+        assertThat(saved.getValue().getContent()).isEqualTo("Bạn được giao biên soạn 10 câu hỏi môn Trí tuệ nhân tạo.");
+        assertThat(saved.getValue().getReferenceId()).isEqualTo(assignment.toString());
+        verify(ws).send(saved.getValue());
+    }
 }

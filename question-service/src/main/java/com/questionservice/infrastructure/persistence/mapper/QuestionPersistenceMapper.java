@@ -12,12 +12,12 @@ public class QuestionPersistenceMapper {
         e.knowledgeItemId=q.knowledgeItemId();e.assignmentId=q.assignmentId();e.content=q.content();e.imageUrl=q.imageUrl();e.storageKey=q.storageKey();
         e.type=q.type();e.difficulty=q.difficulty();e.status=q.status();e.archivedFromStatus=q.archivedFromStatus();e.source=q.source();e.aiSourceId=q.aiSourceId();e.createdBy=q.createdBy();e.createdAt=q.createdAt();e.updatedAt=q.updatedAt();
         e.options=q.options().stream().map(o->{var x=new QuestionOptionEntity();x.id=o.id();x.question=e;x.label=o.label();x.content=o.content();x.imageUrl=o.imageUrl();x.storageKey=o.storageKey();x.correct=o.correct();x.sortOrder=o.sortOrder();return x;}).toList();
-        e.histories=q.reviewHistory().stream().map(h->{var x=new ReviewHistoryEntity();x.id=h.id();x.question=e;x.reviewerId=h.reviewerId();x.action=h.action();x.comment=h.comment();x.createdAt=h.createdAt();return x;}).toList();
+        e.histories=q.reviewHistory().stream().map(h->{var x=new ReviewHistoryEntity();x.id=h.id();x.question=e;x.reviewerId=h.reviewerId();x.action=h.action();x.fromStatus=h.fromStatus();x.toStatus=h.toStatus();x.comment=h.comment();x.createdAt=h.createdAt();return x;}).toList();
         return e;
     }
     public Question toDomain(QuestionEntity e) {
         return new Question(e.id,e.facultyId,e.subjectId,e.chapterId,e.topicId,e.knowledgeItemId,e.assignmentId,e.content,e.imageUrl,e.storageKey,e.type,e.difficulty,e.status,e.source,e.aiSourceId,e.createdBy,e.createdAt,e.updatedAt,
                 e.options.stream().map(o->new QuestionOption(o.id,o.label,o.content,o.imageUrl,o.storageKey,o.correct,o.sortOrder)).toList(),
-                e.histories.stream().map(h->new QuestionReviewHistory(h.id,h.reviewerId,h.action,h.comment,h.createdAt)).toList(), e.archivedFromStatus);
+                e.histories.stream().map(h->new QuestionReviewHistory(h.id,h.reviewerId,h.action,h.fromStatus,h.toStatus,h.comment,h.createdAt)).toList(), e.archivedFromStatus);
     }
 }
