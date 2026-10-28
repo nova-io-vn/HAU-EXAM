@@ -15,6 +15,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -73,5 +74,18 @@ class CatalogServiceAuthorizationTest {
         ForbiddenException error = assertThrows(ForbiddenException.class,
                 () -> service.assignLecturer(subjectId, lecturerId, actor));
         assertEquals("SUBJECT_ACCESS_DENIED", error.code());
+    }
+
+    @Test
+    void assignedLecturerSeesOnlySubjectsInCurrentFaculty() {
+        UUID oldSubjectId = UUID.randomUUID();
+        Subject oldFacultySubject = new Subject(oldSubjectId, "KT", Set.of("KT"), "KT1", "Kiến trúc",
+                subject.createdAt(), subject.updatedAt());
+        when(assignments.findActiveSubjectIds(lecturerId)).thenReturn(List.of(subjectId, oldSubjectId));
+        when(catalog.findSubjects(null)).thenReturn(List.of(subject, oldFacultySubject));
+
+        var visible = service.subjects(new Actor(lecturerId, Role.USER, "CNTT"), null);
+
+        assertEquals(List.of(subject), visible);
     }
 }

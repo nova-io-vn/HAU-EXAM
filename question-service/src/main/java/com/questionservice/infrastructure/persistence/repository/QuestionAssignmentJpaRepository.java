@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface QuestionAssignmentJpaRepository extends JpaRepository<QuestionAssignmentEntity, UUID> {
     List<QuestionAssignmentEntity> findAllByFacultyIdOrderByDeadlineAsc(String facultyId);
     List<QuestionAssignmentEntity> findAllByLecturerIdOrderByDeadlineAsc(UUID lecturerId);
+    List<QuestionAssignmentEntity> findAllBySubjectId(UUID subjectId);
+    boolean existsBySubjectIdAndLecturerId(UUID subjectId, UUID lecturerId);
 }

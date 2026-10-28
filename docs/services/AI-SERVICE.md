@@ -12,6 +12,8 @@ Package `com.aiservice`; database `ai_db`; migrations V1-V3. Job có `PENDING`, 
 
 `POST/GET /api/v1/documents`, `/api/v1/documents/{id}`; `POST /api/v1/ai/generate/questions`, `/api/v1/ai/analyze`, `/api/v1/chat`; `GET /api/v1/ai/jobs/{id}`. Request tạo câu hỏi bắt buộc có `documentId`, `subjectId`, `chapterId`; `topicId` là tùy chọn. SYSTEM_ADMIN quản lý kho tri thức trợ lý qua `GET/POST /api/v1/admin/ai-policy/documents`, `PATCH /{id}?enabled=...`, `POST /{id}/reprocess` và `DELETE /{id}`; response tài liệu có `chunkCount` để giao diện theo dõi kết quả lập chỉ mục. Internal result endpoint nằm trong `AiWorkspaceController` và yêu cầu internal token. Chi tiết request/response phải đối chiếu controller tương ứng.
 
+`POST /api/v1/ai/system-help` nhận `message` và `previousQuestion` tùy chọn (câu hỏi trước của người dùng, tối đa 1000 ký tự). Trợ lý dùng quy tắc xác thực cục bộ cho quyền duyệt câu hỏi, trạng thái đăng ký và hướng dẫn tạo câu hỏi; khi AI provider lỗi, fallback không suy đoán nội dung thiếu nguồn. SYSTEM_ADMIN có thể cấu hình provider `OPENAI` cùng model được hỗ trợ qua `/api/v1/admin/ai-settings`; key được mã hóa ở backend và không đưa vào source/YAML.
+
 ## 4. Async/event
 
 Request generation trả job theo pattern 202; consumer xử lý `ai.generation.requested` và publish `ai.generation.completed`/`failed`. Completion payload gồm jobId, requestedBy, facultyId, subjectId, chapterId, topicId, resultReference. Retry phân loại malformed/non-retryable/retryable và có DLQ.

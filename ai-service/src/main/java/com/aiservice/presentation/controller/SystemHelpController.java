@@ -20,8 +20,9 @@ public class SystemHelpController {
 
     @PostMapping
     public ApiResponse<SystemHelpService.Result> ask(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody Request request) {
-        return ApiResponse.ok(service.ask(jwt.getClaimAsString("role"), request.message().trim()));
+        return ApiResponse.ok(service.ask(jwt.getClaimAsString("role"), request.message().trim(), request.previousQuestion()));
     }
 
-    public record Request(@NotBlank @Size(max = 1000) String message) {}
+    public record Request(@NotBlank @Size(max = 1000) String message,
+                          @Size(max = 1000) String previousQuestion) {}
 }

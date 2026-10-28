@@ -115,7 +115,9 @@ public class CatalogService {
     public List<Subject> subjects(Actor actor, String facultyId) {
         if (actor.role() == Role.USER) {
             Set<UUID> ids = new LinkedHashSet<>(assignments.findActiveSubjectIds(actor.userId()));
-            return repo.findSubjects(null).stream().filter(subject -> ids.contains(subject.id())).toList();
+            return repo.findSubjects(null).stream()
+                    .filter(subject -> ids.contains(subject.id()) && subject.isAvailableTo(actor.facultyId()))
+                    .toList();
         }
         return repo.findSubjects(actor.role() == Role.SUBJECT_ADMIN ? requiredFaculty(actor) : facultyId);
     }
@@ -296,7 +298,8 @@ public class CatalogService {
     private void requireReadScope(Actor actor, Subject subject) {
         if (actor.role() == Role.SYSTEM_ADMIN) return;
         if (actor.role() == Role.USER) {
-            if (actor.userId() != null && assignments.existsActive(subject.id(), actor.userId())) return;
+            if (actor.userId() != null && subject.isAvailableTo(actor.facultyId())
+                    && assignments.existsActive(subject.id(), actor.userId())) return;
         } else if (actor.role() == Role.SUBJECT_ADMIN && subject.isAvailableTo(actor.facultyId())) {
             return;
         }

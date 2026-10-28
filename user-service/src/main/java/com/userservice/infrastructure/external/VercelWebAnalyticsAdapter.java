@@ -59,7 +59,16 @@ public class VercelWebAnalyticsAdapter implements WebAnalyticsPort {
                     ))
                     .toList();
         } catch (RuntimeException exception) {
-            throw new WebAnalyticsException("Không thể tải dữ liệu Vercel Web Analytics", exception);
+            String message = "Không thể tải dữ liệu Vercel Web Analytics";
+            if (exception instanceof org.springframework.web.client.HttpClientErrorException http) {
+                message = switch (http.getStatusCode().value()) {
+                    case 401 -> "Token Vercel không hợp lệ hoặc đã hết hạn";
+                    case 403 -> "Token Vercel không có quyền đọc Web Analytics của project/team đã chọn";
+                    case 404 -> "Không tìm thấy project Vercel đã cấu hình";
+                    default -> message;
+                };
+            }
+            throw new WebAnalyticsException(message, exception);
         }
     }
 
@@ -72,7 +81,7 @@ public class VercelWebAnalyticsAdapter implements WebAnalyticsPort {
         } catch (WebAnalyticsException ex) {
             Throwable cause = ex.getCause();
             if (cause instanceof org.springframework.web.client.HttpClientErrorException http) {
-                return switch (http.getStatusCode().value()) { case 401, 403 -> "FORBIDDEN"; case 404 -> "PROJECT_NOT_FOUND"; case 429 -> "RATE_LIMITED"; default -> "API_ERROR"; };
+                return switch (http.getStatusCode().value()) { case 401 -> "UNAUTHORIZED"; case 403 -> "FORBIDDEN"; case 404 -> "PROJECT_NOT_FOUND"; case 429 -> "RATE_LIMITED"; default -> "API_ERROR"; };
             }
             return "NETWORK_ERROR";
         }

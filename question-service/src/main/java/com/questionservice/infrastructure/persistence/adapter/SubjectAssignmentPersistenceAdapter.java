@@ -3,18 +3,36 @@ package com.questionservice.infrastructure.persistence.adapter;
 import com.questionservice.application.port.out.SubjectAssignmentRepository;
 import com.questionservice.infrastructure.persistence.entity.SubjectLecturerAssignmentEntity;
 import com.questionservice.infrastructure.persistence.repository.SubjectLecturerAssignmentJpaRepository;
+import com.questionservice.infrastructure.persistence.repository.QuestionAssignmentJpaRepository;
 import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Component
 public class SubjectAssignmentPersistenceAdapter implements SubjectAssignmentRepository {
     private final SubjectLecturerAssignmentJpaRepository repository;
-    public SubjectAssignmentPersistenceAdapter(SubjectLecturerAssignmentJpaRepository repository) { this.repository = repository; }
-    public boolean existsActive(UUID subjectId, UUID userId) { return repository.existsBySubjectIdAndUserIdAndActiveTrue(subjectId, userId); }
-    public List<UUID> findActiveSubjectIds(UUID userId) { return repository.findAllByUserIdAndActiveTrue(userId).stream().map(e -> e.subjectId).toList(); }
-    public List<UUID> findActiveUserIds(UUID subjectId) { return repository.findAllBySubjectIdAndActiveTrue(subjectId).stream().map(e -> e.userId).toList(); }
+    private final QuestionAssignmentJpaRepository questionAssignments;
+    public SubjectAssignmentPersistenceAdapter(SubjectLecturerAssignmentJpaRepository repository,
+                                               QuestionAssignmentJpaRepository questionAssignments) {
+        this.repository = repository;
+        this.questionAssignments = questionAssignments;
+    }
+    public boolean existsActive(UUID subjectId, UUID userId) {
+        return repository.existsBySubjectIdAndUserIdAndActiveTrue(subjectId, userId)
+                || questionAssignments.existsBySubjectIdAndLecturerId(subjectId, userId);
+    }
+    public List<UUID> findActiveSubjectIds(UUID userId) {
+        return Stream.concat(repository.findAllByUserIdAndActiveTrue(userId).stream().map(e -> e.subjectId),
+                questionAssignments.findAllByLecturerIdOrderByDeadlineAsc(userId).stream().map(e -> e.subjectId))
+                .distinct().toList();
+    }
+    public List<UUID> findActiveUserIds(UUID subjectId) {
+        return Stream.concat(repository.findAllBySubjectIdAndActiveTrue(subjectId).stream().map(e -> e.userId),
+                questionAssignments.findAllBySubjectId(subjectId).stream().map(e -> e.lecturerId))
+                .distinct().toList();
+    }
     public void assign(UUID subjectId, UUID userId, UUID assignedBy, Instant assignedAt) {
         var e = repository.findBySubjectIdAndUserId(subjectId, userId).orElseGet(SubjectLecturerAssignmentEntity::new);
         if (e.id == null) e.id = UUID.randomUUID();

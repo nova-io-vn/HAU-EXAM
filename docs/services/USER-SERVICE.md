@@ -19,3 +19,4 @@ Consume `user.registration.requested`; publish các thay đổi `user.approved`,
 ## 5. Security/config/test
 
 Role guard SYSTEM_ADMIN nằm ở controller/application; Auth snapshot nhận thay đổi. Faculty scope là rule service, không phải client security. Vercel adapter đọc `VERCEL_ANALYTICS_TOKEN`, `VERCEL_ANALYTICS_PROJECT_ID` và tùy chọn `VERCEL_ANALYTICS_TEAM_ID`; token không được trả về frontend hoặc ghi log. Port `8082`; DB/Rabbit/Eureka theo dev/docker/prod profile. `mvn -f user-service/pom.xml test` và root verify PASS.
+Kiểm tra kết nối Vercel phân biệt `UNAUTHORIZED` (HTTP 401) và `FORBIDDEN` (HTTP 403). Cả hai là lỗi quyền/cấu hình upstream, không thể chữa bằng redeploy mã nguồn nếu token/project/team chưa đúng.

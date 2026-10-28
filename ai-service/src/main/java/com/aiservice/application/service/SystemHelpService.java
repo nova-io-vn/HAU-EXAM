@@ -53,20 +53,27 @@ public class SystemHelpService {
     public SystemHelpService(AiProvider provider, ObjectMapper mapper, AiKnowledgeService knowledge) { this.provider = provider; this.mapper = mapper; this.knowledge = knowledge; }
 
     public Result ask(String role, String message) {
+        return ask(role, message, null);
+    }
+
+    public Result ask(String role, String message, String previousQuestion) {
         if (message == null || message.isBlank()) throw new IllegalArgumentException("Message is required");
         if (isSensitive(message)) return new Result("Tôi không thể cung cấp bí mật hệ thống, hỗ trợ vượt quyền, truy cập dữ liệu trái phép hoặc thực thi câu lệnh nguy hiểm. Tôi có thể hướng dẫn cách sử dụng HAU QM an toàn.", List.of(), List.of());
+        List<Article> articles = KNOWLEDGE.get(role);
+        if (articles == null) throw new IllegalArgumentException("Unsupported role");
         Result simple = simpleAnswer(message);
         if (simple != null) return simple;
+        Result policy = policyAnswer(role, message, previousQuestion);
+        if (policy != null) return policy;
         String intent = message.toLowerCase(Locale.ROOT);
         if ("USER".equals(role) && (intent.contains("phê duyệt") || intent.contains("phe duyet") || intent.contains("duyệt câu hỏi") || intent.contains("duyet cau hoi")))
             return new Result("Giảng viên không trực tiếp phê duyệt câu hỏi. Bạn hãy mở Câu hỏi của tôi, kiểm tra nội dung rồi chọn Gửi duyệt để Quản trị viên chuyên môn của Khoa xem xét.", List.of(new Action("NAVIGATE", "Mở câu hỏi của tôi", "MY_QUESTIONS")), List.of());
-        List<Article> articles = KNOWLEDGE.get(role);
-        if (articles == null) throw new IllegalArgumentException("Unsupported role");
         try {
+            String contextQuestion = previousQuestion == null ? "" : previousQuestion.trim();
             var sources = knowledge == null ? List.<AiKnowledgeService.Source>of() : knowledge.retrieve(message, 4);
             String source = mapper.writeValueAsString(Map.of("role", role, "articles", articles, "policySources", sources,
-                    "responsePolicy", "Answer safe everyday conversation and general knowledge normally. Use supplied sources for HAU-specific workflows. If a document question has no relevant supplied source, say that the knowledge base does not contain enough evidence instead of guessing. Never reveal secrets or grant access."));
-            String request = mapper.writeValueAsString(Map.of("message", message));
+                    "responsePolicy", "SYSTEM_ADMIN manages accounts and faculties but does not review subject questions. Only SUBJECT_ADMIN of the question's faculty reviews it. Newly registered users wait for SYSTEM_ADMIN approval before login. Answer safe everyday conversation and general knowledge normally. Use supplied sources for HAU-specific workflows. If no relevant source exists, say that there is not enough evidence. Never reveal secrets or grant access."));
+            String request = mapper.writeValueAsString(Map.of("message", message, "previousUserQuestion", contextQuestion));
             var root = mapper.readTree(provider.systemHelp(source, request));
             String answer = root.path("answer").asText("").trim();
             if (answer.isBlank()) throw new InvalidAiOutputException("System help answer is empty");
@@ -92,7 +99,7 @@ public class SystemHelpService {
         String normalized = message.toLowerCase(java.util.Locale.ROOT);
         Article match = articles.stream().max(java.util.Comparator.comparingInt(article -> score(normalized, article))).orElse(articles.getFirst());
         if (score(normalized, match) == 0) {
-            return new Result("HAU QM có các nhóm chức năng chính: hồ sơ và tài khoản, ngân hàng câu hỏi, học liệu và AI, phê duyệt chuyên môn, ma trận và đề thi, thông báo, tin nhắn và hỗ trợ. Bạn có thể nói rõ mục tiêu, ví dụ ‘làm sao tạo câu hỏi?’ để mình hướng dẫn từng bước.", List.of(), List.of());
+            return plain("Mình chưa có đủ thông tin đã kiểm chứng để trả lời câu hỏi này. Bạn có thể hỏi về một thao tác cụ thể trong HAU QM.");
         }
         return new Result(match.title() + ":\n" + match.workflow(), List.of(new Action("NAVIGATE", "Mở " + match.title(), match.routeKey())), List.of());
     }
@@ -102,6 +109,33 @@ public class SystemHelpService {
                 .map(value -> value.toLowerCase(java.util.Locale.ROOT))
                 .mapToInt(value -> value.length() > 2 && message.contains(value) ? 1 : 0)
                 .sum();
+    }
+
+    private Result policyAnswer(String role, String message, String previousQuestion) {
+        String text = message.toLowerCase(Locale.ROOT);
+        String previous = previousQuestion == null ? "" : previousQuestion.toLowerCase(Locale.ROOT);
+        boolean aboutReview = (text.contains("duyệt") || text.contains("phê duyệt") || text.contains("phe duyet"))
+                && (text.contains("câu hỏi") || text.contains("cau hoi")
+                    || (text.contains("đó") && previous.contains("câu hỏi")));
+        if (aboutReview) {
+            if ("SYSTEM_ADMIN".equals(role))
+                return plain("SYSTEM_ADMIN quản lý tài khoản và khoa, không duyệt câu hỏi chuyên môn. SUBJECT_ADMIN chỉ được duyệt câu hỏi thuộc khoa mình được phân công; Question Service phải kiểm tra facultyId của người duyệt và câu hỏi.");
+            if ("SUBJECT_ADMIN".equals(role))
+                return new Result("Bạn chỉ được duyệt câu hỏi thuộc khoa mình quản lý. Mở Duyệt câu hỏi, kiểm tra nội dung và chọn phê duyệt, từ chối hoặc yêu cầu chỉnh sửa.",
+                        List.of(new Action("NAVIGATE", "Mở Duyệt câu hỏi", "QUESTION_REVIEW")), List.of());
+            return new Result("Giảng viên tạo câu hỏi và gửi duyệt; SUBJECT_ADMIN của cùng khoa mới có quyền xét duyệt chuyên môn.",
+                    List.of(new Action("NAVIGATE", "Mở Câu hỏi của tôi", "MY_QUESTIONS")), List.of());
+        }
+        if ((text.contains("đăng ký") || text.contains("dang ky"))
+                && (text.contains("đăng nhập") || text.contains("dang nhap") || text.contains("duyệt") || text.contains("duyet")))
+            return plain("Tài khoản mới đăng ký ở trạng thái PENDING_APPROVAL, chưa được đăng nhập ngay. SYSTEM_ADMIN cần phê duyệt để tài khoản chuyển sang ACTIVE.");
+        if (text.contains("tạo câu hỏi") || text.contains("tao cau hoi")) {
+            if ("SYSTEM_ADMIN".equals(role))
+                return plain("SYSTEM_ADMIN quản lý tài khoản và khoa, không trực tiếp tạo câu hỏi chuyên môn. Giảng viên mở Tạo câu hỏi, chọn môn và chương được phân công, nhập nội dung và đáp án, lưu bản nháp rồi gửi duyệt.");
+            return new Result("Mở Tạo câu hỏi; chọn môn và chương được phân công; nhập nội dung và các phương án, đánh dấu đáp án đúng; lưu bản nháp rồi gửi duyệt khi hoàn tất.",
+                    List.of(new Action("NAVIGATE", "Mở Tạo câu hỏi", "QUESTION_CREATE")), List.of());
+        }
+        return null;
     }
 
     public record Article(String routeKey, String title, String workflow) {}
